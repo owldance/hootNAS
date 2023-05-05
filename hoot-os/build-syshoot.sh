@@ -1,5 +1,5 @@
 #!/bin/bash
-
+#
 # usage:
 #
 #     sudo ./build-syshoot.sh <projectname>
@@ -16,9 +16,8 @@
 # requirements:
 # - internet connection
 # - must be run as root on a jammy distro
-# - debootstrap squashfs-tools packages installed
+# - debootstrap package installed
 #
-# see README.md for more details
 
 ################################################################################
 #                            USER VARIABLES
@@ -129,7 +128,7 @@ if [ -d "$project_dir" ]; then
 fi
 
 # check if required packages are installed, if not - install them
-deb_paks='debootstrap squashfs-tools'
+deb_paks='debootstrap'
 for deb_pak in $deb_paks; do
   deb_db_status="$(dpkg-query -W --showformat='${db:Status-Status}' "$deb_pak" 2>&1)"
   if [ ! $? = 0 ] || [ ! "$deb_db_status" = installed ]; then
@@ -256,8 +255,6 @@ if [ "$build" = "metal" ]; then
   chroot syshoot apt install --yes thermald
 fi
 
-
-
 echo "installing packages"
 cat <<'EOF' | chroot syshoot
 apt install --yes man-db
@@ -266,7 +263,6 @@ apt install --yes openssh-client
 apt install --yes openssh-server 
 apt install --yes gdisk 
 apt install --yes dialog
-apt install --yes thermald
 apt install --yes zfsutils-linux
 apt install --yes btrfs-progs
 apt install --yes live-boot # hook for initramfs-tools

@@ -1,4 +1,17 @@
 #!/bin/bash
+#
+# usage:
+#
+#     sudo ./modify-syshoot.sh <projectname>
+#
+# where <projectname> is an existing project dirctory
+#
+# if you need to edit or debug the system you have built, the above command 
+# will login (chroot) on the system in the <projectname>/syshoot directory and 
+# present you with a system prompt, there you can make any changes you need. 
+# When you are done, type 'exit' to end the session.
+#
+
 project_dir=$1
 
 set -e -o pipefail

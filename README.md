@@ -6,16 +6,16 @@ hootNAS comes with a web based management application and API based on a ubuntu
 LTS, it is packaged in two versions, one with hardware drivers for running on 
 bare metal, and one for running in a virtual machine.
 
-**Download** [latest metal.ISO image](#placeholder) or 
-[latest virtual.ISO image](#placeholder)
+**Download** 
+[latest ISO image releases](https://github.com/owldance/hootNAS/releases)
 
-The ambition of hootNAS is to be a robust, utalitarian, user, and devloper 
+The ambition of hootNAS is to be a robust, utilitarian, user, and developer 
 friendly NAS that can be used out-of-the-box, or customized to make it 
 your very own. Although the intended use cases are individuals, academic 
-organisations and small to medium businesses, with high data volumes, home 
+organizations and small to medium businesses, with high data volumes, home 
 users might also find it useful as they can add any functionality they need.
 
-hootNAS acomplishes this by using ubiqitous technology, tools and frameworks 
+hootNAS accomplishes this by using ubiquitous technology, tools and frameworks 
 etc. to curb context switching and trivial tasks, thus enabling the developer 
 to focus more on solving actual problems and prevent developer fatigue. 
 Additionally there is an emphasis on providing a quality documentation, in 

@@ -1,4 +1,4 @@
-# hootOS - in-memeory ubuntu
+# hootOS - in-memory ubuntu
 
 ## Summary
 
@@ -64,9 +64,9 @@ If you need to edit or debug the system you have built, the command
 
     $ sudo ./modify-syshoot.sh <projectname>
 
-will login (chroot) to the system and present you with a system prompt, there 
-you can make any changes you need. When you are done, type *exit* to end the 
-session.
+will login (chroot) on the system in the *projectname/syshoot* directory and 
+present you with a system prompt, there you can make any changes you need. When 
+you are done, type *exit* to end the session.
 
 If you modify the system, you should also build a new iso image.
 
