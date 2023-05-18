@@ -2,9 +2,12 @@
 #
 # usage:
 #
-#     sudo ./build-hootiso.sh <projectname>
+#     sudo build-hootiso.sh <projectname> <originaliso> <newiso>
 #
-# where <projectname> is an existing project dirctory
+# where <projectname> is an existing project directory, and <originaliso> is 
+# the path and name of the original ubuntu iso file that must exist, 
+# and <newiso> is the path and name of the new iso file to be built, the path 
+# must exist, any existing file will be overwritten. 
 #
 # this script will create a new hybrid BIOS/UEFI bootable iso file using the 
 # original ubuntu as a template. if you are using a ubuntu version other than 
@@ -12,19 +15,15 @@
 # command in this script.
 #
 # requirements:
-# a ubuntu-22.04.2-desktop-amd64.iso file
-# squashfs-tools and xorriso packages installed
+# - a ubuntu-22.04.2-desktop-amd64.iso file
+# - squashfs-tools and xorriso packages installed
 #
 
 ################################################################################
 #                           USER VARIABLES
 ################################################################################
 #
-# path and name of the original ubuntu iso file, the file must exist
-original_iso=/home/username/Downloads/ubuntu-22.04.2-desktop-amd64.iso
-# path and name of the new iso file, the path must exist
-# any existing file will be overwritten
-new_iso=/home/username/Downloads/hootNAS-22-04.2.000.iso
+# the following variables are used to create the new iso file
 # ISO compatible volume name [0-9A-Z_] 
 iso_vol_name='HOOTNAS_22_04_2' 
 disk_info='HOOTNAS 22.04.2'
@@ -34,48 +33,39 @@ disk_uuid_generic='6fa987c2-37b1-43ef-a880-77284b5f614f'
 #
 ################################################################################
 
-# are we root?
-if [ "$EUID" -ne 0 ] 
-  then
-    echo "must run as root"
-    echo 
-    echo "usage "
-    echo "     sudo ./build-hootiso.sh <projectname>"
-    echo
-    echo "where <projectname> is a existing project dirctory"
-    echo
-    exit 1
-fi 
-
-# check if system dir exists
-if [ ! -d "$1/syshoot" ]
-  then 
-    echo "system directory $1/syshoot not found"
-    echo "check your path or spelling, or run "
-    echo
-    echo "     sudo ./build-syshoot.sh <projectname>"
-    echo
-    echo "to create a new project here"
-    exit 1
+# check user input
+user_err=0
+if [ "$EUID" -ne 0 ]; then
+  echo "you must run this script as root"
+  user_err=1
+elif [ ! -d "$1/syshoot" ]; then 
+  echo "hootOS system directory $1/syshoot not found"
+  user_err=1
+elif [ ! -f "$2" ] || [ ! "${2##*.}" = "iso" ]; then 
+  echo "$2 is not an existing ubuntu iso file"
+  user_err=1
+elif [ ! -d "$(dirname $3)" ] || [ ! "${3##*.}" = "iso" ]; then
+  echo "$3 is not an existing path, or filename does not end with .iso"
+  user_err=1
 fi
 
-# check if new iso path exists
-if [ ! -d "$(dirname $new_iso)" ]
-  then 
-    echo "new iso path $(dirname $2) not found"
-    echo
-    exit 1
+if [ $user_err = 1 ]; then
+  echo
+  echo "usage:"
+  echo
+  echo "    sudo ./build-hootiso.sh <projectname> <originaliso> <newiso>"
+  echo
+  echo "where <projectname> is an existing project directory, and <originaliso> is"
+  echo "the path and name of the original ubuntu iso file that must exist,"
+  echo "and <newiso> is the path and name of the new iso file to be built, the path"
+  echo "must exist, any existing file will be overwritten."
+  echo
+  exit 1
 fi
 
-# check if required packages are installed, if not - install them
-deb_paks='squashfs-tools xorriso'
-for deb_pak in $deb_paks; do
-  deb_db_status="$(dpkg-query -W --showformat='${db:Status-Status}' "$deb_pak" 2>&1)"
-  if [ ! $? = 0 ] || [ ! "$deb_db_status" = installed ] 
-    then
-      apt install --yes $deb_pak
-  fi
-done
+project_dir=$1
+original_iso=$2
+new_iso=$3
 
 # mount the original iso
 mkdir -p /mnt/isodtp
@@ -84,11 +74,13 @@ mount -o loop $original_iso /mnt/isodtp
 if [ ! -d '/mnt/isodtp/boot' ] 
   then 
     echo "original iso is not mounted"
+    umount /mnt/isodtp
+    rm -r /mnt/isodtp
     exit 1
 fi
 
-# cd into project folder
-cd $1
+# cd into project directory
+cd $project_dir
 
 # create and populate the image directory 
 mkdir -p isoimage/{live,install,assets}

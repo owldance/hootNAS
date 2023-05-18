@@ -2,7 +2,7 @@
 #
 # usage:
 #
-#     sudo ./modify-syshoot.sh <projectname>
+#     sudo modify-syshoot.sh <projectname>
 #
 # where <projectname> is an existing project dirctory
 #

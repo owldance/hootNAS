@@ -199,5 +199,3 @@ while :; do
   fi
 done
 
-clear
-exit 0

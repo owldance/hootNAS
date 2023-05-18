@@ -1,0 +1,11 @@
+{
+  "name": "webapi",
+  "version": "0.1.0",
+  "description": "web api for hootnas",
+  "main": "webapi.mjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

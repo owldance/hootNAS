@@ -33,6 +33,9 @@ particular adding context, reasoning and references.
 * Management dashboard web application
 * API for custom or automated management
 
+The in-memory operation is partially inspired by [SmartOS](https://smartos.org/)
+
+
 ## DEV STACK
 ![Dev stack](/documentation/assets/devstack.png "Dev stack")
 

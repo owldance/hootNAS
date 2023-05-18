@@ -26,10 +26,14 @@ In early userspace, live-boot searches for a filesystem[2] labled
 The default network configuration is DHCP, see 
 [build-syshoot.sh](./build-syshoot.sh) for details.
 
-The script [network-config.sh](/tty/README.md) is executed on boot, and
+The script [network-config.sh](/tty/README.md) is executed on **first boot**, and
 on the terminal screen, the user is welcomed with the IP address of the system. 
 With this information, the user can connect to the system using SSH, or make 
-webAPI calls, or open a browser and connect to the hootOS management dashboard.
+webAPI calls, or open a browser and connect to the hootNAS management dashboard.
+
+**On boot** the service `hootsrv.service` starts the webserver target 
+[webserver.mjs](/webserver/webserver.mjs) which in turn starts the webapp 
+target [index.html](/webapp/index.html).
 
 ## Building hootOS
 
@@ -37,14 +41,15 @@ A two step buildflow is used to create a hootOS ISO file.
 
 ### 1. Building the system
 
-Before running the below command, check that user variables in the 
-[build-syshoot.sh](./build-syshoot.sh) file are according to your 
-requirements.
+Before running the below command, you must as a minimum set the environment 
+variable HOOT_REPO to point to the root of your local hootNAS git repository. 
+check [build-syshoot.sh](./build-syshoot.sh) for other recomended, but optional 
+settings.
 
-    $ sudo ./build-syshoot.sh <projectname>
+    $ sudo build-syshoot.sh <projectname>
 
-where *projectname* only contains characters [0-9a-zA-Z._-], this will build 
-the hootOS system in the *projectname/syshoot* directory. 
+where `projectname` is the name of the subfolder that will be created, this 
+will build the hootOS system in the `projectname/syshoot` directory. 
 
 ### 2. Building the hootOS iso file
 
@@ -52,26 +57,30 @@ Before running the below command, check that user variables in the
 [build-hootiso.sh](./build-hootiso.sh) file are according to your 
 requirements.
 
-    $ sudo ./build-hootiso.sh <projectname>
+```bash
+$ sudo build-hootiso.sh <projectname> <originaliso> <newiso>
+```
+where `projectname` is an existing project directory, and `originaliso` is 
+the path and name of the original ubuntu iso file that must exist, and `newiso` 
+is the path and name of the new iso file to be built, the path must exist, any 
+existing file will be overwritten.
 
 the command does two things, first it will build an ISO image in the 
-*projectname/isoimage* directory, then it will use the content of this 
+`projectname/isoimage` directory, then it will use the content of this 
 directory to generate an hootOS ISO file.
 
 ### Modifying system-hoot after building
 
 If you need to edit or debug the system you have built, the command 
 
-    $ sudo ./modify-syshoot.sh <projectname>
-
-will login (chroot) on the system in the *projectname/syshoot* directory and 
+```bash
+$ sudo modify-syshoot.sh <projectname>
+```
+will login (chroot) on the system in the `projectname/syshoot` directory and 
 present you with a system prompt, there you can make any changes you need. When 
-you are done, type *exit* to end the session.
+you are done, type `exit` to end the session.
 
 If you modify the system, you should also build a new iso image.
-
-## TODO
-* time synchronization seems to lag 2 hours behind
 
 ## Contributing
 

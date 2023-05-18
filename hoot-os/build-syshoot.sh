@@ -2,7 +2,7 @@
 #
 # usage:
 #
-#     sudo ./build-syshoot.sh <projectname>
+#     sudo build-syshoot.sh <projectname>
 #
 # where <projectname> is a new project directory
 #
@@ -14,56 +14,55 @@
 # code git extension.
 #
 # requirements:
+# - you must set the environment variable HOOT_REPO to point to the root of
+#   your local hootNAS git repository
 # - internet connection
 # - must be run as root on a jammy distro
-# - debootstrap package installed
+# - debootstrap package installed.
+#
+# optional environment variables:
+# - HOOT_LOCALE, if not set, defaults to 'en_DE.UTF-8'
+#   set your locale in the format 'en_XX.UTF-8'
+#   see supported UTF-8 locales here: /usr/share/i18n/SUPPORTED
+# - HOOT_XKB_LAYOUT, if not set, defaults to 'de'
+#   see supported keyboard settings: /usr/share/X11/xkb/rules/evdev.lst
+# - HOOT_ZONE, if not set, defaults to 'Europe'
+#   setting up your local timezone and city is especially important for LDAP/AD 
+#   authentication. supported timezones: /usr/share/zoneinfo
+# - HOOT_CITY, if not set, defaults to 'Berlin'
 #
 
 ################################################################################
 #                            USER VARIABLES
 ################################################################################
 #
-# you must set the full path to this local hootNAS git repository directory
-repo_dir=/home/username/Documents/hootNAS
-#
-# optional, you can set all the following variables to your liking
+# you can set all the following variables to your liking
 #
 # set the build variable to either 'metal' or 'virtual'
 # build 'metal' system which includes firmware and microcode, 
 # or 'virtual' system which doesn't include firmware and microcode
-build=metal
-# set the locale, supported UTF-8 locales: /usr/share/i18n/SUPPORTED
-locale=en_US.UTF-8
+build=virtual
 # keyboard settings, convenient if you are going to be working in the terminal. 
-# supported keyboard settings: /usr/share/X11/xkb/rules/evdev.lst
+# model 'pc105' is a good general choice for most keyboards
+# see supported keyboard settings: /usr/share/X11/xkb/rules/evdev.lst
 xkb_model=pc105
-xkb_layout=us
-# set the timezone, this is especially important for LDAP/AD authentication
-# supported timezones: /usr/share/zoneinfo
-# etc setting is mainly for backward compatibility of the tz database
-# https://github.com/eggert/tz/blob/main/etcetera
-# https://github.com/eggert/tz
-etc=UTC 
-zone=Europe
-city=Berlin
 # download and install node.js
-nodejs_version=18.12.0
+nodejs_version=v18.12.0
 # copy in interactive network configuration script for terminal (tty)
-config_script=$repo_dir/tty/network-config.sh
+config_script=$HOOT_REPO/tty/network-config.sh
 # if directory exist, copy in webserver and create systemd service for 
-# target webserver/server.mjs. the webserver serves both the web management
+# target webserver/webserver.mjs. the webserver serves both the web management
 # app and the webAPI endpoints on port 80
-webserver=$repo_dir/webserver
+webserver=$HOOT_REPO/webserver
 # if directory exist, copy in web management app with 
 # target webapp/dist/index.html
-webapp=$repo_dir/webapp
+# make sure you have built the webapp 'npm run build' in the webapp directory
+# before running this script
+webapp=$HOOT_REPO/webapp
 # if directory exist, copy in webAPI endpoints
-webapi=$repo_dir/webapi
+webapi=$HOOT_REPO/webapi
 #
 ################################################################################
-
-# get commandline parameter
-project_dir=$1
 
 # start measuring time
 SECONDS=0
@@ -76,7 +75,7 @@ set -e -o pipefail
 # error handler, called on non-zero exit codes
 function trapper {
   if [ $? -ne 0 ]; then
-    echo "fatal error: something didn't go as expected"
+    echo "fatal error!"
   else
     echo
     echo "system created"
@@ -86,11 +85,19 @@ function trapper {
     echo
   fi
   # lazy umount because it's mounted recusively with --rbind
-  umount -lf syshoot/dev
-  umount -lf syshoot/proc
-  umount -lf syshoot/sys
-  # cd out of project dir
-  cd ..
+  if [ "$(mountpoint -q syshoot/dev ; echo $?)" = 0 ]; then
+    umount -lf syshoot/dev
+  fi
+  if [ "$(mountpoint -q syshoot/proc ; echo $?)" = 0 ]; then
+    umount -lf syshoot/proc
+  fi
+  if [ "$(mountpoint -q syshoot/sys ; echo $?)" = 0 ]; then
+    umount -lf syshoot/sys
+  fi
+  # if current working directory is project_dir, cd down one level
+  if [ "$(basename $PWD)" = "$project_dir" ]; then
+    cd ..
+  fi
   # calculate duration
   duration=$SECONDS
   duration_minutes=$(($duration / 60))
@@ -101,50 +108,56 @@ function trapper {
 }
 trap trapper EXIT
 
-# are we root?
-if [ "$EUID" -ne 0 ] || ! [[ $project_dir =~ ^[0-9a-zA-Z._-]+$ ]]; then
-  echo "must run as root"
-  echo
-  echo "usage "
-  echo "     sudo ./build-syshoot.sh <projectname>"
-  echo
-  echo "where <projectname> only contains [0-9a-zA-Z._-]"
-  echo
-  exit 1
-fi
+# get commandline parameter
+project_dir=$1
 
-# check if we are running on ubuntu jammy
-if [ ! "$(lsb_release -sc)" = "jammy" ]; then
-  echo "this script must run on a jammy distro"
-  echo
-  exit 1
-fi
-
-# check if working directory exists
-if [ -d "$project_dir" ]; then
+# check user input
+user_err=0
+if [ "$EUID" -ne 0 ]; then
+  echo "you must run this script as root"
+  user_err=1
+elif [ -z "$project_dir" ]; then
+  echo "<projectname> not specified"
+  user_err=1
+elif [ -d "$project_dir" ]; then
   echo "project dir $project_dir already exists"
+  user_err=1
+elif [ ! -f "$HOOT_REPO/README.md" ] || [ -z "$HOOT_REPO" ]; then 
+  echo "set the environment variable HOOT_REPO to point"
+  echo "to the root of your local hootNAS git repository"
+  echo "e.g. HOOT_REPO=/path/to/hootNAS"
+  user_err=1
+elif [ ! "$(lsb_release -sc)" = "jammy" ]; then
+  echo "this script must run on a jammy distro"
+  user_err=1
+fi
+
+if [ $user_err = 1 ]; then
+  echo
+  echo "usage:"
+  echo
+  echo "    sudo ./build-syshoot.sh <projectname>"
+  echo
+  echo "where <projectname> is a new project directory"
   echo
   exit 1
 fi
 
-# check if required packages are installed, if not - install them
-deb_paks='debootstrap'
-for deb_pak in $deb_paks; do
-  deb_db_status="$(dpkg-query -W --showformat='${db:Status-Status}' "$deb_pak" 2>&1)"
-  if [ ! $? = 0 ] || [ ! "$deb_db_status" = installed ]; then
-    apt install --yes $deb_pak
-  fi
-done
+# check optional environment variables, if not set, set to default
+if [ -z "$HOOT_LOCALE" ]; then HOOT_LOCALE='en_DE.UTF-8'; fi
+if [ -z "$HOOT_XKB_LAYOUT" ]; then $HOOT_XKB_LAYOUT='de'; fi
+if [ -z "$HOOT_ZONE" ]; then HOOT_ZONE='Europe'; fi
+if [ -z "$HOOT_CITY" ]; then HOOT_CITY='Berlin'; fi
 
 # create project and syshoot dir if it does not exist
 mkdir -p $project_dir/syshoot
 cd $project_dir # cd into project dir
 
-# download nodejs tarball if it does not exist
-if [ ! -f "node-v$nodejs_version-linux-x64.tar.xz" ]; then
-  echo "downloading nodejs tarball"
+# download node.js tarball if it does not exist
+if [ ! -f "node-$nodejs_version-linux-x64.tar.xz" ]; then
+  echo "downloading node.js tarball"
   wget -q --show-progress \
-  https://nodejs.org/dist/v${nodejs_version}/node-v${nodejs_version}-linux-x64.tar.xz
+  https://nodejs.org/dist/${nodejs_version}/node-${nodejs_version}-linux-x64.tar.xz
 fi
 
 ################################################################################
@@ -179,33 +192,52 @@ cat <<EOF | chroot syshoot
 apt update
 apt install --yes locales
 locale-gen en_US.UTF-8
-locale-gen $locale
+locale-gen $HOOT_LOCALE
 apt install --yes debconf-utils
 EOF
 
 echo "configuring locales"
 cat <<EOF | chroot syshoot
 echo "locales locales/locales_to_be_generated multiselect \
-$locale UTF-8, en_US.UTF-8 UTF-8" | debconf-set-selections
+$HOOT_LOCALE UTF-8, en_US.UTF-8 UTF-8" | debconf-set-selections
 echo "locales locales/default_environment_locale select \
-$locale" | debconf-set-selections
+$HOOT_LOCALE" | debconf-set-selections
 dpkg-reconfigure --frontend noninteractive locales
 EOF
 
-echo "configuring timezones"
+echo "configuring timezone database"
+# Etc zone is mainly for backward compatibility of the tz database
+# https://github.com/eggert/tz/blob/main/etcetera
+# https://github.com/eggert/tz
 cat <<EOF | chroot syshoot
-echo "tzdata tzdata/Zones/Etc select $etc" | debconf-set-selections
-echo "tzdata tzdata/Areas select $zone" | debconf-set-selections
-echo "tzdata tzdata/Zones/$zone select $city" | debconf-set-selections
+echo "tzdata tzdata/Zones/Etc select UTC" | debconf-set-selections
+echo "tzdata tzdata/Areas select $HOOT_ZONE" | debconf-set-selections
+echo "tzdata tzdata/Zones/$HOOT_ZONE select $HOOT_CITY" | debconf-set-selections
 dpkg-reconfigure --frontend noninteractive tzdata
 EOF
+
+echo "configuring local system timezone"
+# at this point system has not been booted with systemd as init system (PID 1) 
+# so we can't use timedatectl to set the timezone
+rm /etc/localtime
+ln -s /usr/share/zoneinfo/$HOOT_ZONE/$HOOT_CITY /etc/localtime
+
+# configure time synchronization servers
+# /etc/systemd/timesyncd.conf
+#  #[Time]
+#  #NTP=
+#  #FallbackNTP=ntp.ubuntu.com
+#  #RootDistanceMaxSec=5
+#  #PollIntervalMinSec=32
+#  #PollIntervalMaxSec=2048
+
 
 echo "configuring keyboard"
 # debconf-set-selections doesn't work here when it's a first install
 cat <<EOF | chroot syshoot
 echo "
 XKBMODEL=\"$xkb_model\"
-XKBLAYOUT=\"$xkb_layout\"
+XKBLAYOUT=\"$HOOT_XKB_LAYOUT\"
 XKBVARIANT=\"\"
 XKBOPTIONS=\"\"
 
@@ -232,19 +264,10 @@ dpkg-reconfigure --frontend noninteractive console-setup
 EOF
 
 echo "installing kernels headers and modules"
-# 'uname -r' to check host kernel version
-# linux-image-generic
-#   Depends: linux-image-5.15.0-52-generic
-#   Depends: linux-modules-extra-5.15.0-52-generic # zfs module is here
-#   Depends: linux-firmware
-#   Depends: intel-microcode
-#   Depends: amd64-microcode
-#   Recommends: thermald
-# chroot syshoot apt install --yes linux-image-generic
-
 # install same kernel version as host
 chroot syshoot apt install --yes linux-image-$(uname -r)
 # chroot syshoot apt install --yes linux-headers-$(uname -r)
+# zfs module is in linux-modules-extra
 chroot syshoot apt install --yes linux-modules-extra-$(uname -r)
 
 # if metal, install firmware
@@ -296,11 +319,11 @@ EOF
 echo "setting up node.js"
 mkdir -p syshoot/usr/bin/nodejs
 tar \
--xJvf node-v${nodejs_version}-linux-x64.tar.xz \
+-xJvf node-${nodejs_version}-linux-x64.tar.xz \
 -C syshoot/usr/bin/nodejs >/dev/null
 # adding node.js binary to PATH
 echo "adding node.js binary to PATH"
-sed -i "s|\"$|:/usr/bin/nodejs/node-v${nodejs_version}-linux-x64/bin\"|" \
+sed -i "s|\"$|:/usr/bin/nodejs/node-${nodejs_version}-linux-x64/bin\"|" \
   syshoot/etc/environment
 
 # if file config_script exist copy to syshoot/root/scripts
@@ -338,7 +361,7 @@ Restart=on-failure
 RestartSec=10
 StandardOutput=syslog
 StandardError=syslog
-ExecStart=/usr/local/hootnas/webserver/server.mjs
+ExecStart=/usr/local/hootnas/webserver/webserver.mjs
 [Install]
 WantedBy=multi-user.target
 EOF
@@ -346,7 +369,7 @@ EOF
   echo "set permissions on unit file and executable"
   echo "for hootnas webserver service"
   chmod 0664 syshoot/etc/systemd/system/hootsrv.service
-  chmod 0744 syshoot/usr/local/hootnas/webserver/server.mjs
+  chmod 0744 syshoot/usr/local/hootnas/webserver/webserver.mjs
 
   # enable hootnas webserver service
   echo "enabling hootsrv.service service"
@@ -355,11 +378,21 @@ EOF
 fi
 
 # copy in webapp if source directory exists
+# make sure you have built the webapp 'npm run build' in the webapp directory
+# before running this script
 if [ -d "$webapp" ]; then
   echo "creating directory /usr/local/hootnas"
-  mkdir -p syshoot/usr/local/hootnas/webapp
+  mkdir -p syshoot/usr/local/hootnas/webapp/dist
   echo "copy in hootnas webapp"
-  cp -r $webapp/* syshoot/usr/local/hootnas/webapp
+  cp -r $webapp/dist/* syshoot/usr/local/hootnas/webapp/dist
+fi
+
+# copy in webapi if source directory exists
+if [ -d "$webapi" ]; then
+  echo "creating directory /usr/local/hootnas"
+  mkdir -p syshoot/usr/local/hootnas/webapi
+  echo "copy in hootnas webapi"
+  cp -r $webapi/* syshoot/usr/local/hootnas/webapi
 fi
 
 echo "customizing login"
@@ -376,4 +409,11 @@ echo "configuring root password"
 cat <<'EOF' | chroot syshoot
 echo "root:$(printf 'pass1234' | openssl passwd -6 -salt Zf4aH -stdin)" | \
 chpasswd -e
+EOF
+
+# clear history
+echo "clearing history"
+cat <<EOF | chroot syshoot
+history -c
+history -w
 EOF
