@@ -123,12 +123,11 @@ provide('storagepool', storagepool)
 <template>
   <div class="container">
     <div class="text-center">
-      <p>Paragraph</p>
+      <h1>Storage Setup</h1>
     </div>
     <div class="row">
       <div class="col offset-xxl-3">
-        <div class="carousel slide" data-bs-ride="false" id="carousel-init"
-          style="width: 600px;">
+        <div class="carousel slide" data-bs-ride="false" id="carousel-init" style="width: 600px;">
           <div class="carousel-inner">
             <Suspense>
               <DiskCheck />
@@ -144,28 +143,23 @@ provide('storagepool', storagepool)
               minimum 2 disks are required to make a vdev
               -->
               <Suspense>
-                <DiskSelect v-if="!vdev.name.match('devicepool|reserved')"
-                  v-bind:vdevName=vdev.name />
+                <DiskSelect v-if="!vdev.name.match('devicepool|reserved')" v-bind:vdevName=vdev.name />
               </Suspense>
               <Suspense>
-                <TopologySelect v-if="!vdev.name.match('devicepool|reserved')"
-                  v-bind:vdevName=vdev.name />
+                <TopologySelect v-if="!vdev.name.match('devicepool|reserved')" v-bind:vdevName=vdev.name />
               </Suspense>
               <Suspense>
-                <OptionsSelect v-if="!vdev.name.match('devicepool|reserved')"
-                  v-bind:vdevName=vdev.name />
+                <OptionsSelect v-if="!vdev.name.match('devicepool|reserved')" v-bind:vdevName=vdev.name />
               </Suspense>
             </div>
             <!-- 
                 if all disks allocated and there is minimum 4 vdevs
                 ( devicepool + reserved + minimum 2 user created) 
               -->
-            <Suspense
-              v-if="storagepool.vdevs.length >= 4 && allDisksAllocated(storagepool)">
+            <Suspense v-if="storagepool.vdevs.length >= 4 && allDisksAllocated(storagepool)">
               <TopologySelectStoragepool />
             </Suspense>
-            <Suspense
-              v-if="storagepool.vdevs.length >= 4 && allDisksAllocated(storagepool)">
+            <Suspense v-if="storagepool.vdevs.length >= 4 && allDisksAllocated(storagepool)">
               <OptionsSelectStoragepool />
             </Suspense>
             <!-- 
@@ -183,5 +177,4 @@ provide('storagepool', storagepool)
 </template> 
 
 <style scoped>
-
 </style>

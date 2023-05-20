@@ -1,6 +1,5 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router'
-import { provide, reactive, watch, Suspense } from 'vue'
+import { provide, reactive, Suspense } from 'vue'
 import 'bootstrap/dist/css/bootstrap.css'
 import './assets/css/Nunito.css'
 import './assets/fonts/fontawesome-all.min.css'
@@ -33,7 +32,7 @@ get('getSetupId')
   })
   .catch((e) => {
     if (e.message.match(/ssh|verification/)) {
-      // check yyour connectivity
+      // check your connectivity
       console.log(e.message)
     }
     else {
@@ -47,7 +46,7 @@ get('getSetupId')
 <template>
   <header>
   </header>
-  <main>
+  <main class="full-height">
     <p>appstate.vue: {{ appstate.vue }}</p>
     <h1 v-if="appstate.vue === 'management'">setup complete, vue management
       component goes here</h1>
@@ -58,4 +57,18 @@ get('getSetupId')
   </main>
 </template>
 
-<style scoped></style>
+<style>
+body {
+  background: url("assets/img/white-h-trans.svg") center / contain no-repeat,
+    linear-gradient(rgb(0, 0, 0), rgb(9, 1, 122));
+  font-family: 'Nunito', sans-serif;
+}
+.full-height {
+  height: 100vh;
+}
+h1 {
+  color: #eeebeb;
+  font-weight: bold;
+  margin-bottom: 1em;
+}
+</style>
