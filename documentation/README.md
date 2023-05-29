@@ -1,5 +1,20 @@
 # hootNAS - Documentation
 
+* [Getting started](/documentation/getstarted.md) - Get up and running in no 
+time, also contains the current status of the project.
+* [ZFS concepts](./zfs-concepts.md) - A brief introduction to ZFS concepts and
+definition of terms.
+* [hootOS](/hoot-os/README.md) - The hootNAS operating system, on which the
+hootNAS software runs.
+* [Web server](/webserver/README.md) - The hootNAS webserver, which serves the
+hootNAS webapp and api.
+* [Web app](/webapp/README.md) - The hootNAS webapp, which is the user interface
+to the hootNAS software.
+* [Web API](/webapi/README.md) - The hootNAS API, which is the interface to the 
+hootNAS software.
+* [hootNAS CLI](/tty/README.md) - The hootNAS command line interface, which is
+the interface to the hootOS.
+
 ## Concepts
 
 The documentation consist of two types of information, 

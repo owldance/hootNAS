@@ -3,7 +3,6 @@ import { inject } from 'vue'
 import { post, get } from './shared.mjs'
 const appstate = inject('appstate')
 const storagepool = inject('storagepool')
-
 /**
  * Go to previous carouselItem
  * @function
@@ -17,7 +16,22 @@ function goPrev(event) {
     carousel.prev()
 }
 /**
- * Sends configStoragePool request to server and disables the 
+ * Sends initialSetup request to server for testing and disables the 
+ * install-options-button
+ * @async
+ * @function
+ * @listens v-on:change:click
+ * @param {Object} event native DOM event object
+ */
+ async function testSetup(event) {
+    storagepool.debug = true
+    console.log(storagepool)
+    const xdat = await post('initialSetup', storagepool)
+    console.log(xdat.message)
+    storagepool.debug = false
+}
+/**
+ * Sends initialSetup request to server and disables the 
  * install-options-button
  * @async
  * @function
@@ -25,6 +39,7 @@ function goPrev(event) {
  * @param {Object} event native DOM event object
  */
 async function configStoragePool(event) {
+    storagepool.debug = false
     const buttonBack = document.getElementById('install-options-button')
     buttonBack.disabled = true
     const buttonConfig = document.getElementById('config-button')
@@ -101,6 +116,13 @@ async function configStoragePool(event) {
                     connection, this may
                     take quite a while, please be patient.
                 </p>
+                <p class="card-text">Test your setup without actually
+                    modifying anything on the hootnas. The results will be
+                    displayed in the browser console, press F12 to view.
+                </p>
+                <div class="col text-start"><button class="btn btn-warning" id="test-setup-button" type="button"
+                            v-on:click="testSetup">Test Setup</button>
+                    </div>
                 <h6 id="install-msg"></h6>
                 <div class="progress" style="height: 24px;margin-top: 20px;margin-bottom: 20px;">
                     <div class="progress-bar" id="install-progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"

@@ -1,13 +1,8 @@
 <script setup>
 import DiskCheck from './storage-setup-carousel-items/DiskCheck.vue'
-import ReservedDiskSelect from './storage-setup-carousel-items/ReservedDiskSelect.vue'
-import DiskSelect from './storage-setup-carousel-items/DiskSelect.vue'
-import TopologySelect from './storage-setup-carousel-items/TopologySelect.vue'
-import OptionsSelect from './storage-setup-carousel-items/OptionsSelect.vue'
-import TopologySelectStoragepool from './storage-setup-carousel-items/TopologySelectStoragepool.vue'
-import OptionsSelectStoragepool from './storage-setup-carousel-items/OptionsSelectStoragepool.vue'
+import VdevConfig from './storage-setup-carousel-items/VdevConfig.vue'
 import FinalizeSetup from './storage-setup-carousel-items/FinalizeSetup.vue'
-import { get, allDisksAllocated } from './storage-setup-carousel-items/shared.mjs'
+import { get } from './storage-setup-carousel-items/shared.mjs'
 import { provide, reactive, watch } from 'vue'
 /** 
  * A blockdevice is a physical disk/partition on the machine
@@ -56,22 +51,15 @@ import { provide, reactive, watch } from 'vue'
  * @constant
  * @type {Array<blockdevice>}
  */
-const disks = reactive(await get('getBlockDevices'))
-/** 
- * The number of total disks on the machine
- * @constant
- * @type {Number}
- */
-const totalDisks = disks.blockdevices.length
+const allDisks = reactive(await get('getBlockDevices'))
+provide('allDisks', allDisks)
 /**
- * storagepool is the primary object of this component. storagepool has two 
- * special vdevs named devicepool and reserved. 
+ * storagepool is the primary object of this component. 
  * 
- * devicepool contains all blockdevices on the machine. The purpose of this 
- * component is to move these blockdevice from devicepool to reserved and/or 
- * any user defined vdevs.
+ * allDisks contains all blockdevices on the machine. The purpose of this 
+ * component is to copy these blockdevice to any user defined vdevs.
  * 
- * When devicepool is empty, the storage setup of the machine can be initiated.
+ * When done, the setup of the storage pool can be initiated.
  * 
  * @const storagepool
  * @type {vdev}
@@ -79,34 +67,13 @@ const totalDisks = disks.blockdevices.length
 const storagepool = reactive(
   {
     vdevs: [
-      {
-        blockdevices: disks.blockdevices,
-        topology: null,
-        name: 'devicepool',
-        compress: null,
-        encrypt: null,
-        password: 'password',
-        capacity: 0
-      },
-      {
-        blockdevices: [],
-        topology: null,
-        name: 'reserved',
-        compress: null,
-        encrypt: null,
-        password: 'password',
-        capacity: 0
-      }
     ],
-    topology: null,
-    name: 'AGA771-4',
-    compress: null,
-    encrypt: null,
-    password: 'password',
-    capacity: 0
+    setupid: 'AGA771-4',
+    debug: false
   }
 )
 provide('storagepool', storagepool)
+
 // watch(
 //   () => storagepool.vdevs.length,
 //   (current, prev) => {
@@ -132,39 +99,11 @@ provide('storagepool', storagepool)
             <Suspense>
               <DiskCheck />
             </Suspense>
-            <Suspense>
-              <!-- 
-              minimum 3 disks are required to show <ReservedDiskSelect/>
-              -->
-              <ReservedDiskSelect v-if="totalDisks >= 3" vdevName="reserved" />
-            </Suspense>
             <div v-for="vdev in storagepool.vdevs">
-              <!-- 
-              minimum 2 disks are required to make a vdev
-              -->
               <Suspense>
-                <DiskSelect v-if="!vdev.name.match('devicepool|reserved')" v-bind:vdevName=vdev.name />
-              </Suspense>
-              <Suspense>
-                <TopologySelect v-if="!vdev.name.match('devicepool|reserved')" v-bind:vdevName=vdev.name />
-              </Suspense>
-              <Suspense>
-                <OptionsSelect v-if="!vdev.name.match('devicepool|reserved')" v-bind:vdevName=vdev.name />
+                <VdevConfig v-bind:vdevType=vdev.type />
               </Suspense>
             </div>
-            <!-- 
-                if all disks allocated and there is minimum 4 vdevs
-                ( devicepool + reserved + minimum 2 user created) 
-              -->
-            <Suspense v-if="storagepool.vdevs.length >= 4 && allDisksAllocated(storagepool)">
-              <TopologySelectStoragepool />
-            </Suspense>
-            <Suspense v-if="storagepool.vdevs.length >= 4 && allDisksAllocated(storagepool)">
-              <OptionsSelectStoragepool />
-            </Suspense>
-            <!-- 
-                finally do the setup 
-              -->
             <FinalizeSetup />
           </div>
         </div>
@@ -176,5 +115,4 @@ provide('storagepool', storagepool)
   </div>
 </template> 
 
-<style scoped>
-</style>
+<style scoped></style>

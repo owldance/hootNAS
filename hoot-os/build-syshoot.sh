@@ -31,7 +31,6 @@
 #   authentication. supported timezones: /usr/share/zoneinfo
 # - HOOT_CITY, if not set, defaults to 'Berlin'
 #
-
 ################################################################################
 #                            USER VARIABLES
 ################################################################################
@@ -48,19 +47,6 @@ build=virtual
 xkb_model=pc105
 # download and install node.js
 nodejs_version=v18.12.0
-# copy in interactive network configuration script for terminal (tty)
-config_script=$HOOT_REPO/tty/network-config.sh
-# if directory exist, copy in webserver and create systemd service for 
-# target webserver/webserver.mjs. the webserver serves both the web management
-# app and the webAPI endpoints on port 80
-webserver=$HOOT_REPO/webserver
-# if directory exist, copy in web management app with 
-# target webapp/dist/index.html
-# make sure you have built the webapp 'npm run build' in the webapp directory
-# before running this script
-webapp=$HOOT_REPO/webapp
-# if directory exist, copy in webAPI endpoints
-webapi=$HOOT_REPO/webapi
 #
 ################################################################################
 
@@ -326,7 +312,9 @@ echo "adding node.js binary to PATH"
 sed -i "s|\"$|:/usr/bin/nodejs/node-${nodejs_version}-linux-x64/bin\"|" \
   syshoot/etc/environment
 
-# if file config_script exist copy to syshoot/root/scripts
+# if file exists, copy in interactive network configuration 
+# script for terminal (tty)
+config_script=$HOOT_REPO/tty/network-config.sh
 if [ -f "$config_script" ]; then
   echo "copy in config script"
   mkdir -p syshoot/root/scripts
@@ -342,6 +330,8 @@ EOF
 fi
 
 # copy in hootnas webserver if source directory exists
+# and create systemd service for target webserver/webserver.mjs. 
+webserver=$HOOT_REPO/webserver
 if [ -d "$webserver" ]; then
   echo "creating directory /usr/local/hootnas"
   mkdir -p syshoot/usr/local/hootnas/webserver
@@ -380,14 +370,16 @@ fi
 # copy in webapp if source directory exists
 # make sure you have built the webapp 'npm run build' in the webapp directory
 # before running this script
+webapp=$HOOT_REPO/webapp/dist
 if [ -d "$webapp" ]; then
   echo "creating directory /usr/local/hootnas"
   mkdir -p syshoot/usr/local/hootnas/webapp/dist
   echo "copy in hootnas webapp"
-  cp -r $webapp/dist/* syshoot/usr/local/hootnas/webapp/dist
+  cp -r $webapp/* syshoot/usr/local/hootnas/webapp/dist
 fi
 
 # copy in webapi if source directory exists
+webapi=$HOOT_REPO/webapi
 if [ -d "$webapi" ]; then
   echo "creating directory /usr/local/hootnas"
   mkdir -p syshoot/usr/local/hootnas/webapi

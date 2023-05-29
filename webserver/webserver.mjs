@@ -22,16 +22,15 @@ export const basePath = process.env.HOOT_REPO || '/usr/local/hootnas'
 export const serverPath = `${basePath}/webserver`
 export const appPath = `${basePath}/webapp/dist`
 
+
 const server = express()
 let port = 80
 if (process.env.HOOT_REPO) {
     console.log(`hootNAS server running in development mode`)
-    // if you change the port number, remember also to change it in
+    // if you change this port number, remember also to change it in
     // webapp/src/components/storage-setup-carousel-items/shared.mjs
     port = 8000
 }
-
-
 // json parse post body
 server.use(express.json())
 // set CORS headers
@@ -44,7 +43,6 @@ server.use(function (req, res, next) {
     res.setHeader('Access-Control-Allow-Credentials', true)
     next()
 })
-
 // serve static content 
 server.use(express.static(appPath, { index: 'index.html' }))
 
