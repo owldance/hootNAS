@@ -1,4 +1,13 @@
 <script setup>
+/**
+ * The StorageSetupCarousel component is a wizard that guides the user through
+ * the process of setting up the storage pool.
+ * @module StorageSetupCarousel
+ * @todo use :key for VdevConfig component to force re-render when vdevs are
+ * added or removed. this seems to be more appropriate than v-for
+ * see https://michaelnthiessen.com/force-re-render/
+ * 
+ */
 import DiskCheck from './storage-setup-carousel-items/DiskCheck.vue'
 import VdevConfig from './storage-setup-carousel-items/VdevConfig.vue'
 import FinalizeSetup from './storage-setup-carousel-items/FinalizeSetup.vue'
@@ -74,6 +83,7 @@ const storagepool = reactive(
 )
 provide('storagepool', storagepool)
 
+// uncomment for debugging
 // watch(
 //   () => storagepool.vdevs.length,
 //   (current, prev) => {

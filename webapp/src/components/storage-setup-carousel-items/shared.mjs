@@ -1,5 +1,5 @@
 /**
- * Contains shared methods for this app.
+ * Contains shared methods for CarouselItem components in StorageSetupCarousel
  * @module shared
  */
 'use strict'

@@ -19,7 +19,7 @@ window.bootstrap = bootstrap
 const appstate = reactive({ vue: 'nothing' })
 provide('appstate', appstate)
 /** 
- * Check if there exist a partition named 'persistence', if it exist, change
+ * Check if setupid is availiable on hootnas, if it exist, change
  * appstate accordingly.
  *  
  * can't use await syntax here, because the parent vue file must be wrapped in 
@@ -28,7 +28,7 @@ provide('appstate', appstate)
 get('getSetupId')
   .then((data) => {
     console.log(data.message)
-    appstate.vue = 'management'
+    appstate.vue = 'setupStoragePool'
   })
   .catch((e) => {
     if (e.message.match(/ssh|verification/)) {
@@ -37,7 +37,7 @@ get('getSetupId')
     }
     else {
       console.log(e.message)
-      appstate.vue = 'setup'
+      appstate.vue = 'setupStoragePool'
     }
   })
 
@@ -52,7 +52,7 @@ get('getSetupId')
       component goes here</h1>
     <h1 v-if="appstate.vue === 'nothing'">waiting</h1>
     <Suspense>
-      <StorageSetupCarousel v-if="appstate.vue === 'setup'" />
+      <StorageSetupCarousel v-if="appstate.vue === 'setupStoragePool'" />
     </Suspense>
   </main>
 </template>

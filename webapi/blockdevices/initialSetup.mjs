@@ -90,6 +90,19 @@ function sortVdevs(storagepool) {
  * with the 'n' option, it displays the configuration that would be used 
  * without actually creating the pool. The actual pool creation can still fail 
  * due to insufficient privileges or device sharing.
+ * 
+ * At pool creation, ashift=12 should always be used, except with SSDs that 
+ * have 8k sectors where ashift=13 is correct. A vdev of 512 byte disks using 
+ * 4k sectors will not experience performance issues, but a 4k disk using 512 
+ * byte sectors will. Since ashift cannot be changed after pool creation, even 
+ * a pool with only 512 byte disks should use 4k because those disks may need 
+ * to be replaced with 4k disks or the pool may be expanded by adding a vdev 
+ * composed of 4k disks. Because correct detection of 4k disks is not 
+ * reliable, -o ashift=12 should always be specified during pool creation. 
+ * blockdev --getpbsz /dev/sda will show the physical block size reported by 
+ * the device's ioctls.
+ * See the OpenZFS FAQ for more details. 
+ * @link https://openzfs.github.io/openzfs-docs/Project%20and%20Community/FAQ.html#advanced-format-disks
  * @function createZpool
  * @async
  * @param {storagepool} storagepool
@@ -101,9 +114,9 @@ async function createZpool(storagepool) {
   try {
     let createZpoolString = ''
     if (storagepool.debug)
-      createZpoolString = `zpool create -n dpool `
+      createZpoolString = `zpool create -n -o ashift=12 -o autotrim=on dpool `
     else
-      createZpoolString = `zpool create dpool `
+      createZpoolString = `zpool create -o ashift=12 -o autotrim=on dpool `
     for (const vdev of storagepool.vdevs) {
       if (!vdev.type.startsWith('data'))
         createZpoolString += `${vdev.type} `
@@ -124,7 +137,6 @@ async function createZpool(storagepool) {
   }
   return Promise.resolve(creationMsg)
 }
-
 /**
  * Configures persistance on all blockdevices in storagepool.vdevs where vdev 
  * name is not 'reserved' or 'devicepool'. Existing filesystems and partitions
@@ -222,13 +234,16 @@ export async function initialSetup(storagepool) {
     /dev/disk/by-id/${storagepool.vdevs[0].blockdevices[0].wwid}-part1 /mnt`)
     // configure persistance
     await shell(`echo '/etc union' > /mnt/persistence.conf`)
+    await shell(`echo '/lib union' > /mnt/persistence.conf`)
     await shell(`echo '/usr union' >> /mnt/persistence.conf`)
     await shell(`echo '/var union' >> /mnt/persistence.conf`)
     await shell(`echo '/home union' >> /mnt/persistence.conf`)
     await shell(`echo '/root union' >> /mnt/persistence.conf`)
+    await shell(`echo '/srv union' >> /mnt/persistence.conf`)
+    await shell(`echo '/opt union' >> /mnt/persistence.conf`)
     await shell(`mkdir -p /mnt/root/rw`)
     // create a identification file /root/setup.id file, which can be used to
-    // check if the initial setup has been done
+    // check if the initial setup has been done.
     await shell(`echo '${storagepool.setupid}' > /mnt/root/rw/setup.id`)
     await shell(`chmod 700 /mnt/root`)
     await shell(`umount /mnt`)

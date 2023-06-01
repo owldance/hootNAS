@@ -1,4 +1,8 @@
 <script setup>
+/**
+ * The VdevConfig component is used to configure vdevs in the storagepool.
+ * @module VdevConfig
+ */
 import { inject, nextTick, onMounted } from 'vue'
 const storagepool = inject('storagepool')
 const allDisks = inject('allDisks')

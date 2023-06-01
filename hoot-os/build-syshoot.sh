@@ -275,12 +275,16 @@ apt install --yes dialog
 apt install --yes zfsutils-linux
 apt install --yes btrfs-progs
 apt install --yes live-boot # hook for initramfs-tools
+apt install --yes nfs-kernel-server
+apt install --yes tgt
+apt install --yes samba
 EOF
 
 echo "cleaning up"
 chroot syshoot apt purge --yes os-prober
 chroot syshoot apt --yes update
 chroot syshoot apt --purge --yes autoremove
+chroot syshoot apt --yes clean
 
 echo "update the initrd files"
 chroot syshoot update-initramfs -c -k all
@@ -366,6 +370,9 @@ EOF
   chroot syshoot systemctl enable systemd-networkd-wait-online.service
   chroot syshoot systemctl enable hootsrv.service
 fi
+
+# enable nfs server
+chroot syshoot systemctl enable nfs-kernel-server.service
 
 # copy in webapp if source directory exists
 # make sure you have built the webapp 'npm run build' in the webapp directory

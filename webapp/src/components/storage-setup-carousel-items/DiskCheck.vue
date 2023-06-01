@@ -1,4 +1,15 @@
 <script setup>
+/**
+ * The DiskCheck component checks if there are any disks available on the
+ * system. If there are, the user can continue to the next carousel item.
+ * @module DiskCheck
+ * @todo check storagepool devices for existing partitions. if there are
+ * existing partitions, and user accepts to delete them, delete them from 
+ * storagepool and continue. otherwise exit.
+ * @todo check for existing zfs and persistence partions on the disks. if there
+ * are existing partitions, and user accepts to delete them, zwipe disks. 
+ * otherwise exit.
+  */
 import { inject, nextTick } from 'vue';
 import { get } from './shared.mjs'
 const storagepool = inject('storagepool')
@@ -63,7 +74,7 @@ setTimeout(() => {
                 <h6 id="disk-check-subtitle" class="text-muted card-subtitle mb-2">Wait a moment...
                 </h6>
                 <p id="disk-check-text" class="card-text">Looking for disk
-                    UUID's registered
+                    WWID's registered
                     in /dev/disk/by-id</p>
                 <div class="row">
                     <div class="col text-end">

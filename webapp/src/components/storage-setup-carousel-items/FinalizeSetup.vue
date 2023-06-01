@@ -1,4 +1,12 @@
 <script setup>
+/**
+ * The FinalizeSetup component is the last component in the storage setup
+ * carousel. It sends the initialSetup request to the server and reboots the
+ * system. While waiting for the system to reboot, it polls the getSetupId
+ * request to check if the system has rebooted. When the system has rebooted,
+ * the vue management component is shown.
+ * @module FinalizeSetup
+ */
 import { inject } from 'vue'
 import { post, get } from './shared.mjs'
 const appstate = inject('appstate')
