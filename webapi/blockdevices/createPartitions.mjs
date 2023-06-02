@@ -1,5 +1,7 @@
 /**
- * Create required partitions on a blockdevice
+ * Create required partitions on a blockdevice. All blockdevices in a hootnas 
+ * must have two partitions: first partition of 2GB is reserved for 
+ * persistance, and the rest of the device is for zfs.
  * @module createPartitions
  */
 'use strict'
@@ -8,8 +10,8 @@ import { shell } from "../utilities/shell.mjs"
  * Create required partitions. All partitions must be created before the
  * persistance btrfs raid is created, otherwise, for any subsequent created
  * partitions on the same blockdevice, the partition table on the device 
- * will be written, but the device manager will not update /dev directory 
- * even after a reboot.
+ * will be written to the device, but the device manager udev will not update 
+ * /dev directory, even after a reboot.
  * @function createPartitions
  * @async
  * @param {String} blockDevicePath Full path to the blockdevice

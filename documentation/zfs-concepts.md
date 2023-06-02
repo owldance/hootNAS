@@ -1,8 +1,9 @@
 # hootNAS - ZFS concepts
 
-See [man zpoolconcepts](https://openzfs.github.io/openzfs-docs/man/7/zpoolconcepts.7.html)
+For details, see [man zpoolconcepts](https://openzfs.github.io/openzfs-docs/man/7/zpoolconcepts.7.html)
+and [man zpoolprops](https://openzfs.github.io/openzfs-docs/man/7/zpoolprops.7.html) 
+and [man zpool-features](https://openzfs.github.io/openzfs-docs/man/7/zpool-features.7.html)
 and [man zfsprops](https://openzfs.github.io/openzfs-docs/man/7/zfsprops.7.html) 
-
 
 ## Pool
 

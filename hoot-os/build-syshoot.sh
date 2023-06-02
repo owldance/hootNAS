@@ -318,6 +318,7 @@ sed -i "s|\"$|:/usr/bin/nodejs/node-${nodejs_version}-linux-x64/bin\"|" \
 
 # if file exists, copy in interactive network configuration 
 # script for terminal (tty)
+# @todo fix this for the new onlogin.sh file
 config_script=$HOOT_REPO/tty/network-config.sh
 if [ -f "$config_script" ]; then
   echo "copy in config script"

@@ -28,7 +28,7 @@ provide('appstate', appstate)
 get('getSetupId')
   .then((data) => {
     console.log(data.message)
-    appstate.vue = 'setupStoragePool'
+    appstate.vue = 'management'
   })
   .catch((e) => {
     if (e.message.match(/ssh|verification/)) {
