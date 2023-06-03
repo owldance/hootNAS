@@ -316,22 +316,17 @@ echo "adding node.js binary to PATH"
 sed -i "s|\"$|:/usr/bin/nodejs/node-${nodejs_version}-linux-x64/bin\"|" \
   syshoot/etc/environment
 
-# if file exists, copy in interactive network configuration 
-# script for terminal (tty)
-# @todo fix this for the new onlogin.sh file
-config_script=$HOOT_REPO/tty/network-config.sh
-if [ -f "$config_script" ]; then
-  echo "copy in config script"
+# copy in bash scripts if source directory exists
+# configure onlogin.sh to run on login
+bash_scripts=$HOOT_REPO/scripts
+if [ -d "$bash_scripts" ]; then
+  echo "creating directory /root/scripts"
   mkdir -p syshoot/root/scripts
-  cp $config_script syshoot/root/scripts
-  # create onlogin.sh and run on login
-  cat <<'EOF' >syshoot/root/onlogin.sh
-#!/bin/sh
-. ~/scripts/network-config.sh
-EOF
-  chmod 0644 syshoot/root/onlogin.sh
+  echo "copy in bash scripts"
+  cp -r $bash_scripts/* syshoot/root/scripts
+  chmod 0644 syshoot/root/scripts/onlogin.sh
   # insert command to run onlogin.sh at line no. 6 in .profile
-  sed -i "6i\    . ~/onlogin.sh" syshoot/root/.profile
+  sed -i "6i\    . ~/scripts/onlogin.sh" syshoot/root/.profile
 fi
 
 # copy in hootnas webserver if source directory exists

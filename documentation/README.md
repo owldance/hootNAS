@@ -12,8 +12,8 @@ hootNAS webapp and api.
 to the hootNAS software.
 * [Web API](/webapi/README.md) - The hootNAS API, which is the interface to the 
 hootNAS software.
-* [hootNAS CLI](/tty/README.md) - The hootNAS command line interface, which is
-the interface to the hootOS.
+* [hootNAS bash scripts](/scripts/README.md) - Various bash scripts used by the
+hootNAS software.
 
 ## Concepts
 

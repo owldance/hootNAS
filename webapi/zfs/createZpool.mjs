@@ -167,10 +167,10 @@ export async function createZpool(storagepool) {
             createZpoolString = `zpool create ${zpoolOptions} dpool `
         // add vdevs
         for (const vdev of storagepool.vdevs) {
-            // data is not a zfs type vdev, do not added to the string
+            // data is not a zfs type vdev, do not add to string
             if (!vdev.type.startsWith('data'))
                 createZpoolString += `${vdev.type} `
-            // stripe is not a zfs redundancy, so do not added to the string
+            // stripe is not a zfs redundancy, do not add to string
             if (vdev.redundancy !== 'stripe')
                 createZpoolString += `${vdev.redundancy} `
             // get blockdevices in vdev as one string  
