@@ -4,7 +4,7 @@ import 'bootstrap/dist/css/bootstrap.css'
 import './assets/css/Nunito.css'
 import './assets/fonts/fontawesome-all.min.css'
 import * as bootstrap from 'bootstrap'
-import { get } from './components/storage-setup-carousel-items/shared.mjs'
+import { post } from './components/storage-setup-carousel-items/shared.mjs'
 import StorageSetupCarousel from './components/StorageSetupCarousel.vue'
 // when bootstrap is not imported via the <script> tag in HTML, the bootstrap 
 // namespace is not on the window object
@@ -25,9 +25,9 @@ provide('appstate', appstate)
  * can't use await syntax here, because the parent vue file must be wrapped in 
  * Suspense tags, and App.vue doesn't have any parent.
  */
-get('getSetupId')
+post('api/getSetupId')
   .then((data) => {
-    console.log(data.message)
+    console.log(`data: ${data.message}`)
     appstate.vue = 'management'
   })
   .catch((e) => {
@@ -36,7 +36,6 @@ get('getSetupId')
       console.log(e.message)
     }
     else {
-      console.log(e.message)
       appstate.vue = 'setupStoragePool'
     }
   })

@@ -11,8 +11,7 @@ related to the storage setup.
 
 ## Prepare your development environment
 
-1.  Clone this repository to your local machine, either by downloading the zip 
-    file or by using the git command:
+1.  Clone or fork this repository to your local machine
     
     ```bash
     $ git clone https://github.com/owldance/hootNAS.git
@@ -28,8 +27,7 @@ related to the storage setup.
     $ sudo echo "HOOT_REPO=/path/to/hootNAS" >> /etc/environment
     ```
 
-    Make sure to log in/out or run `source /etc/environment` to make the
-    variable available in your current terminal.
+    Make sure to log in/out to make the variable available system wide.
 
 
 3.  Check the script 
@@ -41,17 +39,14 @@ related to the storage setup.
     ```bash
     $ sudo $HOOT_REPO/getting-started.sh
     ```
-    Then run /etc/environment file with the 'dot space' command to make the 
-    variables available in your current terminal, or log in/out.
     
-    ```bash
-    $ . /etc/environment
-    ```
+    Then log in/out to make the variables available system wide.
+    
 
 ## Start developing hootNAS with Vue 3 in Vite
 
 1.  Create a hootNAS ISO image following [this guide](/hoot-os/README.md), or
-    download 
+    just download 
     [latest ISO image releases](https://github.com/owldance/hootNAS/releases).
     
     Boot the image up in a virtual machine or on a physical machine with at 
@@ -83,8 +78,8 @@ related to the storage setup.
     ```
 
     Copy the public key to the `hootnas` machine. This will prompt for 
-    the root password, enter `pass1234` which is the default on the hootNAS 
-    ISO image.
+    the root password, enter `pass1234` which is the default password on the 
+    hootNAS ISO image.
     
     ```bash
     ssh-copy-id root@hootnas

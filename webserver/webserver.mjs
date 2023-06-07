@@ -13,11 +13,7 @@
  */
 'use strict'
 import express from 'express'
-import { getBlockDevices } from '../webapi/blockdevices/getBlockDevices.mjs'
-import { initialSetup } from '../webapi/blockdevices/initialSetup.mjs'
-import { rebootSystem } from '../webapi/utilities/rebootSystem.mjs'
-import { getSetupId } from '../webapi/utilities/getSetupId.mjs'
-
+import { apiRouter, pubRouter } from './routes/index.mjs'
 export const basePath = process.env.HOOT_REPO || '/usr/local/hootnas'
 export const serverPath = `${basePath}/webserver`
 export const appPath = `${basePath}/webapp/dist`
@@ -46,46 +42,18 @@ server.use(function (req, res, next) {
 // serve static content 
 server.use(express.static(appPath, { index: 'index.html' }))
 
-// routes
-server.get('/getBlockDevices', async (req, res) => {
-    try {
-        const data = await getBlockDevices()
-        res.status(200).send(data)
+// just a test 
+async function requireToken(req, res, next) {
+    const { accesstoken } = req.body
+    if (accesstoken) {
+        next()
+    } else {
+        res.status(403).send({ message: 'No token provided' })
     }
-    catch (e) {
-        res.status(200).send(e)
-    }
-    return Promise.resolve()
-})
-server.get('/rebootSystem', (req, res) => {
-    const data = rebootSystem()
-    res.status(200).send(data)
-})
-server.get('/getSetupId', async (req, res) => {
-    try {
-        let data = await getSetupId()
-        res.status(200).send({ message: data })
-    }
-    catch (e) {
-        res.status(200).send(e)
-    }
-    return Promise.resolve()
-})
-server.post('/initialSetup', async (req, res) => {
-    const storagepool = req.body
-    try {
-        if (!storagepool) {
-            res.status(200).send({ message: 'storagepool object required' })
-        } else {
-            const data = await initialSetup(storagepool)
-            res.status(200).send(data)
-        }
-    }
-    catch (e) {
-        res.status(200).send(e)
-    }
-    return Promise.resolve()
-})
+}
+//server.use('/api', requireToken, apiRouter)
+server.use('/api', apiRouter)
+server.use('/pub', pubRouter)
 
 server.listen(port, () => {
     console.log('hootNAS is listening')

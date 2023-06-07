@@ -146,6 +146,13 @@ if [ ! -f "node-$nodejs_version-linux-x64.tar.xz" ]; then
   https://nodejs.org/dist/${nodejs_version}/node-${nodejs_version}-linux-x64.tar.xz
 fi
 
+# download sqlite tools if zip file does not exist
+# if [ ! -f "sqlite-tools.zip" ]; then
+#   echo "downloading sqlite tools"
+#   wget -q --show-progress -O sqlite-tools.zip \
+#   https://www.sqlite.org/2023/sqlite-tools-linux-x86-3420000.zip
+# fi
+
 ################################################################################
 #                    BASE SYSTEM AND EARLY USERSPACE                           #
 ################################################################################
@@ -308,13 +315,37 @@ EOF
 # setting up node.js
 echo "setting up node.js"
 mkdir -p syshoot/usr/bin/nodejs
-tar \
--xJvf node-${nodejs_version}-linux-x64.tar.xz \
+tar -xJvf node-${nodejs_version}-linux-x64.tar.xz \
 -C syshoot/usr/bin/nodejs >/dev/null
 # adding node.js binary to PATH
 echo "adding node.js binary to PATH"
 sed -i "s|\"$|:/usr/bin/nodejs/node-${nodejs_version}-linux-x64/bin\"|" \
   syshoot/etc/environment
+
+# setting up sqlite
+# echo "setting up sqlite"
+apt install --yes sqlite3
+# mkdir -p syshoot/usr/bin/sqlite
+# unzip -j sqlite-tools.zip -d syshoot/usr/bin/sqlite
+# # adding sqlite binary to PATH
+# echo "adding sqlite binary to PATH"
+# sed -i "s|\"$|:/usr/bin/sqlite\"|" syshoot/etc/environment
+
+# copy in db directory if exists
+db=$HOOT_REPO/db
+if [ -d "$db" ]; then
+  echo "creating directory /usr/local/hootnas/db"
+  mkdir -p syshoot/usr/local/hootnas/db
+  echo "copy in hootnas db"
+  cp -r $db/* syshoot/usr/local/hootnas/db
+fi
+
+# run hoot.sql to create empty database
+echo "creating empty database"
+cat <<'EOF' | chroot syshoot
+cd /usr/local/hootnas/db
+sqlite3 hoot.db < hoot.sql
+EOF
 
 # copy in bash scripts if source directory exists
 # configure onlogin.sh to run on login
@@ -333,7 +364,7 @@ fi
 # and create systemd service for target webserver/webserver.mjs. 
 webserver=$HOOT_REPO/webserver
 if [ -d "$webserver" ]; then
-  echo "creating directory /usr/local/hootnas"
+  echo "creating directory /usr/local/hootnas/webserver"
   mkdir -p syshoot/usr/local/hootnas/webserver
   echo "copy in hootnas webserver source"
   cp -r $webserver/* syshoot/usr/local/hootnas/webserver

@@ -11,7 +11,7 @@
 import DiskCheck from './storage-setup-carousel-items/DiskCheck.vue'
 import VdevConfig from './storage-setup-carousel-items/VdevConfig.vue'
 import FinalizeSetup from './storage-setup-carousel-items/FinalizeSetup.vue'
-import { get } from './storage-setup-carousel-items/shared.mjs'
+import { post } from './storage-setup-carousel-items/shared.mjs'
 import { provide, reactive, watch } from 'vue'
 /** 
  * A blockdevice is a physical disk/partition on the machine
@@ -60,7 +60,7 @@ import { provide, reactive, watch } from 'vue'
  * @constant
  * @type {Array<blockdevice>}
  */
-const allDisks = reactive(await get('getBlockDevices'))
+const allDisks = reactive(await post('api/getBlockDevices'))
 provide('allDisks', allDisks)
 /**
  * storagepool is the primary object of this component. 
