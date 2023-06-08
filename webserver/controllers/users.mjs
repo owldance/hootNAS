@@ -4,18 +4,17 @@
  * returned from the services, and then send the response back to the client.
  * @module controllers/index
  */
-import { getAccessToken, verifyAccessToken } from '../services/users.mjs'
+import { getJwt, verifyAccessToken } from '../services/users.mjs'
 'use strict'
 
-export async function login(req, res, next) {
-  const { username, password } = req.body
+export async function getAccessToken(req, res, next) {
+  const { name, password } = req.body
   try {
-    const accessToken = await getAccessToken(username, password)
-    res.status(201).send(accessToken)
+    const user = await getJwt(name, password)
+    res.status(201).send(user)
     next()
   } catch (e) {
-    console.log(e.message)
-    res.sendStatus(500) //&& next(error)
+    res.status(500).send({ message: e.message }) //&& next(error)
   }
 }
 
@@ -26,6 +25,6 @@ export async function verify(req, res, next) {
     res.status(200).send(payload)
     next()
   } catch (e) {
-    res.status(500).send({ message: e.message }) //&& next(error)
+    res.status(500).send(e) //&& next(error)
   }
 }

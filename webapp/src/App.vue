@@ -25,6 +25,14 @@ provide('appstate', appstate)
  * can't use await syntax here, because the parent vue file must be wrapped in 
  * Suspense tags, and App.vue doesn't have any parent.
  */
+post('pub/getAccessToken', { name: 'Monkey', password: 'monk7y' })
+  .then((data) => {
+    console.log(data)
+  })
+  .catch((e) => {
+    console.log(e)
+  })
+
 post('api/getSetupId')
   .then((data) => {
     console.log(`data: ${data.message}`)

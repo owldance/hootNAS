@@ -9,27 +9,20 @@ import { selectUser } from '../../webapi/db/selectUser.mjs'
 const accessTokenSecret = 'youraccesstokensecret'
 
 
-export async function getAccessToken(username, password) {
-  const user = await selectUser(username)
+export async function getJwt(username, password) {
   try {
-    if (user) {
-      console.log('getAccessToken', username, password)
-      const accessToken = jwt.sign({
-        username: user.name, mail: user.mail, groups: ['admin', 'user'] 
-      }, accessTokenSecret)
-      return accessToken
-    } else {
-      throw new Error('Username or password incorrect')
-    }
+    const user = await selectUser(username, password)
+    user.jwt = jwt.sign(user, accessTokenSecret)
+    return user
   } catch (e) {
-    throw new Error(e.message)
+    throw e
   }
 }
 
 export function verifyAccessToken(accessToken) {
   return new Promise((resolve, reject) => {
     jwt.verify(accessToken, accessTokenSecret, (err, payload) => {
-      if (err){
+      if (err) {
         reject(new Error(err))
       }
       else

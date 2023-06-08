@@ -9,7 +9,7 @@ import * as system from '../controllers/system.mjs'
 export const apiRouter = express.Router()
 export const pubRouter = express.Router()
 
-pubRouter.post('/login', user.login)
+pubRouter.post('/getAccessToken', user.getAccessToken)
 apiRouter.post('/verify', user.verify)
 apiRouter.post('/getBlockDevices', devices.getBlockDevices)
 apiRouter.post('/rebootSystem', system.rebootSystem)

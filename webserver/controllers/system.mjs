@@ -5,6 +5,7 @@
  * @module controllers/system
  */
 import { reboot, getSetup } from '../services/system.mjs'
+import { getErrorObject } from '../../webapi/utilities/getErrorObject.mjs'
 'use strict'
 
 export async function rebootSystem(req, res, next) {
@@ -18,12 +19,13 @@ export async function rebootSystem(req, res, next) {
   }
 }
 
+
 export async function getSetupId(req, res, next) {
   try {
     const result = await getSetup()
     res.status(200).send(result)
     next()
   } catch (e) {
-    res.status(500).send(e) //&& next(error)
+    res.status(500).send(getErrorObject(e)) //&& next(error)
   }
 }

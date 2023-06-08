@@ -34,21 +34,23 @@ export async function shell(cmd) {
         }
         // get exit code of last shell command 
         await new Promise((resolve, reject) => {
-            shell.on('exit', (data) => {
-                if (data === 0) resolve()
+            shell.on('exit', (exitCode) => {
+                if (exitCode === 0) resolve()
                 // in case HOOT_REPO is set, but the user has not setup 
                 // ssh access to the remote system
                 if (ret.match(/ssh_askpass/i)) {
                     ret = `host key verification failed. please see 
                     /documentation/getstarted.md for more information.`
                 }
-                reject({ message: ret, exit: data })
+                const err = new Error(ret)
+                err.exit = exitCode 
+                reject(err)
             })
         })
     } catch (e) {
-        return Promise.reject(e)
+        throw e
     }
-    return Promise.resolve(ret)
+    return ret
 }
 
 
