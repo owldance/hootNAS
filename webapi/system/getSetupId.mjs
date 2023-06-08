@@ -10,7 +10,7 @@ import { shell } from "../utilities/shell.mjs"
  * @function getSetupId
  * @async
  * @returns {Promise<Message>} On resolve, message object with setup.id contents
- * @returns {Promise<Error>} On reject, Error object with error message
+ * @returns {Promise<Error>} On reject, error object
  */
 export async function getSetupId() {
     let ret = ''
@@ -19,10 +19,10 @@ export async function getSetupId() {
         // remove the trailing newline
         ret = ret.replace(/\n$/, '')
     }
-    catch (e) {
-        return Promise.reject(e)
+    catch (e) { 
+        throw e
     }
-    return Promise.resolve(ret)
+    return { message: ret }
 }
 
 // getSetupId()

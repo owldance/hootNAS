@@ -31,10 +31,9 @@ function goPrev(event) {
  * @listens v-on:change:click
  * @param {Object} event native DOM event object
  */
- async function testSetup(event) {
+async function testSetup(event) {
     storagepool.debug = true
-    console.log(storagepool)
-    const xdat = await post('initialSetup', storagepool)
+    const xdat = await post('api/initialSetup', { storagepool: storagepool })
     console.log(xdat.message)
     storagepool.debug = false
 }
@@ -56,11 +55,11 @@ async function configStoragePool(event) {
     const progress = document.getElementById('install-progress')
     msg.innerHTML = 'setting up storage pool and perstance'
     console.log('setting up storage pool and perstance')
-    const xdat = await post('initialSetup', storagepool)
+    const xdat = await post('api/initialSetup', storagepool)
     console.log(xdat)
     msg.innerHTML = 'rebooting system'
     console.log('rebooting system')
-    const ydat = await get('rebootSystem')
+    const ydat = await post('api/rebootSystem')
     console.log(ydat)
     // while waiting for system to reboot, keep polling getSetupId.
     // counters used to control the flow: 'ticks' is incremented each time 
@@ -82,7 +81,7 @@ async function configStoragePool(event) {
             tries++
             try {
                 console.log('executing getSetupId')
-                const data = await get('getSetupId')
+                const data = await post('api/getSetupId')
                 console.log(`finished! setup id: ${data.message}`)
                 msg.innerHTML = `finished! setup id: ${data.message}`
                 progress.style.width = `100%`
@@ -129,8 +128,8 @@ async function configStoragePool(event) {
                     displayed in the browser console, press F12 to view.
                 </p>
                 <div class="col text-start"><button class="btn btn-warning" id="test-setup-button" type="button"
-                            v-on:click="testSetup">Test Setup</button>
-                    </div>
+                        v-on:click="testSetup">Test Setup</button>
+                </div>
                 <h6 id="install-msg"></h6>
                 <div class="progress" style="height: 24px;margin-top: 20px;margin-bottom: 20px;">
                     <div class="progress-bar" id="install-progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"

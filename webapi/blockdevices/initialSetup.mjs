@@ -223,9 +223,9 @@ export async function initialSetup(storagepool) {
     creationMessage = await createZpool(storagepool)
   }
   catch (e) {
-    return Promise.reject(e)
+    throw e
   }
-  return Promise.resolve({ message: creationMessage })
+  return { message: creationMessage }
 }
 
 // example storagepool object

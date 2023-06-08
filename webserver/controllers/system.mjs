@@ -14,7 +14,7 @@ export async function rebootSystem(req, res, next) {
     res.status(200).send(result)
     next()
   } catch (e) {
-    res.status(500).send({ message: e.message }) //&& next(error)
+    res.status(500).send(e) //&& next(error)
   }
 }
 
@@ -24,6 +24,6 @@ export async function getSetupId(req, res, next) {
     res.status(200).send(result)
     next()
   } catch (e) {
-    res.status(500).send({ message: e.message }) //&& next(error)
+    res.status(500).send(e) //&& next(error)
   }
 }

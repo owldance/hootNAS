@@ -146,13 +146,6 @@ if [ ! -f "node-$nodejs_version-linux-x64.tar.xz" ]; then
   https://nodejs.org/dist/${nodejs_version}/node-${nodejs_version}-linux-x64.tar.xz
 fi
 
-# download sqlite tools if zip file does not exist
-# if [ ! -f "sqlite-tools.zip" ]; then
-#   echo "downloading sqlite tools"
-#   wget -q --show-progress -O sqlite-tools.zip \
-#   https://www.sqlite.org/2023/sqlite-tools-linux-x86-3420000.zip
-# fi
-
 ################################################################################
 #                    BASE SYSTEM AND EARLY USERSPACE                           #
 ################################################################################
@@ -285,6 +278,7 @@ apt install --yes live-boot # hook for initramfs-tools
 apt install --yes nfs-kernel-server
 apt install --yes tgt
 apt install --yes samba
+apt install --yes sqlite3
 EOF
 
 echo "cleaning up"
@@ -321,15 +315,6 @@ tar -xJvf node-${nodejs_version}-linux-x64.tar.xz \
 echo "adding node.js binary to PATH"
 sed -i "s|\"$|:/usr/bin/nodejs/node-${nodejs_version}-linux-x64/bin\"|" \
   syshoot/etc/environment
-
-# setting up sqlite
-# echo "setting up sqlite"
-apt install --yes sqlite3
-# mkdir -p syshoot/usr/bin/sqlite
-# unzip -j sqlite-tools.zip -d syshoot/usr/bin/sqlite
-# # adding sqlite binary to PATH
-# echo "adding sqlite binary to PATH"
-# sed -i "s|\"$|:/usr/bin/sqlite\"|" syshoot/etc/environment
 
 # copy in db directory if exists
 db=$HOOT_REPO/db

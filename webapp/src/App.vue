@@ -31,8 +31,8 @@ post('api/getSetupId')
     appstate.vue = 'management'
   })
   .catch((e) => {
-    if (e.message.match(/ssh|verification/)) {
-      // check your connectivity
+    if (e.message.match(/ssh|verification|network/i)) {
+      console.log('check your connectivity and refresh the page') 
       console.log(e.message)
     }
     else {

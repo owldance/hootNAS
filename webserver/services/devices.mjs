@@ -11,16 +11,16 @@ export async function getDevices() {
   try {
     return await getBlockDevices()
   } catch (e) {
-    throw new Error(e.message)
+    throw e
   }
 }
 export async function setupDevices(storagepool) {
   try {
-    if (!storagepool)
-      throw new Error('storagepool object required')
+    console.log(storagepool)
     return await initialSetup(storagepool)
   } catch (e) {
-    throw new Error(e.message)
+    throw e
   }
 }
 
+ 

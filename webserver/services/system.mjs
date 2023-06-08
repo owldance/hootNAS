@@ -11,13 +11,14 @@ export async function reboot() {
   try {
     return await rebootSystem()
   } catch (e) {
-    throw new Error(e.message)
+    throw e
   }
 }
+
 export async function getSetup() {
   try {
     return await getSetupId()
   } catch (e) {
-    throw new Error(e.message)
+    throw e
   }
 }

@@ -53,9 +53,9 @@ export async function getBlockDevices() {
       block.size = humanReadableToNumber(block.size)
     }
   } catch (e) {
-    return Promise.reject(e)
+    throw e
   }
-  return Promise.resolve(blocks)
+  return blocks
 }
 
 /**
