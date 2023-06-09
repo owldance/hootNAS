@@ -19,7 +19,8 @@ const dbPath = `${basePath}/db/hoot.db`
  * @async
  * @param {String} name 
  * @param {String} password 
- * @returns {User}
+ * @returns {User} on resolve
+ * @returns {Error} on reject
  */
 export async function selectUser(name, password) {
   let result = null

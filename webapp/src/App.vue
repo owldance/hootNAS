@@ -18,35 +18,48 @@ window.bootstrap = bootstrap
  */
 const appstate = reactive({ vue: 'nothing' })
 provide('appstate', appstate)
-/** 
- * Check if setupid is availiable on hootnas, if it exist, change
- * appstate accordingly.
- *  
- * can't use await syntax here, because the parent vue file must be wrapped in 
- * Suspense tags, and App.vue doesn't have any parent.
- */
+
+
+// Get an access token from hootnas, so we can access the api.
+// can't use await syntax here, because the parent vue file must be wrapped in 
+// Suspense tags, and App.vue doesn't have any parent.
 post('pub/getAccessToken', { name: 'Monkey', password: 'monk7y' })
   .then((data) => {
-    console.log(data)
-  })
-  .catch((e) => {
+    // Check if setupid is availiable on hootnas, if it exist, change
+    // appstate accordingly.
+    post('api/getSetupId', { accesstoken: `data.accesstoken` })
+      .then((data) => {
+        console.log(`data: ${data.message}`)
+        appstate.vue = 'management'
+      })
+      .catch((e) => {
+        if (e.message.match(/ssh|verification|network/i)) {
+          console.log('check your connectivity and refresh the page')
+          console.log(e.message)
+        }
+        else if (e.httpStatus === 403) 
+          console.log(e.message)
+        else
+          appstate.vue = 'setupStoragePool'
+      })
+
+  }).catch((e) => {
+    console.log('error getAccessToken')
     console.log(e)
   })
 
-post('api/getSetupId')
-  .then((data) => {
-    console.log(`data: ${data.message}`)
-    appstate.vue = 'management'
-  })
-  .catch((e) => {
-    if (e.message.match(/ssh|verification|network/i)) {
-      console.log('check your connectivity and refresh the page') 
-      console.log(e.message)
-    }
-    else {
-      appstate.vue = 'setupStoragePool'
-    }
-  })
+    //post('pub/verifyAccessToken', { accesstoken: `data.accesstoken` })
+    //     .then((data) => {
+    //       console.log('verifyAccessToken')
+    //       console.log(data)
+    //     })
+    //     .catch((e) => {
+    //       console.log('error verifyAccessToken')
+    //       console.log(e)
+    //     })
+    //})
+
+
 
 </script>
 
@@ -70,9 +83,11 @@ body {
     linear-gradient(rgb(0, 0, 0), rgb(9, 1, 122));
   font-family: 'Nunito', sans-serif;
 }
+
 .full-height {
   height: 100vh;
 }
+
 h1 {
   color: #eeebeb;
   font-weight: bold;

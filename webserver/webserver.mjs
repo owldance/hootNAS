@@ -14,9 +14,9 @@
 'use strict'
 import express from 'express'
 import { apiRouter, pubRouter } from './routes/index.mjs'
-export const basePath = process.env.HOOT_REPO || '/usr/local/hootnas'
-export const serverPath = `${basePath}/webserver`
-export const appPath = `${basePath}/webapp/dist`
+const basePath = process.env.HOOT_REPO || '/usr/local/hootnas'
+const serverPath = `${basePath}/webserver`
+const appPath = `${basePath}/webapp/dist`
 
 
 const server = express()
@@ -42,16 +42,9 @@ server.use(function (req, res, next) {
 // serve static content 
 server.use(express.static(appPath, { index: 'index.html' }))
 
-// just a test 
-async function requireToken(req, res, next) {
-    const { accesstoken } = req.body
-    if (accesstoken) {
-        next()
-    } else {
-        res.status(403).send({ message: 'No token provided' })
-    }
-}
-//server.use('/api', requireToken, apiRouter)
+
+//server.use('/api', checkAuthorization(req,res,next), apiRouter)
+// server.use('/api', apiRouter)
 server.use('/api', apiRouter)
 server.use('/pub', pubRouter)
 

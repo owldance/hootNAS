@@ -5,6 +5,7 @@
  * @module controllers/devices
  */
 import { getDevices, setupDevices } from '../services/devices.mjs'
+import { getErrorObject } from '../../webapi/utilities/getErrorObject.mjs'
 'use strict'
 
 export async function getBlockDevices(req, res, next) {
@@ -14,7 +15,7 @@ export async function getBlockDevices(req, res, next) {
     res.status(201).send(result)
     next()
   } catch (e) {
-    res.status(500).send(e) //&& next(error)
+    res.status(500).send(getErrorObject(e)) //&& next(error)
   }
 }
 export async function initialSetup(req, res, next) {
@@ -25,7 +26,7 @@ export async function initialSetup(req, res, next) {
     res.status(200).send(result)
     next()
   } catch (e) {
-    res.status(500).send(e) //&& next(error)
+    res.status(500).send(getErrorObject(e)) //&& next(error)
   }
 }
 

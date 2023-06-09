@@ -49,9 +49,11 @@ export async function get(uri) {
  * @param {Integer} exit error code
  * @returns {ApiException}
  */ 
- function ApiException(message, exit) {
+ function ApiException(message, exit, status, statusText) {
   this.message = message
   this.exit = exit
+  this.httpStatus = status
+  this.httpStatusText = statusText
   this.name = "ApiException"
 }
 /**
@@ -88,7 +90,8 @@ export async function post(uri, payload) {
     // responses are sent as json
     bodydata = await response.json()
     if (!response.ok) {
-      throw new ApiException(bodydata.message, bodydata.exit)
+      throw new ApiException(bodydata.message, bodydata.exit, 
+        response.status, response.statusText)
     }
   }
   catch (e) {
