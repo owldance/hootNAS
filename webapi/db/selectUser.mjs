@@ -30,10 +30,11 @@ export async function selectUser(name, password) {
       driver: sqlite3.Database
     })
     result = await db.all(
-      `SELECT users.* , groups."group"
+      `SELECT users.* , user_status.status, groups."group"
       FROM users
       INNER JOIN user_groups ON users.id = user_groups.user_id 
       INNER JOIN groups ON user_groups.group_id = groups.id 
+      INNER JOIN user_status ON users.status_id = user_status.id
       WHERE name ='${name}' AND password='${password}'`
     )
     if (result.length === 0) {

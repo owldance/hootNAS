@@ -11,6 +11,7 @@ import { inject } from 'vue'
 import { post, get } from './shared.mjs'
 const appstate = inject('appstate')
 const storagepool = inject('storagepool')
+
 /**
  * Go to previous carouselItem
  * @function
@@ -33,7 +34,10 @@ function goPrev(event) {
  */
 async function testSetup(event) {
     storagepool.debug = true
-    const xdat = await post('api/initialSetup', { storagepool: storagepool })
+    const xdat = await post('api/initialSetup', {
+        accesstoken: appstate.accesstoken,
+        storagepool: storagepool
+    })
     console.log(xdat.message)
     storagepool.debug = false
 }
@@ -59,7 +63,8 @@ async function configStoragePool(event) {
     console.log(xdat)
     msg.innerHTML = 'rebooting system'
     console.log('rebooting system')
-    const ydat = await post('api/rebootSystem')
+    const ydat = await post('api/rebootSystem',
+        { accesstoken: appstate.accesstoken })
     console.log(ydat)
     // while waiting for system to reboot, keep polling getSetupId.
     // counters used to control the flow: 'ticks' is incremented each time 

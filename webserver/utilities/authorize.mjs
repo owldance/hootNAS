@@ -1,7 +1,10 @@
-
+/**
+ * Authorization middleware
+ * @module webserver/utilities/authorize
+ */
 import jwt from 'jsonwebtoken'
 import { getErrorObject } from '../../webapi/utilities/getErrorObject.mjs'
-const accessTokenSecret = 'youraccesstokensecret'
+import { accessTokenSecret } from '../../webserver/webserver.mjs'
 
 /**
  * Verifies a jwt token and returns the payload
@@ -22,27 +25,54 @@ async function verifyJwt(accessToken) {
         })
     })
 }
-
+/**
+ * Object containing the groups required to access a route
+ * @constant {Object} authRequired
+ * @property {Array<String>} route path
+ * ...etc
+*/
+const authRequired = {
+    getSetupId: ['admins', 'users'],
+    initialSetup: ['admins'],
+    rebootSystem: ['admins'],
+    getBlockDevices: ['admins', 'users']
+}
 /**
  * @typedef {Object} User
  * @property {String} name
  * .... etc 
  * @property {Array<String>} groups group names
  */
-
+/**
+ * Checks if a user is authorized to access a route
+ * @function checkAuthorization
+ * @async
+ * @param {Request} req 
+ * @param {Response} res
+ * @param {Function} next
+ */
 export async function checkAuthorization(req, res, next) {
     const { accesstoken } = req.body
     try {
+        // if route is not authRequired, skip authorization
+        if (!authRequired.hasOwnProperty(req.route.path.slice(1))) {
+            next()
+            return
+        }
+        // if route is authRequired, check if token is valid        
         if (!accesstoken)
             throw new Error('No token provided')
         const user = await verifyJwt(accesstoken)
-        // check if user is member of admin group
-        if (!user.groups.includes('admins'))
+        // check if user is active
+        if (user.status !== 'active')
+            throw new Error('User is not active')
+        // check if user is member of group required for this route
+        if (!user.groups.some(
+            group => authRequired[req.route.path.slice(1)].includes(group))
+        )
             throw new Error('User is not authorized')
-        console.log({ message: `${user.name} is authorized` })
         next()
     } catch (e) {
-        console.log(e)
         res.status(403).send(getErrorObject(e)) //&& next(error)
     }
 }

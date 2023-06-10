@@ -16,51 +16,52 @@ window.bootstrap = bootstrap
  * @constant
  * @type {Object} 
  */
-const appstate = reactive({ vue: 'nothing' })
+const appstate = reactive({ vue: 'nothing', accesstoken: '' })
 provide('appstate', appstate)
-
-
-// Get an access token from hootnas, so we can access the api.
-// can't use await syntax here, because the parent vue file must be wrapped in 
-// Suspense tags, and App.vue doesn't have any parent.
-post('pub/getAccessToken', { name: 'Monkey', password: 'monk7y' })
+/**
+ * see https://jsdoc.app/tags-callback.html for the callback tag
+ * @callback postCallback
+ * @param {Object} data - The response body of the post request.
+ * @returns {void}
+ */
+/**
+ * Posts a request to the hootnas server to get an access token, if the
+ * request is successful, it checks if the setupid is availiable on hootnas, if
+ * it is, it changes the appstate.vue to 'management', if it isn't, it changes
+ * the appstate.vue to 'setupStoragePool'.
+ * The name/password combination is hardcoded and is used only for setup, upon 
+ * completion of setup, this user is deactivated in the database.
+ * 
+ * await syntax is not possible here, because the parent vue file must be 
+ * wrapped in Suspense tags, and App.vue doesn't have any parent.
+ * @async
+ * @param {string} name - The username of the hootnas server.
+ * @param {string} password - The password of the hootnas server.
+ * @param {postCallback} callback - The callback that handles the response of
+ * the post request.
+ */
+post('api/getAccessToken', { name: 'Monkey', password: 'monk7y' })
   .then((data) => {
     // Check if setupid is availiable on hootnas, if it exist, change
     // appstate accordingly.
-    post('api/getSetupId', { accesstoken: `data.accesstoken` })
+    appstate.accesstoken = data.accesstoken
+    post('api/getSetupId', { accesstoken: appstate.accesstoken })
       .then((data) => {
-        console.log(`data: ${data.message}`)
+        // setupid is availiable because storagepool is already setup
         appstate.vue = 'management'
       })
       .catch((e) => {
         if (e.message.match(/ssh|verification|network/i)) {
-          console.log('check your connectivity and refresh the page')
-          console.log(e.message)
+          console.log(`${e.message}\ncheck your connectivity and refresh the page`)
         }
-        else if (e.httpStatus === 403) 
-          console.log(e.message)
         else
+          // setupid is not availiable because storagepool requires setup
           appstate.vue = 'setupStoragePool'
       })
-
-  }).catch((e) => {
-    console.log('error getAccessToken')
-    console.log(e)
   })
-
-    //post('pub/verifyAccessToken', { accesstoken: `data.accesstoken` })
-    //     .then((data) => {
-    //       console.log('verifyAccessToken')
-    //       console.log(data)
-    //     })
-    //     .catch((e) => {
-    //       console.log('error verifyAccessToken')
-    //       console.log(e)
-    //     })
-    //})
-
-
-
+  .catch((e) => {
+    console.log(e.message)
+  })
 </script>
 
 <template>

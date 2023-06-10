@@ -47,6 +47,8 @@ export async function get(uri) {
  * @constructor
  * @param {String} message
  * @param {Integer} exit error code
+ * @param {Integer} status http status code
+ * @param {String} statusText http status text
  * @returns {ApiException}
  */ 
  function ApiException(message, exit, status, statusText) {

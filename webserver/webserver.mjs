@@ -13,10 +13,11 @@
  */
 'use strict'
 import express from 'express'
-import { apiRouter, pubRouter } from './routes/index.mjs'
+import { apiRouter } from './routes/index.mjs'
 const basePath = process.env.HOOT_REPO || '/usr/local/hootnas'
 const serverPath = `${basePath}/webserver`
 const appPath = `${basePath}/webapp/dist`
+export const accessTokenSecret = 'youraccesstokensecret'
 
 
 const server = express()
@@ -42,11 +43,8 @@ server.use(function (req, res, next) {
 // serve static content 
 server.use(express.static(appPath, { index: 'index.html' }))
 
-
-//server.use('/api', checkAuthorization(req,res,next), apiRouter)
-// server.use('/api', apiRouter)
 server.use('/api', apiRouter)
-server.use('/pub', pubRouter)
+
 
 server.listen(port, () => {
     console.log('hootNAS is listening')

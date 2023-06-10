@@ -5,7 +5,7 @@
  */
 import jwt from 'jsonwebtoken'
 import { selectUser } from '../../webapi/db/selectUser.mjs'
-const accessTokenSecret = 'youraccesstokensecret'
+import { accessTokenSecret } from '../../webserver/webserver.mjs'
 
 /**
  * @typedef {Object} User
@@ -32,24 +32,4 @@ export async function getJwt(username, password) {
     e.exit = 1
     throw e
   }
-}
-/**
- * Verifies a jwt token and returns the payload
- * @function verifyJwt
- * @async
- * @param {Sting} accessToken 
- * @returns {User} on resolve
- * @returns {Error} on reject
- */
-export async function verifyJwt(accessToken) {
-  return new Promise((resolve, reject) => {
-    jwt.verify(accessToken, accessTokenSecret, (err, payload) => {
-      if (err) {
-        err.exit = 1
-        reject(err)
-      }
-      else
-        resolve(payload)
-    })
-  })
 }

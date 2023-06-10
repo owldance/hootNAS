@@ -39,8 +39,8 @@ export async function shell(cmd) {
                 // in case HOOT_REPO is set, but the user has not setup 
                 // ssh access to the remote system
                 if (ret.match(/ssh_askpass/i)) {
-                    ret = `host key verification failed. please see 
-                    /documentation/getstarted.md for more information.`
+                    ret = "host key verification failed. please see \n" +
+                    '/documentation/getstarted.md for more information.'
                 }
                 const err = new Error(ret)
                 err.exit = exitCode 
