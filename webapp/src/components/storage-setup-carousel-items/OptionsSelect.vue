@@ -1,11 +1,7 @@
 <script setup>
-import { inject, nextTick, onMounted } from 'vue'
+import { inject, onMounted } from 'vue'
 const storagepool = inject('storagepool')
 
-// declare properties
-const props = defineProps({
-    vdevName: String
-})
 /**
  * Sets up eventlisteners for all tooltips and popovers in DOM
  * @function
@@ -21,31 +17,6 @@ onMounted(() => {
     const tooltipList = [...tooltipTriggerList].map(
         tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
 })
-/* get vdev index by name
-*/
-const thisVdevIndex = storagepool.vdevs.findIndex(({ name }) =>
-    name === props.vdevName)
-/**
- * Get the index of a vdev by name
- * @function
- * @param {String} vdevName The name of the vdev
- * @returns {Number} An index in the storagepool.vdevs array if vdevName exists; 
- * otherwise, -1
- */
-function vdevIndex(vdevName) {
-    return storagepool.vdevs.findIndex(({ name }) =>
-        name === vdevName)
-}
-/**
- * Checks if all disks are allocated i.e. the vdev 'devicepool' is empty
- * @function
- * @returns {Boolean} true if all disks are allocated; otherwise false
- */
-function allDisksAllocated() {
-    if (storagepool.vdevs[vdevIndex('devicepool')].blockdevices.length === 0)
-        return true
-    else return false
-}
 /**
  * Go to previous carouselItem, if there are no disks selected here, remove 
  * this vdev from storagepool
@@ -70,14 +41,14 @@ async function goNext(event) {
     // if encrypt selected, check that password is not 'password' and consists 
     // only of [a-zA-Z0-9_.-] and is min 3 max 30 chars
     if (
-        storagepool.vdevs[thisVdevIndex].encrypt &&
-        !storagepool.vdevs[thisVdevIndex].password.match(
+        storagepool.encrypt &&
+        !storagepool.password.match(
             /^[a-zA-Z0-9_.-]{3,30}(?<!password)$/m)
     ) {
         // if not, focus on input field, then show the tooltip
-        const inputField = document.getElementById(`password-input-${props.vdevName}`)
+        const inputField = document.getElementById('password-input')
         inputField.focus()
-        const tooltip = bootstrap.Tooltip.getInstance(`#password-input-${props.vdevName}`)
+        const tooltip = bootstrap.Tooltip.getInstance('#password-input')
         tooltip.show()
         // hide toolip after timeout
         setTimeout(() => {
@@ -85,56 +56,39 @@ async function goNext(event) {
         }, 2000)
         return
     }
-    // if this is the last vdev, and not all disks are assigned to storagepool
-    if (thisVdevIndex === (storagepool.vdevs.length - 1) && !allDisksAllocated()) {
-        // create new vdev
-        storagepool.vdevs.push({
-            blockdevices: [],
-            topology: null,
-            name: 'default',
-            compress: null,
-            encrypt: null,
-            password: 'password',
-            capacity: 0
-        })
-        // wait for DOM to update
-        await nextTick()
-    }
     // advance to next carouselItem
     const carousel = new bootstrap.Carousel(
         document.getElementById('carousel-init'))
     carousel.next()
 }
 /**
- * Updates the encrypt or compress options for this vdev in storagepool.
+ * Updates the encrypt or compress options for storagepool.
  * @function
  * @listens v-on:change:vdev-name
  * @param {Object} event native DOM event object
  */
 function optionChange(event) {
-    // extract option from name
-    const option = event.target.name.match(/[^-]*/m)[0]
-    if (option === 'compress')
-        storagepool.vdevs[thisVdevIndex].compress = option
-    if (option === 'encrypt')
-        storagepool.vdevs[thisVdevIndex].encrypt = option
+    if (event.target.id === 'compress')
+        storagepool.compress = event.target.checked
+    if (event.target.id === 'encrypt')
+        storagepool.encrypt = event.target.checked
 }
 /**
- * Updates the password for this vdev in storagepool.
+ * Updates the password for storagepool.
  * @function
  * @listens v-on:change:vdev-name
  * @param {Object} event native DOM event object
   */
 function passwordChange(event) {
-    storagepool.vdevs[thisVdevIndex].password = event.target.value
+    storagepool.password = event.target.value
 }
 </script>
 
 <template>
-    <div class="carousel-item" v-bind:id="props.vdevName">
+    <div class="carousel-item">
         <div class="card">
             <div class="card-body">
-                <h4 class="card-title">{{ props.vdevName }} options</h4>
+                <h4 class="card-title">Storage options</h4>
                 <h6 class="text-muted card-subtitle mb-2">Subtitle</h6>
                 <p class="card-text">Nullam id dolor id nibh ultricies vehicula
                     ut id elit. Cras
@@ -153,8 +107,8 @@ function passwordChange(event) {
                         <tbody>
                             <tr>
                                 <td><input class="form-check-input"
-                                        type="checkbox"
-                                        v-bind:name="`compress-option-checkbox-${props.vdevName}`"
+                                        type="checkbox" name="option-selector"
+                                        id="compress"
                                         v-on:change="optionChange"></td>
                                 <td data-bs-toggle="tooltip"
                                     data-bs-placement="top"
@@ -167,9 +121,8 @@ function passwordChange(event) {
                             </tr>
                             <tr>
                                 <td><input class="form-check-input"
-                                        type="checkbox"
-                                        v-bind:name="`encrypt-option-checkbox-${props.vdevName}`"
-                                        v-on:change="optionChange">
+                                        type="checkbox" name="option-selector"
+                                        id="encrypt" v-on:change="optionChange">
                                 </td>
                                 <td data-bs-toggle="tooltip"
                                     data-bs-placement="top"
@@ -179,9 +132,9 @@ function passwordChange(event) {
                                     <i class="fas fa-info-circle"></i>
                                 </td>
                                 <td> <input v-on:change="passwordChange"
-                                        v-bind:id="`password-input-${props.vdevName}`"
-                                        v-bind:value="storagepool.vdevs[thisVdevIndex].password"
-                                        type="text" data-bs-toggle="tooltip"
+                                        id="password-input" type="text"
+                                        v-bind:value="storagepool.password"
+                                        data-bs-toggle="tooltip"
                                         data-bs-trigger="hover"
                                         data-bs-placement="top"
                                         data-bs-custom-class="custom-tooltip"

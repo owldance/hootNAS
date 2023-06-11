@@ -13,11 +13,11 @@ The directory structure of the [webserver folder](/webserver/) is as follows:
     ┣ 📂controllers
     ┗ 📂services
 
-Routes only chain together controller functions, no logic should go here.
-Controllers handle the request and call the services, and decide what to do 
-with the data returned from the services, and then send the response back to 
-the client. Services call various webapi's and handle the data returned, no 
-experess.js context should be in the services.
+Routes only authorize and chain together controller functions, no other logic 
+should go here. Controllers handle the request and call the services, and 
+decide what to do with the data returned from the services, and then send the 
+response back to the client. Services call various webapi's and handle the 
+data returned, no experess.js context should be in the services.
 
 ## Contributing
 

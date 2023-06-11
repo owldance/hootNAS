@@ -8,7 +8,7 @@
  * @module FinalizeSetup
  */
 import { inject } from 'vue'
-import { post, get } from './shared.mjs'
+import { post } from '../shared.mjs'
 const appstate = inject('appstate')
 const storagepool = inject('storagepool')
 
@@ -59,7 +59,10 @@ async function configStoragePool(event) {
     const progress = document.getElementById('install-progress')
     msg.innerHTML = 'setting up storage pool and perstance'
     console.log('setting up storage pool and perstance')
-    const xdat = await post('api/initialSetup', storagepool)
+    const xdat = await post('api/initialSetup',  {
+        accesstoken: appstate.accesstoken,
+        storagepool: storagepool
+    })
     console.log(xdat)
     msg.innerHTML = 'rebooting system'
     console.log('rebooting system')

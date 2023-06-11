@@ -11,7 +11,6 @@
  * otherwise exit.
   */
 import { inject, nextTick } from 'vue';
-import { get } from './shared.mjs'
 const storagepool = inject('storagepool')
 const allDisks = inject('allDisks')
 

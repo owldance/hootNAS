@@ -32,7 +32,6 @@ async function verifyJwt(accessToken) {
  * ...etc
 */
 const authRequired = {
-    getSetupId: ['admins', 'users'],
     initialSetup: ['admins'],
     rebootSystem: ['admins'],
     getBlockDevices: ['admins', 'users']
@@ -48,7 +47,7 @@ const authRequired = {
  * @function checkAuthorization
  * @async
  * @param {Request} req 
- * @param {Response} res
+ * @param {Response} res on Error, 403 Forbidden
  * @param {Function} next
  */
 export async function checkAuthorization(req, res, next) {

@@ -4,8 +4,9 @@ import 'bootstrap/dist/css/bootstrap.css'
 import './assets/css/Nunito.css'
 import './assets/fonts/fontawesome-all.min.css'
 import * as bootstrap from 'bootstrap'
-import { post } from './components/storage-setup-carousel-items/shared.mjs'
+import { post } from './components/shared.mjs'
 import StorageSetupCarousel from './components/StorageSetupCarousel.vue'
+import SignInCarousel from './components/SignInCarousel.vue'
 // when bootstrap is not imported via the <script> tag in HTML, the bootstrap 
 // namespace is not on the window object
 window.bootstrap = bootstrap
@@ -29,8 +30,7 @@ provide('appstate', appstate)
  * request is successful, it checks if the setupid is availiable on hootnas, if
  * it is, it changes the appstate.vue to 'management', if it isn't, it changes
  * the appstate.vue to 'setupStoragePool'.
- * The name/password combination is hardcoded and is used only for setup, upon 
- * completion of setup, this user is deactivated in the database.
+
  * 
  * await syntax is not possible here, because the parent vue file must be 
  * wrapped in Suspense tags, and App.vue doesn't have any parent.
@@ -40,28 +40,30 @@ provide('appstate', appstate)
  * @param {postCallback} callback - The callback that handles the response of
  * the post request.
  */
-post('api/getAccessToken', { name: 'Monkey', password: 'monk7y' })
+// Check if setupid is availiable on hootnas
+post('api/getSetupId')
   .then((data) => {
-    // Check if setupid is availiable on hootnas, if it exist, change
-    // appstate accordingly.
-    appstate.accesstoken = data.accesstoken
-    post('api/getSetupId', { accesstoken: appstate.accesstoken })
-      .then((data) => {
-        // setupid is availiable because storagepool is already setup
-        appstate.vue = 'management'
-      })
-      .catch((e) => {
-        if (e.message.match(/ssh|verification|network/i)) {
-          console.log(`${e.message}\ncheck your connectivity and refresh the page`)
-        }
-        else
-          // setupid is not availiable because storagepool requires setup
-          appstate.vue = 'setupStoragePool'
-      })
+    // setupid is availiable because storagepool is already setup
+    appstate.vue = 'signIn'
   })
   .catch((e) => {
-    console.log(e.message)
+    if (e.message.match(/ssh|verification|network/i)) {
+      console.log(`${e.message}\ncheck your connectivity and refresh the page`)
+      return
+    }
+    // setupid is not availiable because storagepool requires setup.
+    // need to get accesstoken first, the name/password is hardcoded and is 
+    // used only for setup, upon setup completion, this user is deactivated.
+    post('api/getAccessToken', { name: 'Monkey', password: 'monk7y' })
+      .then((data) => {
+        appstate.accesstoken = data.accesstoken
+        appstate.vue = 'setupStoragePool'
+        //appstate.vue = 'signIn'
+      }).catch((e) => {
+        console.log(e.message)
+      })
   })
+
 </script>
 
 <template>
@@ -69,9 +71,11 @@ post('api/getAccessToken', { name: 'Monkey', password: 'monk7y' })
   </header>
   <main class="full-height">
     <p>appstate.vue: {{ appstate.vue }}</p>
-    <h1 v-if="appstate.vue === 'management'">setup complete, vue management
-      component goes here</h1>
+
     <h1 v-if="appstate.vue === 'nothing'">waiting</h1>
+    <Suspense>
+      <SignInCarousel v-if="appstate.vue === 'signIn'" />
+    </Suspense>
     <Suspense>
       <StorageSetupCarousel v-if="appstate.vue === 'setupStoragePool'" />
     </Suspense>

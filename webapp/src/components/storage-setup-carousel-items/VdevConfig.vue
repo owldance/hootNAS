@@ -1,6 +1,9 @@
 <script setup>
 /**
  * The VdevConfig component is used to configure vdevs in the storagepool.
+ * Since there can be multiple insctances of the VdevConfig component, the 
+ * vdevType prop, which is unique, is prepended to most id's and names in this 
+ * component.
  * @module VdevConfig
  */
 import { inject, nextTick, onMounted } from 'vue'

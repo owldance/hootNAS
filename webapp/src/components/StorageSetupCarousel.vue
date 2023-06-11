@@ -11,7 +11,7 @@
 import DiskCheck from './storage-setup-carousel-items/DiskCheck.vue'
 import VdevConfig from './storage-setup-carousel-items/VdevConfig.vue'
 import FinalizeSetup from './storage-setup-carousel-items/FinalizeSetup.vue'
-import { post } from './storage-setup-carousel-items/shared.mjs'
+import { post } from './shared.mjs'
 import { provide, reactive, watch, inject } from 'vue'
 /** 
  * A blockdevice is a physical disk/partition on the machine
