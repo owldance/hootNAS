@@ -6,10 +6,10 @@ create tables for hoot.db
 /* create users table */ 
 CREATE TABLE IF NOT EXISTS "users" (
     "id"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
-    "name"	TEXT NOT NULL,
-    "mail"	TEXT NOT NULL,
+    "name"	TEXT NOT NULL UNIQUE,
+    "mail"	TEXT NOT NULL UNIQUE,
     "password"	TEXT NOT NULL,
-    "status_id"	DEFAULT 1
+    "status_id"	NOT NULL DEFAULT 1
 );
 
 /* create table for groups */
@@ -43,8 +43,6 @@ INSERT INTO "groups" ("group") VALUES ('backup-admins');
 INSERT INTO "user_status" ("status") VALUES ('active');
 INSERT INTO "user_status" ("status") VALUES ('inactive');
 INSERT INTO "user_status" ("status") VALUES ('locked');
-
-
 
 /* create 3 random users */
 INSERT INTO "users" ("name", "mail", "password") 

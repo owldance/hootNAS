@@ -6,7 +6,7 @@ import './assets/fonts/fontawesome-all.min.css'
 import * as bootstrap from 'bootstrap'
 import { post } from './components/shared.mjs'
 import StorageSetupCarousel from './components/StorageSetupCarousel.vue'
-import SignInCarousel from './components/SignInCarousel.vue'
+import SignIn from './components/SignIn.vue'
 // when bootstrap is not imported via the <script> tag in HTML, the bootstrap 
 // namespace is not on the window object
 window.bootstrap = bootstrap
@@ -57,8 +57,8 @@ post('api/getSetupId')
     post('api/getAccessToken', { name: 'Monkey', password: 'monk7y' })
       .then((data) => {
         appstate.accesstoken = data.accesstoken
-        appstate.vue = 'setupStoragePool'
-        //appstate.vue = 'signIn'
+        // appstate.vue = 'setupStoragePool'
+        appstate.vue = 'signIn'
       }).catch((e) => {
         console.log(e.message)
       })
@@ -71,10 +71,10 @@ post('api/getSetupId')
   </header>
   <main class="full-height">
     <p>appstate.vue: {{ appstate.vue }}</p>
-
+    <h1 v-if="appstate.vue === 'dashBoard'">DASHBOARD</h1>
     <h1 v-if="appstate.vue === 'nothing'">waiting</h1>
     <Suspense>
-      <SignInCarousel v-if="appstate.vue === 'signIn'" />
+      <SignIn v-if="appstate.vue === 'signIn'" />
     </Suspense>
     <Suspense>
       <StorageSetupCarousel v-if="appstate.vue === 'setupStoragePool'" />

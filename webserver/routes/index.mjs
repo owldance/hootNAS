@@ -11,7 +11,8 @@ import { checkAuthorization } from '../utilities/authorize.mjs'
 export const apiRouter = express.Router()
 
 
-apiRouter.post('/getAccessToken', checkAuthorization, user.getAccessToken)
+apiRouter.post('/getAccessToken', user.getAccessToken)
+apiRouter.post('/createAccount', user.createAccount)
 apiRouter.post('/getBlockDevices',checkAuthorization, devices.getBlockDevices)
 apiRouter.post('/rebootSystem', checkAuthorization, system.rebootSystem)
 apiRouter.post('/getSetupId', checkAuthorization, system.getSetupId)

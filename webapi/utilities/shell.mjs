@@ -36,7 +36,8 @@ export async function shell(cmd) {
         await new Promise((resolve, reject) => {
             shell.on('exit', (exitCode) => {
                 if (exitCode === 0) resolve()
-                // in case HOOT_REPO is set, but the user has not setup 
+                // a friendly reminder in case vebserver is in dev mode i.e. 
+                // HOOT_REPO is set, but the user has not setup 
                 // ssh access to the remote system
                 if (ret.match(/ssh_askpass/i)) {
                     ret = "host key verification failed. please see \n" +
