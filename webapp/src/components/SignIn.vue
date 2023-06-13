@@ -137,8 +137,10 @@ async function signIn() {
 </script>
 
 <template>
+  <div class="full-height">
+    <p style="margin-bottom:1%">&nbsp;</p>
   <div class="d-flex justify-content-center">
-    <div class="card " style="width: 330px;">
+    <div class="card" style="width: 330px;">
       <div class="card-body">
         <h4 id="signin-check-title" class="card-title">Sign In or Create Account
         </h4>
@@ -172,6 +174,7 @@ async function signIn() {
         </div>
       </div>
     </div>
+  </div>
   </div>
 </template> 
 

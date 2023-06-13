@@ -7,6 +7,7 @@ import * as bootstrap from 'bootstrap'
 import { post } from './components/shared.mjs'
 import StorageSetupCarousel from './components/StorageSetupCarousel.vue'
 import SignIn from './components/SignIn.vue'
+import DashBoard from './components/DashBoard.vue'
 // when bootstrap is not imported via the <script> tag in HTML, the bootstrap 
 // namespace is not on the window object
 window.bootstrap = bootstrap
@@ -28,9 +29,8 @@ provide('appstate', appstate)
 /**
  * Posts a request to the hootnas server to get an access token, if the
  * request is successful, it checks if the setupid is availiable on hootnas, if
- * it is, it changes the appstate.vue to 'management', if it isn't, it changes
+ * it is, it changes the appstate.vue to 'signIn', if it isn't, it changes
  * the appstate.vue to 'setupStoragePool'.
-
  * 
  * await syntax is not possible here, because the parent vue file must be 
  * wrapped in Suspense tags, and App.vue doesn't have any parent.
@@ -57,8 +57,8 @@ post('api/getSetupId')
     post('api/getAccessToken', { name: 'Monkey', password: 'monk7y' })
       .then((data) => {
         appstate.accesstoken = data.accesstoken
-        // appstate.vue = 'setupStoragePool'
-        appstate.vue = 'signIn'
+        appstate.vue = 'setupStoragePool'
+        // appstate.vue = 'signIn'
       }).catch((e) => {
         console.log(e.message)
       })
@@ -69,9 +69,11 @@ post('api/getSetupId')
 <template>
   <header>
   </header>
-  <main class="full-height">
-    <p>appstate.vue: {{ appstate.vue }}</p>
-    <h1 v-if="appstate.vue === 'dashBoard'">DASHBOARD</h1>
+  <main>
+    <!-- <p>appstate.vue: {{ appstate.vue }}</p> -->
+    <Suspense>
+      <DashBoard v-if="appstate.vue === 'dashBoard'" />
+    </Suspense>
     <h1 v-if="appstate.vue === 'nothing'">waiting</h1>
     <Suspense>
       <SignIn v-if="appstate.vue === 'signIn'" />

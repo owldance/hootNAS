@@ -84,45 +84,25 @@ const storagepool = reactive(
   }
 )
 provide('storagepool', storagepool)
-
-// uncomment for debugging
-// watch(
-//   () => storagepool.vdevs.length,
-//   (current, prev) => {
-//     console.log(`storagepool.vdevs.length changed from ${prev} to ${current}`)
-//     storagepool.vdevs.forEach(vdev => {
-//       console.log(`${vdev.name}`, vdev)
-//     })
-//   },
-//   { deep: true }
-// )
-
 </script>
 
 <template>
-  <div class="container">
-    <div class="text-center">
-      <h1>Storage Setup</h1>
-    </div>
-    <div class="row">
-      <div class="col offset-xxl-3">
-        <div class="carousel slide" data-bs-ride="false" id="carousel-init" style="width: 600px;">
-          <div class="carousel-inner">
+  <div class="full-height">
+    <p style="margin-bottom:1%">&nbsp;</p>
+    <div class="d-flex justify-content-center">
+      <div class="carousel slide" data-bs-ride="false" id="carousel-init" style="width: 600px;">
+        <div class="carousel-inner">
+          <Suspense>
+            <DiskCheck />
+          </Suspense>
+          <div v-for="vdev in storagepool.vdevs">
             <Suspense>
-              <DiskCheck />
+              <VdevConfig v-bind:vdevType=vdev.type />
             </Suspense>
-            <div v-for="vdev in storagepool.vdevs">
-              <Suspense>
-                <VdevConfig v-bind:vdevType=vdev.type />
-              </Suspense>
-            </div>
-            <FinalizeSetup />
           </div>
+          <FinalizeSetup />
         </div>
       </div>
-    </div>
-    <div class="text-center">
-      <p>Paragraph</p>
     </div>
   </div>
 </template> 

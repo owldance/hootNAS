@@ -25,21 +25,29 @@ function goPrev(event) {
     carousel.prev()
 }
 /**
- * Sends initialSetup request to server for testing and disables the 
- * install-options-button
+ * Sends initialSetup request to server for testing
+ * 
+ * @function testSetup
  * @async
- * @function
- * @listens v-on:change:click
- * @param {Object} event native DOM event object
  */
-async function testSetup(event) {
+async function testSetup() {
     storagepool.debug = true
-    const xdat = await post('api/initialSetup', {
-        accesstoken: appstate.accesstoken,
-        storagepool: storagepool
-    })
-    console.log(xdat.message)
-    storagepool.debug = false
+    try {
+        const xdat = await post('api/initialSetup', {
+            accesstoken: appstate.accesstoken,
+            storagepool: storagepool
+        })
+        storagepool.debug = false
+    }
+    catch (e) {
+        const msg = e.message.replace(/^use.*override.*$/m, '<br>')
+        document.getElementById('modal-vdev-error-message').innerHTML = msg
+        var modalElement = document.getElementById('vdev-configuration-error-modal')
+        var modal = bootstrap.Modal.getOrCreateInstance(modalElement)
+        modal.show()
+        storagepool.debug = false
+        throw e
+    }
 }
 /**
  * Sends initialSetup request to server and disables the 
@@ -50,16 +58,24 @@ async function testSetup(event) {
  * @param {Object} event native DOM event object
  */
 async function configStoragePool(event) {
-    storagepool.debug = false
     const buttonBack = document.getElementById('install-options-button')
-    buttonBack.disabled = true
     const buttonConfig = document.getElementById('config-button')
+    buttonBack.disabled = true
     buttonConfig.disabled = true
+    try {
+        await testSetup()
+    }
+    catch (e) {
+        buttonBack.disabled = false
+        buttonConfig.disabled = false
+        return
+    }
+    storagepool.debug = false
     const msg = document.getElementById('install-msg')
     const progress = document.getElementById('install-progress')
-    msg.innerHTML = 'setting up storage pool and perstance'
-    console.log('setting up storage pool and perstance')
-    const xdat = await post('api/initialSetup',  {
+    msg.innerHTML = 'setting up storage pool and persistance'
+    console.log('setting up storage pool and persistance')
+    const xdat = await post('api/initialSetup', {
         accesstoken: appstate.accesstoken,
         storagepool: storagepool
     })
@@ -94,9 +110,9 @@ async function configStoragePool(event) {
                 msg.innerHTML = `finished! setup id: ${data.message}`
                 progress.style.width = `100%`
                 progress.innerHTML = `100%`
-                // show vue management component
-                appstate.vue = 'management'
                 clearInterval(interval)
+                // show vue signIn component
+                appstate.vue = 'signIn'
             }
             catch (e) {
                 console.log(`getSetupId error: ${e.message}`)
@@ -127,17 +143,9 @@ async function configStoragePool(event) {
             <div class="card-body">
                 <h4 class="card-title">Finalize setup</h4>
                 <h6 class="text-muted card-subtitle mb-2">Subtitle</h6>
-                <p class="card-text">Depending on your system and internet
-                    connection, this may
+                <p class="card-text">Depending on your chosen system setup, this may
                     take quite a while, please be patient.
                 </p>
-                <p class="card-text">Test your setup without actually
-                    modifying anything on the hootnas. The results will be
-                    displayed in the browser console, press F12 to view.
-                </p>
-                <div class="col text-start"><button class="btn btn-warning" id="test-setup-button" type="button"
-                        v-on:click="testSetup">Test Setup</button>
-                </div>
                 <h6 id="install-msg"></h6>
                 <div class="progress" style="height: 24px;margin-top: 20px;margin-bottom: 20px;">
                     <div class="progress-bar" id="install-progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
@@ -149,6 +157,28 @@ async function configStoragePool(event) {
                     </div>
                     <div class="col text-end"><button class="btn btn-primary" id="config-button" type="button"
                             v-on:click="configStoragePool">Configure pool</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modal box -->
+        <div class="modal fade" id="vdev-configuration-error-modal" data-bs-backdrop="static" data-bs-keyboard="false"
+            tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="vdev-configuration-error-static-backdrop-label">Configuration error</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>hootNAS was unable to configure the storage pool. </p>
+                        <p>Go back using the 'Prev' button and please
+                            check the following:</p>
+                        <p id="modal-vdev-error-message"></p>
+                        <p>And then try again.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     </div>
                 </div>
             </div>

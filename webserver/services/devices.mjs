@@ -16,7 +16,6 @@ export async function getDevices() {
 }
 export async function setupDevices(storagepool) {
   try {
-    console.log(storagepool)
     return await initialSetup(storagepool)
   } catch (e) {
     throw e

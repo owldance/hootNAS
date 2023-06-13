@@ -726,24 +726,24 @@ function goNext(event) {
                 </div>
             </div>
         </div>
-    </div>
-    <!-- modal box -->
-    <div class="modal fade" v-bind:id="`vdev-empty-modal-${props.vdevType}`" data-bs-backdrop="static"
-        data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="staticBackdropLabel">This vdev is empty</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    You didn't select any disks for this vdev. If you continue, this vdev will be removed from the
-                    storagepool. You can allways add it back later.
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="ok-remove-button"
-                        v-on:click="okRemoveEmptyVdev">Continue</button>
+        <!-- modal box -->
+        <div class="modal fade" v-bind:id="`vdev-empty-modal-${props.vdevType}`" data-bs-backdrop="static"
+            data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="staticBackdropLabel">This vdev is empty</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        You didn't select any disks for this vdev. If you continue, this vdev will be removed from the
+                        storagepool. You can allways add it back later.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="ok-remove-button"
+                            v-on:click="okRemoveEmptyVdev">Continue</button>
+                    </div>
                 </div>
             </div>
         </div>
