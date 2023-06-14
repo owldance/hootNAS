@@ -11,7 +11,6 @@ import { inject } from 'vue'
 import { post } from '../shared.mjs'
 const appstate = inject('appstate')
 const storagepool = inject('storagepool')
-
 /**
  * Go to previous carouselItem
  * @function
@@ -24,30 +23,17 @@ function goPrev(event) {
         document.getElementById('carousel-init'))
     carousel.prev()
 }
-/**
- * Sends initialSetup request to server for testing
- * 
- * @function testSetup
- * @async
- */
-async function testSetup() {
-    storagepool.debug = true
-    try {
-        const xdat = await post('api/initialSetup', {
-            accesstoken: appstate.accesstoken,
-            storagepool: storagepool
-        })
-        storagepool.debug = false
-    }
-    catch (e) {
-        const msg = e.message.replace(/^use.*override.*$/m, '<br>')
-        document.getElementById('modal-vdev-error-message').innerHTML = msg
-        var modalElement = document.getElementById('vdev-configuration-error-modal')
-        var modal = bootstrap.Modal.getOrCreateInstance(modalElement)
-        modal.show()
-        storagepool.debug = false
-        throw e
-    }
+function showFinalizeModal(title, body, buttonDisabled = false) {
+    document.getElementById('finalize-modal-title').innerHTML = title
+    document.getElementById('finalize-modal-body').innerHTML = body
+    const cancelButton = document.getElementById('finalize-modal-button')
+    if (buttonDisabled)
+        cancelButton.disabled = true
+    else
+        cancelButton.disabled = false
+    var modalElement = document.getElementById('finalize-modal')
+    var modal = bootstrap.Modal.getOrCreateInstance(modalElement)
+    modal.show()
 }
 /**
  * Sends initialSetup request to server and disables the 
@@ -58,33 +44,56 @@ async function testSetup() {
  * @param {Object} event native DOM event object
  */
 async function configStoragePool(event) {
+    // disable buttons
     const buttonBack = document.getElementById('install-options-button')
     const buttonConfig = document.getElementById('config-button')
     buttonBack.disabled = true
     buttonConfig.disabled = true
+    // test setup
     try {
-        await testSetup()
+        storagepool.debug = true
+        await post('api/initialSetup', {
+            accesstoken: appstate.accesstoken,
+            storagepool: storagepool
+        })
     }
     catch (e) {
+        // test failed, allow user to go back and try again
+        const msg = e.message.replace(/^use.*override.*$/m, '<br>')
+        showFinalizeModal('Configuration Error', 
+        `<p>hootNAS was unable to configure the storage pool. </p>
+        <p>Go back using the 'Prev' button and please check the following:</p>
+        <p>${msg}</p><p>And then try again.</p>`, false)
         buttonBack.disabled = false
         buttonConfig.disabled = false
         return
     }
+    // setup storage pool for real
     storagepool.debug = false
     const msg = document.getElementById('install-msg')
     const progress = document.getElementById('install-progress')
-    msg.innerHTML = 'setting up storage pool and persistance'
-    console.log('setting up storage pool and persistance')
+    msg.innerHTML = 'Setting up storage pool and persistance'
+    progress.style.width = `10%`
+    progress.innerHTML = `10%`
     const xdat = await post('api/initialSetup', {
         accesstoken: appstate.accesstoken,
         storagepool: storagepool
     })
-    console.log(xdat)
-    msg.innerHTML = 'rebooting system'
-    console.log('rebooting system')
-    const ydat = await post('api/rebootSystem',
-        { accesstoken: appstate.accesstoken })
-    console.log(ydat)
+    msg.innerHTML = 'Rebooting system'
+    progress.style.width = `20%`
+    progress.innerHTML = `20%`
+    try {
+        await post('api/rebootSystem',
+            { accesstoken: appstate.accesstoken })
+    }
+    catch (e) {
+        showFinalizeModal('Reboot Error', 
+        `<p>Reboot reported an error: </p>
+        <p>${e.message}</p>
+        <p>Try turning your server off/on, and the hit the 
+            refresh button in your browser</p>`, true)
+        return
+    }
     // while waiting for system to reboot, keep polling getSetupId.
     // counters used to control the flow: 'ticks' is incremented each time 
     // setInterval callback is called, if countTicks if true. and 'tries' is 
@@ -93,7 +102,7 @@ async function configStoragePool(event) {
     // will be called with a 5 second delay, and thereafter every 10 
     // seconds plus the time it takes to execute getSetupId.
     let ticks = 0
-    let tries = 0
+    let tries = 2 // already adcanced progress bar by 20% in above code
     let countTicks = true
     const ticksBetweenTries = 10
     const ticksBeforeFirstTry = 5
@@ -162,23 +171,17 @@ async function configStoragePool(event) {
             </div>
         </div>
         <!-- modal box -->
-        <div class="modal fade" id="vdev-configuration-error-modal" data-bs-backdrop="static" data-bs-keyboard="false"
-            tabindex="-1">
+        <div class="modal fade" id="finalize-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="vdev-configuration-error-static-backdrop-label">Configuration error</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        <h5 class="modal-title" id="finalize-modal-title">Configuration Error</h5>
                     </div>
-                    <div class="modal-body">
-                        <p>hootNAS was unable to configure the storage pool. </p>
-                        <p>Go back using the 'Prev' button and please
-                            check the following:</p>
-                        <p id="modal-vdev-error-message"></p>
-                        <p>And then try again.</p>
+                    <div id="finalize-modal-body" class="modal-body">
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-secondary" id="finalize-modal-button"
+                            data-bs-dismiss="modal">Cancel</button>
                     </div>
                 </div>
             </div>

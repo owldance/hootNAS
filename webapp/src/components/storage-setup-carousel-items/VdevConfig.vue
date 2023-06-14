@@ -10,6 +10,16 @@ import { inject, nextTick, onMounted } from 'vue'
 const storagepool = inject('storagepool')
 const allDisks = inject('allDisks')
 /**
+ * Filers all blockdevices in allDisks, and returns only the type 'disk'
+ * @function filteredBlockDevices
+ * @returns {Array<blockdevice>}
+ */
+function filteredBlockDevices() {
+    return allDisks.blockdevices.filter((disk) => {
+        return disk.type === 'disk'
+    })
+}
+/**
  * The props passed on to this component
  * @typedef {Object} props
  * @property {String} vdevType the type of the vdev
@@ -465,7 +475,7 @@ function goNext(event) {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="disk in allDisks.blockdevices">
+                            <tr v-for="disk in filteredBlockDevices()">
                                 <td class="text-center">
                                     <input v-if="diskInThisVdev(disk.kname)" v-on:change="diskSelectionChanged"
                                         class="form-check-input" type="checkbox" name="disk-selector" v-bind:id="disk.kname"

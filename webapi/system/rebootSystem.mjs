@@ -12,17 +12,19 @@ import { shell } from "../utilities/shell.mjs"
  * @returns {Promise<Error>} On reject, Error object with error message
  */
 export async function rebootSystem() {
-    let ret = ''
     try {
-        ret = await shell('reboot')
+        const ret = await shell('reboot')
+        return { message: ret }
     }
     catch (e) {
+        // when server is in dev mode, exit code 255 is due to ssh 
+        // 'connection closed by remote', which 
+        // indicates the command was successful
         if (e.exit === 255) {
-            return Promise.resolve(e.message)
+            return { message: e.message }
         }
-        else return Promise.reject(e)
+        throw e
     }
-    return Promise.resolve(ret)
 }
 
 // rebootSystem()

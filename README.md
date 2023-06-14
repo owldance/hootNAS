@@ -1,13 +1,14 @@
 # hootNAS
 
+**Download** 
+[latest ISO image releases](https://github.com/owldance/hootNAS/releases) or 
+read about the current status of the project.
+
 ## A NAS appliance based on ubuntu LTS and ZFS
 
 hootNAS comes with a web based management application and API based on a ubuntu 
 LTS, it is packaged in two versions, one with hardware drivers for running on 
 bare metal, and one for running in a virtual machine.
-
-**Download** 
-[latest ISO image releases](https://github.com/owldance/hootNAS/releases)
 
 The ambition of hootNAS is to be a robust, utilitarian, user, and developer 
 friendly NAS that can be used out-of-the-box, or customized to make it 
@@ -31,6 +32,7 @@ particular adding context, reasoning and references.
 * SMB, NFS and iSCSI network folders and blockdevices
 * Industrial grade ZFS storage
 * Management dashboard web application
+* Self-service user dashboard web application
 * API for custom or automated management
 
 The in-memory operation is partially inspired by [SmartOS](https://smartos.org/)
@@ -60,7 +62,7 @@ Active Directory clients for authentication, and SQLite for state management.
 ## Where to go from here
 
 * [Getting started](/documentation/getstarted.md) - Get up and running in no 
-time, also contains the current status of the project.
+time.
 * [Documentation](/documentation/README.md) - The documentation is a work in 
 progress.
 

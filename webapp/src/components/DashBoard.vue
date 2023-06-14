@@ -1,7 +1,7 @@
 <script setup>
 /**
  * This is the dashboard component
- * @module dashboard
+ * @module DashBoard
  */
 'use strict'
 import { post } from './shared.mjs'

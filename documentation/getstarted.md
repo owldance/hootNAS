@@ -1,14 +1,5 @@
 # hootNAS - Getting started
 
-## Status of the project
-
-The hootNAS ISO image can presently boot up satisfactory and present an IP 
-address on the terminal. The web application is available at 
-`http://<IP address>` and can perform a basic setup of the storage, when done a 
-placeholder for the management app is displayed. The API is implemented in
-so far as it can be called from the webserver and perform basic operations 
-related to the storage setup. 
-
 ## Prepare your development environment
 
 1.  Clone or fork this repository to your local machine

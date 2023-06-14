@@ -1,21 +1,28 @@
 # hootNAS - Documentation
 
-* [Getting started](/documentation/getstarted.md) - Get up and running in no 
-time, also contains the current status of the project.
-* [ZFS concepts](./zfs-concepts.md) - A brief introduction to ZFS concepts and
-definition of terms.
-* [hootOS](/hoot-os/README.md) - The hootNAS operating system, on which the
-hootNAS software runs.
-* [Web server](/webserver/README.md) - The hootNAS webserver, which serves the
-hootNAS webapp and api.
-* [Web app](/webapp/README.md) - The hootNAS webapp, which is the user interface
-to the hootNAS software.
-* [Web API](/webapi/README.md) - The hootNAS API, which is the interface to the 
-hootNAS software.
-* [hootNAS bash scripts](/scripts/README.md) - Various bash scripts used by the
-hootNAS software.
+1. Development
+    - [Getting started](/documentation/getstarted.md) - Get up and running 
+    resonably quickly.
 
-## Concepts
+2. General concepts
+    - [ZFS concepts](./zfs-concepts.md) - A brief introduction to ZFS concepts 
+    and definition of terms.
+
+2. The hootNAS operating system
+    - [hootOS](/hoot-os/README.md) - on which the hootNAS software runs.
+
+3. hootNas software
+    - [Web server](/webserver/README.md) - The hootNAS webserver, which serves 
+    the hootNAS webapp and api.
+    - [Web app](/webapp/README.md) - The hootNAS webapp, which is the user 
+    interface.
+    - [Web API](/webapi/README.md) - The hootNAS API, which is the interface 
+    to the api.
+    - [Scripts](/scripts/README.md) - Bash scripts used by the
+    hootNAS software.
+    - [Database](/db/README.md) - The state management database
+
+## Writing documentation
 
 The documentation consist of two types of information, 
 code comments, using [JSDoc](https://jsdoc.app/index.html) format for 
