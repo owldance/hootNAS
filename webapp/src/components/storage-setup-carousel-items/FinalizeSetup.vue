@@ -60,8 +60,8 @@ async function configStoragePool(event) {
     catch (e) {
         // test failed, allow user to go back and try again
         const msg = e.message.replace(/^use.*override.*$/m, '<br>')
-        showFinalizeModal('Configuration Error', 
-        `<p>hootNAS was unable to configure the storage pool. </p>
+        showFinalizeModal('Configuration Error',
+            `<p>hootNAS was unable to configure the storage pool. </p>
         <p>Go back using the 'Prev' button and please check the following:</p>
         <p>${msg}</p><p>And then try again.</p>`, false)
         buttonBack.disabled = false
@@ -87,12 +87,16 @@ async function configStoragePool(event) {
             { accesstoken: appstate.accesstoken })
     }
     catch (e) {
-        showFinalizeModal('Reboot Error', 
-        `<p>Reboot reported an error: </p>
-        <p>${e.message}</p>
-        <p>Try turning your server off/on, and the hit the 
-            refresh button in your browser</p>`, true)
-        return
+        // show error message, if it's not a network error. network errors are
+        // expected, because the system is rebooting.
+        if (!e.message.match(/ssh|verification|network/i)) {
+            showFinalizeModal('Reboot Error',
+                `<p>Reboot reported an error: </p>
+                <p>${e.message}</p>
+                <p>Try turning your server off/on, and the hit the 
+                refresh button in your browser</p>`, true)
+            return
+        }
     }
     // while waiting for system to reboot, keep polling getSetupId.
     // counters used to control the flow: 'ticks' is incremented each time 

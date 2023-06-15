@@ -2,7 +2,7 @@
 
 1. Development
     - [Getting started](/documentation/getstarted.md) - Get up and running 
-    resonably quickly.
+    reasonably quick.
 
 2. General concepts
     - [ZFS concepts](./zfs-concepts.md) - A brief introduction to ZFS concepts 

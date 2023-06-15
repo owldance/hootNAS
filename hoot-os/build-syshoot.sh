@@ -40,7 +40,7 @@
 # set the build variable to either 'metal' or 'virtual'
 # build 'metal' system which includes firmware and microcode, 
 # or 'virtual' system which doesn't include firmware and microcode
-build=virtual
+build=metal
 # keyboard settings, convenient if you are going to be working in the terminal. 
 # model 'pc105' is a good general choice for most keyboards
 # see supported keyboard settings: /usr/share/X11/xkb/rules/evdev.lst
@@ -329,6 +329,7 @@ fi
 echo "creating empty database"
 cat <<'EOF' | chroot syshoot
 cd /usr/local/hootnas/db
+rm hoot.db
 sqlite3 hoot.db < hoot.sql
 EOF
 
