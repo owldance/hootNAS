@@ -7,11 +7,12 @@
 2. General concepts
     - [ZFS concepts](./zfs-concepts.md) - A brief introduction to ZFS concepts 
     and definition of terms.
+    - [Create a BIOS/UEFI hybrid ubuntu boot disk](./tech/create-bios-uefi-hybrid-boot-disk.md) - A guide to creating a ubuntu boot disk that can boot both BIOS and UEFI systems.
 
-2. The hootNAS operating system
+3. The hootNAS operating system
     - [hootOS](/hoot-os/README.md) - on which the hootNAS software runs.
 
-3. hootNas software
+4. hootNas software
     - [Web server](/webserver/README.md) - The hootNAS webserver, which serves 
     the hootNAS webapp and api.
     - [Web app](/webapp/README.md) - The hootNAS webapp, which is the user 
@@ -21,6 +22,8 @@
     - [Scripts](/scripts/README.md) - Bash scripts used by the
     hootNAS software.
     - [Database](/db/README.md) - The state management database
+
+
 
 ## Writing documentation
 
