@@ -153,6 +153,8 @@ async function createBtrfsPersistance(storagepool) {
       persistancePartitions += `/dev/disk/by-id/${blockdevice.wwid}-part1 `
     }
   }
+  // this also works 
+  // mkfs.btrfs -L persistence -d raid1 -m raid1 -f /dev/disk/by-id/*-part1
   await shell(`mkfs.btrfs -L persistence -d raid1 -m raid1 \
      -f ${persistancePartitions}`)
 }

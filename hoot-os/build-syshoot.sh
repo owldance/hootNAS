@@ -40,7 +40,7 @@
 # set the build variable to either 'metal' or 'virtual'
 # build 'metal' system which includes firmware and microcode, 
 # or 'virtual' system which doesn't include firmware and microcode
-build=metal
+build=virtual
 # keyboard settings, convenient if you are going to be working in the terminal. 
 # model 'pc105' is a good general choice for most keyboards
 # see supported keyboard settings: /usr/share/X11/xkb/rules/evdev.lst
@@ -282,6 +282,8 @@ apt install --yes sqlite3
 EOF
 
 echo "cleaning up"
+# avoids error messages from update-grub. os-prober is only necessary in 
+# dual-boot configurations.
 chroot syshoot apt purge --yes os-prober
 chroot syshoot apt --yes update
 chroot syshoot apt --purge --yes autoremove
@@ -366,8 +368,8 @@ Wants=network-online.target
 Type=simple
 Restart=on-failure
 RestartSec=10
-StandardOutput=syslog
-StandardError=syslog
+StandardOutput=journal
+StandardError=journal
 ExecStart=/usr/local/hootnas/webserver/webserver.mjs
 [Install]
 WantedBy=multi-user.target
