@@ -28,6 +28,7 @@ export async function zwipeBlockDevice(blockDevicePath) {
   try {
     await shell(`wipefs -af ${blockDevicePath}`)
     await shell(`sgdisk --zap-all ${blockDevicePath}`)
+    await shell(`sgdisk --clear ${blockDevicePath}`)
   }
   catch (e) {
     return Promise.reject(e)
