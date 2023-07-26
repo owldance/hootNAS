@@ -261,7 +261,7 @@ Filesystem     1K-blocks   Used Available Use% Mounted on
 /dev/sda1         516190  15932    500259   4% /mnt/boot/efi
 ```
 
-23. You can now boot from the disk and test the new system with the password 
+25. You can now boot from the disk and test the new system with the password 
 you set in step #22. 
 
 

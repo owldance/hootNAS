@@ -291,6 +291,7 @@ chroot syshoot apt --yes clean
 
 echo "update the initrd files"
 chroot syshoot update-initramfs -c -k all
+# chroot syshoot live-update-initramfs -c -k all
 
 ################################################################################
 #                                USERSPACE                                     #
@@ -431,3 +432,5 @@ cat <<EOF | chroot syshoot
 history -c
 history -w
 EOF
+
+rm /var/log/bootstrap.log

@@ -124,8 +124,8 @@ set menu_color_normal=white/black
 set menu_color_highlight=black/light-gray
 
 menuentry 'Boot hootNAS' {
-        linux   /live/vmlinuz boot=live noeject persistence 
-        initrd  /live/initrd
+        linux   /live/vmlinuz boot=live noeject persistence
+        initrd  /live/initrd 
 }
 grub_platform
 if [ "\$grub_platform" = "efi" ]; then

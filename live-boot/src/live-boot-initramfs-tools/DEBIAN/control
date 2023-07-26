@@ -1,0 +1,23 @@
+Package: live-boot-initramfs-tools
+Source: live-boot
+Version: 1:20210208
+Architecture: all
+Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+Original-Maintainer: Debian Live Maintainers <debian-live@lists.debian.org>
+Installed-Size: 52
+Depends: busybox | busybox-initramfs, initramfs-tools, udev
+Conflicts: live-boot-backend
+Replaces: live-boot-backend
+Provides: live-boot-backend
+Section: misc
+Priority: optional
+Homepage: https://wiki.debian.org/DebianLive
+Description: Live System Boot Components (initramfs-tools backend)
+ The Debian Live project maintains the components to build Debian based Live
+ systems and the official Debian Live images themselves.
+ .
+ live-boot contains the components to configure a live system during the boot
+ process (early userspace). Do not install this package on your regular system,
+ it is only meant to be used in a live image.
+ .
+ This package contains the initramfs-tools backend.

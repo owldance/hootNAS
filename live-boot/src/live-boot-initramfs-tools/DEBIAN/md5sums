@@ -1,0 +1,5 @@
+7268515c115e7ccef4ba4aa53fa340c5  usr/share/doc/live-boot-initramfs-tools/changelog.gz
+ab0d7378a48222f5765eca002d0b622e  usr/share/doc/live-boot-initramfs-tools/copyright
+948da68a3e8feb26c434e602e6658686  usr/share/initramfs-tools/hooks/kms
+163fc6970a3be9b3b870e11797614e13  usr/share/initramfs-tools/hooks/live
+9f9de2308cc3135b2eb2c0ab87f1dea1  usr/share/initramfs-tools/scripts/live
