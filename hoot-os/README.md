@@ -53,15 +53,14 @@ will build the hootOS system in the `projectname/syshoot` directory.
 
 ### 2. Building the hootOS iso file
 
-Before running the below command, check that user variables in the 
+Check that user variables in the 
 [build-hootiso.sh](./build-hootiso.sh) file are according to your 
 requirements.
 
 ```bash
-$ sudo build-hootiso.sh <projectname> <originaliso> <newiso>
+$ sudo build-hootiso.sh <projectname> <newiso>
 ```
-where `projectname` is an existing project directory, and `originaliso` is 
-the path and name of the original ubuntu iso file that must exist, and `newiso` 
+where `projectname` is an existing project directory, and `newiso` 
 is the path and name of the new iso file to be built, the path must exist, any 
 existing file will be overwritten.
 

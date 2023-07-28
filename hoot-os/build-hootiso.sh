@@ -9,13 +9,10 @@
 # and <newiso> is the path and name of the new iso file to be built, the path 
 # must exist, any existing file will be overwritten. 
 #
-# this script will create a new hybrid BIOS/UEFI bootable iso file using the 
-# original ubuntu as a template. if you are using a ubuntu version other than 
-# the below mentioned, you will most likely have to modify the xorriso
-# command in this script.
+# this script will create a new hybrid BIOS/UEFI bootable iso file with the 
+# system in the syshoot folder of the project directory.
 #
 # requirements:
-# - a ubuntu-22.04.2-desktop-amd64.iso file
 # - squashfs-tools and xorriso packages installed
 #
 
@@ -24,7 +21,7 @@
 ################################################################################
 #
 # the following variables are used to create the new iso file
-# ISO compatible volume name [0-9A-Z_] 
+# iso_vol_name should be ISO compatible [0-9A-Z_] 
 iso_vol_name='HOOTNAS_22_04_2' 
 disk_info='HOOTNAS 22.04.2'
 disk_release_notes_url='https://github.com/owldance/hootNAS/blob/main/README.md'
@@ -41,11 +38,8 @@ if [ "$EUID" -ne 0 ]; then
 elif [ ! -d "$1/syshoot" ]; then 
   echo "hootOS system directory $1/syshoot not found"
   user_err=1
-elif [ ! -f "$2" ] || [ ! "${2##*.}" = "iso" ]; then 
-  echo "$2 is not an existing ubuntu iso file"
-  user_err=1
-elif [ ! -d "$(dirname $3)" ] || [ ! "${3##*.}" = "iso" ]; then
-  echo "$3 is not an existing path, or filename does not end with .iso"
+elif [ ! -d "$(dirname $2)" ] || [ ! "${2##*.}" = "iso" ]; then
+  echo "$2 is not an existing path, or filename does not end with .iso"
   user_err=1
 fi
 
@@ -53,62 +47,59 @@ if [ $user_err = 1 ]; then
   echo
   echo "usage:"
   echo
-  echo "    sudo ./build-hootiso.sh <projectname> <originaliso> <newiso>"
+  echo "    sudo ./build-hootiso.sh <projectname> <newiso>"
   echo
-  echo "where <projectname> is an existing project directory, and <originaliso> is"
-  echo "the path and name of the original ubuntu iso file that must exist,"
-  echo "and <newiso> is the path and name of the new iso file to be built, the path"
-  echo "must exist, any existing file will be overwritten."
+  echo "where <projectname> is an existing project directory,"
+  echo "and <newiso> is the path and name of the new iso file to be built,"
+  echo "the path must exist, any existing file will be overwritten."
   echo
   exit 1
 fi
 
-project_dir=$1
-original_iso=$2
-new_iso=$3
-
-# mount the original iso
-mkdir -p /mnt/isodtp
-echo "mount -o loop $original_iso /mnt/isodtp"
-mount -o loop $original_iso /mnt/isodtp
-if [ ! -d '/mnt/isodtp/boot' ] 
-  then 
-    echo "original iso is not mounted"
-    umount /mnt/isodtp
-    rm -r /mnt/isodtp
-    exit 1
+# if $HOOT_REPO/hoot-os/iso-assets/boot directory does not exist, 
+# extract assets from tar file $HOOT_REPO/hoot-os/iso-assets/iso-assets.tar.gz
+if [ ! -d "$HOOT_REPO/hoot-os/iso-assets/boot" ]; then
+  echo "extracting iso assets from tar file"
+  tar -xzf $HOOT_REPO/hoot-os/iso-assets/iso-assets.tar.gz \
+        -C $HOOT_REPO/hoot-os/iso-assets
 fi
+
+project_dir=$1
+new_iso=$2
 
 # cd into project directory
 cd $project_dir
 
 # create and populate the image directory 
 mkdir -p isoimage/{live,install,assets}
-cp -r /mnt/isodtp/boot isoimage
-cp -r /mnt/isodtp/EFI isoimage
-cp /mnt/isodtp/boot.catalog isoimage
+cp -r $HOOT_REPO/hoot-os/iso-assets/boot isoimage
+cp -r $HOOT_REPO/hoot-os/iso-assets/EFI isoimage
 cp syshoot/boot/vmlinuz isoimage/live/vmlinuz
 cp syshoot/boot/initrd.img isoimage/live/initrd
 
-# create manifest
-chroot syshoot \
-dpkg-query -W --showformat='${Package} ${Version}\n' | \
-tee isoimage/live/filesystem.manifest > /dev/null
+# # create manifest
+# chroot syshoot \
+# dpkg-query -W --showformat='${Package} ${Version}\n' | \
+# tee isoimage/live/filesystem.manifest > /dev/null
 
-# compress (squash) system folder
-echo "ignore any warnings about any unrecognised xattr prefix"
-if [ -f "isoimage/live/filesystem.squashfs" ]; then 
-    rm isoimage/live/filesystem.squashfs # delete old
+# # compress (squash) system folder
+# echo "ignore any warnings about any unrecognised xattr prefix"
+# if [ -f "isoimage/live/filesystem.squashfs" ]; then 
+#     rm isoimage/live/filesystem.squashfs # delete old
+# fi
+# mksquashfs syshoot isoimage/live/filesystem.squashfs
+
+# # calculate filesize
+# printf $(du -sx --block-size=1 syshoot | cut -f1) > \
+# isoimage/live/filesystem.size
+
+# This section is needed to make the USB Creator work with this custom iso image
+if [ ! -L "isoimage/ubuntu" ]; then
+    ln -s . isoimage/ubuntu
 fi
-mksquashfs syshoot isoimage/live/filesystem.squashfs
-
-# calculate filesize
-printf $(du -sx --block-size=1 syshoot | cut -f1) > \
-isoimage/live/filesystem.size
-
-# This is needed to make the USB Creator work with this custom iso image
-ln -s . isoimage/ubuntu
-mkdir isoimage/.disk
+if [ ! -d "isoimage/.disk" ]; then
+    mkdir isoimage/.disk
+fi
 touch isoimage/.disk/base_installable
 echo "full_cd/single" > isoimage/.disk/cd_type
 echo "$disk_info" > isoimage/.disk/info
@@ -158,46 +149,47 @@ xargs -0 md5sum | \
 grep -v "md5sum.txt" > md5sum.txt
 cd ..
 
+# if $new_iso already exists, delete it
+if [ -f "$new_iso" ]; then 
+    rm $new_iso
+fi
+
 # a original iso recipie can be obtained with the following command:
-#
-# xorriso \
-# -indev $original_iso \
-# -report_el_torito as_mkisofs
+# xorriso -indev $ORIGINAL_ISO -report_el_torito cmd
 #
 # the following command is a modified version of the original iso recipie,
-# it will create the new iso file, overwrite if it already exists
-xorriso -as mkisofs \
--V $iso_vol_name \
---modification-date="$(date +%Y%m%d%H%M%S)00" \
---grub2-mbr \
---interval:local_fs:0s-15s:zero_mbrpt,zero_gpt:$original_iso \
---protective-msdos-label \
--partition_cyl_align off \
--partition_offset 16 \
---mbr-force-bootable \
+# it will create the new iso file, overwrite if it already exists.
+# files created by xorriso 
+# /boot.catalog 
+# /boot/grub/i386-pc/eltorito.img (dir must exist)
+xorriso -outdev $new_iso \
+-blank as_needed \
+-volid $iso_vol_name \
+-volume_date uuid '2023022304134400' \
+-boot_image grub \
+        grub2_mbr="$HOOT_REPO/hoot-os/iso-assets/images/grub2-mbr.img" \
+-boot_image any partition_table=on \
+-boot_image any partition_cyl_align=off \
+-boot_image any partition_offset=16 \
+-boot_image any mbr_force_bootable=on \
 -append_partition 2 28732ac11ff8d211ba4b00a0c93ec93b \
---interval:local_fs:9613460d-9623527d::$original_iso \
--appended_part_as_gpt \
--iso_mbr_part_type a2a0d0ebe5b9334487c068b6b72699c7 \
--c '/boot.catalog' \
--b '/boot/grub/i386-pc/eltorito.img' \
--no-emul-boot \
--boot-load-size 4 \
--boot-info-table \
---grub2-boot-info \
--eltorito-alt-boot \
--e '--interval:appended_partition_2_start_2403365s_size_10068d:all::' \
--no-emul-boot \
--boot-load-size 10068 \
--o $new_iso \
-isoimage
+        $HOOT_REPO/hoot-os/iso-assets/images/efi-partition.img \
+-boot_image any appended_part_as=gpt \
+-boot_image any iso_mbr_part_type=a2a0d0ebe5b9334487c068b6b72699c7 \
+-map isoimage / \
+-boot_image any cat_path='/boot.catalog' \
+-boot_image grub bin_path='/boot/grub/i386-pc/eltorito.img' \
+-boot_image any platform_id=0x00 \
+-boot_image any emul_type=no_emulation \
+-boot_image any boot_info_table=on \
+-boot_image grub grub2_boot_info=on \
+-boot_image any next \
+-boot_image any efi_path='--interval:appended_partition_2:::' \
+-boot_image any platform_id=0xef \
+-boot_image any emul_type=no_emulation 
 
 # cd out of project dir
 cd ..
-
-# unmount the original iso
-umount /mnt/isodtp
-rm -r /mnt/isodtp
 
 echo "done.. iso file can be found here:"
 echo $new_iso

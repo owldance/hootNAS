@@ -86,8 +86,8 @@ function sortVdevs(storagepool) {
   return storagepool
 }
 /**
- * Formats all blockdevices in storagepool.vdevs, labels all the first 
- * partition on all blockdevice 'persistence'. then creates a btrfs raid1 
+ * Formats all blockdevices in storagepool.vdevs, labels the first 
+ * partition on one blockdevice 'persistence'. then creates a btrfs raid1 
  * filesystem with all partitions labeled 'persistence'.
  * @function createBtrfsPersistance
  * @param {storagepool} storagepool
@@ -100,10 +100,21 @@ async function createBtrfsPersistance(storagepool) {
   // subsequent created partitions on the same blockdevice, the partition 
   // table on the device will be written, but the udev device manager will 
   // not update /dev directory even after a reboot.
+  //
+  // label only one partition 'persistence' otherwise live-boot fail 
+  // to mount array. live-boot script must be modified to mount only one disk
+  let persistenceNamed = false
   for (const vdev of storagepool.vdevs) {
     for (const blockdevice of vdev.blockdevices) {
-      await createPartitions(`/dev/disk/by-id/${blockdevice.wwid}`,
-        'persistence', 'dpool')
+      if (!persistenceNamed) {
+        await createPartitions(`/dev/disk/by-id/${blockdevice.wwid}`,
+          'persistence', 'dpool')
+        persistenceNamed = true
+      } 
+      else {
+        await createPartitions(`/dev/disk/by-id/${blockdevice.wwid}`,
+          '', 'dpool')
+      }
     }
   }
   // // create btrfs raid
@@ -116,7 +127,7 @@ async function createBtrfsPersistance(storagepool) {
   }
   // this also works 
   // mkfs.btrfs -L persistence -d raid1 -m raid1 -f /dev/disk/by-id/*-part1
-  await shell(`mkfs.btrfs -L persistence -d raid1 -m raid1 \
+  await shell(`mkfs.btrfs -L hootstore -d raid1 -m raid1 \
      -f ${persistancePartitions}`)
 }
 /**

@@ -1,7 +1,10 @@
 # See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
 
 
-hootOS/**/
+
+hoot-os/iso-assets/boot
+hoot-os/iso-assets/EFI
+hoot-os/iso-assets/images
 notes
 
 # compiled output

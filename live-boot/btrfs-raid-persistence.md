@@ -5,6 +5,11 @@ supports RAID1 creation and management out-of-the-box, and mounting a btrfs
 raid is as simple as mounting a single btrfs device in the raid, which means 
 that `live-boot` does not need to be modified to support btrfs raid.
 
+CAVEAT: If there are multiple raid devices with a partition labeled 
+"persistence", `live-boot` will try to mount them all and the raid will not 
+mount correctly, therefore only one partition label "persistence" is allowed in 
+a raid.
+
 This setup worked for a while until it suddently didn't any more, 
 unfortunately it is not preciesly known when and why it stopped working.
 
