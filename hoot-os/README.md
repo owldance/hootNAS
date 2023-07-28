@@ -5,7 +5,7 @@
 hootOS is based on the latest ubuntu LTS with additional packages required for 
 hootNAS, most notably ZFS.
 
-hootOS is packaged as a BIOS/UEFI[1] bootable ISO hybrid and runs entirely 
+hootOS is packaged as a BIOS/UEFI bootable ISO hybrid and runs entirely 
 in-memory, and can optionally persist system changes to writable media. 
 The advantage of such a system is that: 
 
@@ -20,7 +20,7 @@ The in-memory capability and persistence is accomplished with the
 [live-boot](https://manpages.ubuntu.com/manpages/jammy/man7/live-boot.7.html) 
 package.
 
-In early userspace, live-boot searches for a filesystem[2] labled 
+In early userspace, live-boot searches for a filesystem[1] labled 
 *persistence*. If found, any changes will be persisted to that filesystem.
 
 The default network configuration is DHCP, see 
@@ -107,13 +107,7 @@ available [here](/LICENSE).
 
 ### Footnotes
 
-[1]: Making this iso file from scratch requires some more research. Using 
-[grub-mkrescue](https://www.gnu.org/software/grub/manual/grub/html_node/Making-a-GRUB-bootable-CD_002dROM.html) 
-will produce a BIOS bootable ISO. A Hybrid BIOS/UEFI bootable ISO is more 
-complex, it involves 
-[nested and overlayed partitons](https://lists.gnu.org/archive/html/grub-devel/2015-01/msg00042.html).
-
-[2]: live-boot does not support zfs in early userspace, therefore btrfs is used 
+[1]: live-boot does not support zfs in early userspace, therefore btrfs is used 
 for persitence. As a future feature, zfs in early userspace could be
 accomplished by a custom 
 [initramfs hook](https://manpages.ubuntu.com/manpages/bionic/en/man8/initramfs-tools.8.html) 

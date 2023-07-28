@@ -5,7 +5,7 @@ assets from the original ubuntu ISO, the assets we need are basically those
 created by GRUB2:
 
 1. Master Boot Record (MBR), The MBR is 512 bytes large and is located in the 
-first sector of the disk.
+first sector of the ISO.
 2. The EFI System Partition (ESP), which contains all the GRUB2 files for 
 booting from UEFI firmware.
 3. Directories containing the files for booting the hootOS:
@@ -28,3 +28,6 @@ Usage:
  where `originaliso` is the path and name of the original ubuntu iso file 
  that must exist.
 
+Making this iso file from scratch requires some more research. Using 
+[grub-mkrescue](https://www.gnu.org/software/grub/manual/grub/html_node/Making-a-GRUB-bootable-CD_002dROM.html) 
+will produce a BIOS bootable ISO, should be possible to add the MBR.
