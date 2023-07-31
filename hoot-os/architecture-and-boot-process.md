@@ -1,7 +1,7 @@
-# hootOS - hootNAS architecture
+# hootNAS architecture
 
-The hootOS system is a indeed a complex and eclectic mix of modern and
-legacy compatible technologies combined with  clever hacks to make them all 
+The hootNAS system is a resonably complex and eclectic mix of modern and
+legacy compatible technologies combined with clever hacks to make them all 
 work in unison. 
 
 The best way to get an overview the system and the boot process is to start 
@@ -37,7 +37,6 @@ efi files are image files created when executing `grub-install` or
 For convenience the entire partition is a copy of the original ubuntu ISO image.
 
 The ISO9660 filesystem contains the following files:
-
 ```
 /
 ├── boot
@@ -78,15 +77,13 @@ ubuntu ISO image.
 
 The script `build-hootiso.sh` generates following files:
 ```
-/boot.catalog (xorriso command)
-/boot/grub/eltorito.img (xorriso command)
+/boot.catalog (with xorriso command)
+/boot/grub/eltorito.img (with xorriso command)
 /boot/grub/grub.cfg
 /boot/grub/loopback.cfg
 /live/filesystem.manifest
 /live/filesystem.size
 /live/filesystem.squashfs
-/live/initrd (copied from hootOS system)
-/live/vmlinuz (copied from hootOS system)
 /.disk/base_installable
 /.disk/cd_type
 /.disk/info
@@ -94,8 +91,15 @@ The script `build-hootiso.sh` generates following files:
 /.disk/release_notes_url
 /md5sum.txt
 ```
-The directories `ubuntu` and `.disk` is needed to make the USB Creator work 
-with this custom iso image. 
+The directories `ubuntu` and `.disk` and its files are needed to make the USB 
+Creator work with this custom iso image. 
+
+The files: 
+```
+/live/initrd
+/live/vmlinuz
+```
+are copied from the hootOS system by `build-hootiso.sh`.
 
 The `xorriso` command in `build-hootiso.sh` also updates the partition info in 
 the MBR. 
@@ -108,21 +112,22 @@ configuration files `/boot/grub/grub.cfg` or `/boot/grub/loopback.cfg` loads
 the Linux kernel (vmlinuz) into memory, turns over execution to the kernel, 
 the kernel loads the initial RAM disk (initrd). 
 
-Because the initrd is compiled (i.e. `update-initramfs`) with the 
+Because the initrd is compiled (i.e. `update-initramfs` is executed) with the 
 [live-boot](https://manpages.ubuntu.com/manpages/jammy/man7/live-boot.7.html) 
-package, it unpacks and loads the hootOS filesystem in 
-`/live/filesystem.squashfs` into memory and create a writable environment, 
-using `aufs`, to boot the system from. If `live-boot` detects a filesystem or 
-partition labled `persistence`, then any changes will be persisted to that 
+package, scripts on `initrd` unpacks and loads the hootOS squashed filesystem 
+in `/live/filesystem.squashfs` into memory and create a writable environment, 
+using `aufs`, to boot the system from. If `initrd` scripts detects a filesystem 
+or partition labled `persistence`, then any changes will be persisted to that 
 filesystem.
 
 The default network configuration for hootOS is DHCP, see 
-[build-syshoot.sh](./build-syshoot.sh) for details.
+[build-syshoot.sh](/hoot-os/build-syshoot.sh) for details.
 
-The script [network-config.sh](/tty/README.md) is executed on **first boot**, and
-on the terminal screen, the user is welcomed with the IP address of the system. 
-With this information, the user can connect to the system using SSH, or make 
-webAPI calls, or open a browser and connect to the hootNAS management dashboard.
+The script [network-config.sh](/tty/README.md) is executed on **first boot**, 
+and on the terminal screen, the user is welcomed with the IP address of the 
+system. With this information, the user can connect to the system using SSH, 
+or make webAPI calls, or open a browser and connect to the hootNAS management 
+dashboard.
 
 The service `hootsrv.service` starts the webserver target 
 [webserver.mjs](/webserver/webserver.mjs) which in turn starts the webapp 
