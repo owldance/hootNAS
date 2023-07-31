@@ -5,6 +5,7 @@
     reasonably quick.
 
 2. General concepts
+    - [hootNAS architecture and boot process](/hoot-os/architecture-and-boot-process.md) - A detailed description of the hootOS architecture and boot process.
     - [ZFS concepts](./zfs-concepts.md) - A brief introduction to ZFS concepts 
     and definition of terms.
 

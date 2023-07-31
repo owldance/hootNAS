@@ -1,4 +1,7 @@
-# hootNAS - Getting started
+# hootNAS - Getting started with development
+
+Before starting development it is recommended to read about the hootOS 
+architecture and boot process [here](/hoot-os/architecture-and-boot-process.md).
 
 ## Prepare your development environment
 
@@ -20,21 +23,24 @@
 
     Make sure to log in/out to make the variable available system wide.
 
-
 3.  Check the script 
-    [getting-started.sh](./getting-started.sh) first, then run it to prepare 
+    [getstarted.sh](/scripts/getstarted.sh) first, then run it to prepare 
     your local development environment. This will install the required
     dependencies e.g. node.js, npm packages, debian packages, etc. it will also
     set optional environment variables.
 
     ```bash
-    $ sudo $HOOT_REPO/getting-started.sh
+    $ sudo $HOOT_REPO/scripts/getstarted.sh
     ```
     
     Then log in/out to make the variables available system wide.
     
 
-## Start developing hootNAS with Vue 3 in Vite
+## Spin up and configure a hootNAS instance
+
+Development on your local machine is done by running the webserver on your
+local machine, which then makes system calls via SSH to a running hootNAS 
+instance.
 
 1.  Create a hootNAS ISO image following [this guide](/hoot-os/README.md), or
     just download 
@@ -57,8 +63,6 @@
     ```bash
     sudo echo "192.168.22.48    hootnas" >> /etc/hosts
     ```
-    make sure to log in/out to make the hostname available in your current 
-    terminal.
 
     Generate a public/private rsa key pair, just accept the defaults by 
     pressing enter repeatedly, this will create the files `~/.ssh/id_rsa` and 
@@ -84,14 +88,17 @@
     ```
 
     Now you can log on to the `hootnas` machine without ever entering a 
-    single password. During development on your local machine, this is used by 
-    the webserver to make system calls via SSH to the running hootNAS machine.
+    single password. 
+
+## Start the webserver
 
 3.  Start the webserver in your local VSCode by pressing `F5`, or by selecting 
     `Debug -> Start Debugging` from the menu. This will start the webserver on 
     your local machine, which will make system calls via SSH to the running 
     hootNAS machine. The webserver will output debug information in the DEBUG 
     CONSOLE tab in VSCode.
+
+## Developing with Vue 3 in Vite
 
 4.  Start the web application by changing directory to `$HOOT_REPO/webapp` and 
     run the command

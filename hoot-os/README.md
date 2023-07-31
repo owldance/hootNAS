@@ -14,26 +14,8 @@ The advantage of such a system is that:
 * boot from any media, even a slow USB-stick, or network
 * True data and system OS separation 
 
-## hootOS architecture
-
-The in-memory capability and persistence is accomplished with the 
-[live-boot](https://manpages.ubuntu.com/manpages/jammy/man7/live-boot.7.html) 
-package.
-
-In early userspace, live-boot searches for a filesystem[1] labled 
-*persistence*. If found, any changes will be persisted to that filesystem.
-
-The default network configuration is DHCP, see 
-[build-syshoot.sh](./build-syshoot.sh) for details.
-
-The script [network-config.sh](/tty/README.md) is executed on **first boot**, and
-on the terminal screen, the user is welcomed with the IP address of the system. 
-With this information, the user can connect to the system using SSH, or make 
-webAPI calls, or open a browser and connect to the hootNAS management dashboard.
-
-**On boot** the service `hootsrv.service` starts the webserver target 
-[webserver.mjs](/webserver/webserver.mjs) which in turn starts the webapp 
-target [index.html](/webapp/index.html).
+A detailed description of the hootOS architecture and boot process is available
+[here](/hoot-os/architecture-and-boot-process.md).
 
 ## Building hootOS
 
@@ -104,16 +86,6 @@ the community as outlined in the [hootNAS Community Guidelines](#placeholder).
 
 This is code is licensed under the Apache License 2.0. Full license is 
 available [here](/LICENSE).
-
-### Footnotes
-
-[1]: live-boot does not support zfs in early userspace, therefore btrfs is used 
-for persitence. As a future feature, zfs in early userspace could be
-accomplished by a custom 
-[initramfs hook](https://manpages.ubuntu.com/manpages/bionic/en/man8/initramfs-tools.8.html) 
-or by modifying package zfs-initramfs. In either case live-boot has to be 
-modified as well. Since initramfs documentation is rather abstruse, it might be 
-an opportunity to move from initramfs to dracut, dracut-live and zfs-dracut.
 
 ## Placeholder
 
