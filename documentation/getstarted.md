@@ -35,14 +35,18 @@ architecture and boot process [here](/hoot-os/architecture-and-boot-process.md).
     
     Then log in/out to make the variables available system wide.
     
+## Developing app and api with Vue 3 in Vite
+    
+Skip to the [end](#Developing-the-hootOS-system-and-ISO-image) for developing 
+the hootOS system and ISO image.
 
-## Spin up and configure a hootNAS instance
+### Spin up and configure a hootNAS instance
 
 Development on your local machine is done by running the webserver on your
 local machine, which then makes system calls via SSH to a running hootNAS 
 instance.
 
-1.  Create a hootNAS ISO image following [this guide](/hoot-os/README.md), or
+4.  Create a hootNAS ISO image following [this guide](/hoot-os/README.md), or
     just download 
     [latest ISO image releases](https://github.com/owldance/hootNAS/releases).
     
@@ -57,7 +61,7 @@ instance.
     disk using libvirt or qemu e.g.: 
     `-drive if=none,id=disk1,file=disk1.qcow2,serial=1234567890`
 
-2.  Add the IP address to your `/etc/hosts` file, e.g. if the IP address is 
+5.  Add the IP address to your `/etc/hosts` file, e.g. if the IP address is 
     `192.168.22.48` then add the following line like this
 
     ```bash
@@ -90,17 +94,16 @@ instance.
     Now you can log on to the `hootnas` machine without ever entering a 
     single password. 
 
-## Start the webserver
+### Start developing with Vue 3 in Vite
 
-3.  Start the webserver in your local VSCode by pressing `F5`, or by selecting 
+6.  Start the webserver in your local VSCode by pressing `F5`, or by selecting 
     `Debug -> Start Debugging` from the menu. This will start the webserver on 
     your local machine, which will make system calls via SSH to the running 
     hootNAS machine. The webserver will output debug information in the DEBUG 
     CONSOLE tab in VSCode.
 
-## Developing with Vue 3 in Vite
 
-4.  Start the web application by changing directory to `$HOOT_REPO/webapp` and 
+7.  Start the web application by changing directory to `$HOOT_REPO/webapp` and 
     run the command
     
     ```bash
@@ -111,7 +114,28 @@ instance.
     above command. The web application will output debug information in the
     TERMINAL tab in VSCode. See also [webapp/README.md](/webapp/README.md) for
     more information.
-    
-    
+
+## Developing the hootOS system and ISO image
+
+System development depends very much on what you want to achieve, but is 
+generally done in your local environment, and then tested on a hootNAS 
+instance (see step #4). The general build process is described here 
+[/hoot-os/README.md](/hoot-os/README.md).
+
+Some time-saving tips for development:
+
+When making changes and debugging the source code in 
+[/hoot-os/build-syshoot.sh](/hoot-os/build-syshoot.sh), you may want to 
+split the script in two parts, one upto and including `debootstrap` and 
+then make a copy (or snapshot depending on your local filesystem) of the 
+(`chroot`'ed) `syshoot` directory. Then the test other part after `debootstrap` and onwards on copies of the `syshoot` directory. This will 
+ave you a lot of time when testing changes as `debootstrap` takes a long 
+time (5-10 minutes) to run.
+
+When making changes and debugging the source code in 
+[/hoot-os/build-hootiso.sh](/hoot-os/build-hootiso.sh) you may want to 
+comment out the `mksquashfs` part of the script, for any subsequent builds, 
+as `mksquashfs` takes a long time (5-10 minutes) to run.
+
 
 

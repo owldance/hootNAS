@@ -31,7 +31,8 @@ settings.
     $ sudo build-syshoot.sh <projectname>
 
 where `projectname` is the name of the subfolder that will be created, this 
-will build the hootOS system in the `projectname/syshoot` directory. 
+will build the hootOS system in the `projectname/syshoot` directory. This 
+script must run on a `jammy` distro.
 
 ### 2. Building the hootOS iso file
 

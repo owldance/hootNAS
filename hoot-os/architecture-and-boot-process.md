@@ -18,7 +18,7 @@ Number Start (sector)  End (sector) Size       Code   Name
 ```
 
 The image has a 512 byte protective EFI GPT (type 0xEE) MBR partition that 
-begins on the second sector of the disk, For convenience the MBR is a copy of 
+begins at sector 1 of the disk, For convenience the MBR is a copy of 
 the original ubuntu ISO image. Partition 1 is the ISO9660 filesystem and 
 Partition 2 is EFI System Partition (ESP) FAT formatted.
 
@@ -156,16 +156,6 @@ the community as outlined in the [hootNAS Community Guidelines](#placeholder).
 
 This is code is licensed under the Apache License 2.0. Full license is 
 available [here](/LICENSE).
-
-### Footnotes
-
-[1]: live-boot does not support zfs in early userspace, therefore btrfs is used 
-for persitence. As a future feature, zfs in early userspace could be
-accomplished by a custom 
-[initramfs hook](https://manpages.ubuntu.com/manpages/bionic/en/man8/initramfs-tools.8.html) 
-or by modifying package zfs-initramfs. In either case live-boot has to be 
-modified as well. Since initramfs documentation is rather abstruse, it might be 
-an opportunity to move from initramfs to dracut, dracut-live and zfs-dracut.
 
 ## Placeholder
 
