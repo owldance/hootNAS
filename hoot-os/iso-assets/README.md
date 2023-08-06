@@ -23,7 +23,7 @@ $ ./extract-iso-assets.sh <originaliso>
 where `originaliso` is the path and name of the original ubuntu iso file 
 that must exist.
 
-If the script [build-hootiso.sh](/hoot-os/build-hootiso.sh) can't find a  
+If the script [build-hootiso.sh](/hoot-os/build-hootiso.sh) can't find a 
 `/hoot-os/iso-assets/boot` directory, it will extract the assets from the
 `iso-assets.tar.gz` tarball, which ships with the hootNAS source code. 
 
