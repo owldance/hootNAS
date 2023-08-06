@@ -61,8 +61,12 @@ Active Directory clients for authentication, and SQLite for state management.
 
 ## Where to go from here
 
-* [Getting started](/documentation/getstarted.md) - Get up and running in no 
-time.
+* [Create a hootNAS instance](/documentation/create-hootnas-instance.md) - Get hootNAS up 
+and running in no time.
+* [Prepare your development environment](/documentation/prepare-development-environment.md) - If you want to start contribute to the project.
+* [Developing the webapp](/webapp/README.md) - If you want to work with frontend JS with Vue 3 in Vite.
+* [Developing the webapi](/webapi/README.md) - If you want to work with backend JS with node.js.
+* [Developing hootOS](/hoot-os/README.md) - If you want to work with OS development.
 * [Documentation](/documentation/README.md) - The documentation is a work in 
 progress.
 

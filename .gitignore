@@ -1,7 +1,5 @@
 # See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
 
-
-
 hoot-os/iso-assets/boot
 hoot-os/iso-assets/EFI
 hoot-os/iso-assets/images
@@ -31,7 +29,7 @@ pids
 *.sublime-workspace
 
 # Visual Studio Code
-.vscode/
+# .vscode/
 *.code-workspace
 .history/
 

@@ -3,8 +3,8 @@
 ## webserver.mjs
 
 **On boot** the service `hootsrv.service` starts the webserver target 
-[webserver.mjs](./webserver.mjs) which in turn starts the webapp 
-target [index.html](/webapp/dist/index.html).
+[webserver.mjs](./webserver.mjs). The webserver listens on port HTTP 80 when 
+deployed, and port 8000 in develpment mode.
 
 The directory structure of the [webserver folder](/webserver/) is as follows: 
 

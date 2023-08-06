@@ -1,68 +1,114 @@
 # hootOS - in-memory ubuntu
 
-## Summary
-
-hootOS is based on the latest ubuntu LTS with additional packages required for 
-hootNAS, most notably ZFS.
-
-hootOS is packaged as a BIOS/UEFI bootable ISO hybrid and runs entirely 
-in-memory, and can optionally persist system changes to writable media. 
-The advantage of such a system is that: 
-
-* no installation is required
-* simple and easy to upgrade
-* boot from any media, even a slow USB-stick, or network
-* True data and system OS separation 
-
 A detailed description of the hootOS architecture and boot process is available
-[here](/hoot-os/architecture-and-boot-process.md).
+[here](/hoot-os/architecture-and-boot.md).
 
-## Building hootOS
+## Building hootNAS
 
-A two step buildflow is used to create a hootOS ISO file.
+A three step buildflow is used to create a hootOS ISO file.
 
-### 1. Building the system
+### Building the base system
 
-Before running the below command, you must as a minimum set the environment 
-variable HOOT_REPO to point to the root of your local hootNAS git repository. 
-check [build-syshoot.sh](./build-syshoot.sh) for other recomended, but optional 
-settings.
+1.  This is a one-time operation, create a working directory e.g. `work` 
+    and `cd` into it. Then run the script 
+    [build-base.sh](/hoot-os/build-baseos.sh) to build the base system.
+    system. 
 
-    $ sudo build-syshoot.sh <projectname>
+    ```bash
+    $ sudo build-baseos.sh
+    ```
+    This will create a directory `baseos` containing the base system i.e. a
+    full (minimal) ubuntu installation. This is done to speed up the 
+    development process, as the base system only needs to be built once.
 
-where `projectname` is the name of the subfolder that will be created, this 
-will build the hootOS system in the `projectname/syshoot` directory. This 
-script must run on a `jammy` distro.
+    You now have the following directory structure:
+    ```
+    ..
+    └── work
+        └── baseos
+    ```
+    ### Building hootOS
 
-### 2. Building the hootOS iso file
+2.  Then run the script 
+    [build-hootos.sh](/hoot-os/build-hootos.sh) to build hootOS. 
 
-Check that user variables in the 
-[build-hootiso.sh](./build-hootiso.sh) file are according to your 
-requirements.
+    ```bash
+    $ sudo build-hootos.sh test-build 
+    ```
 
-```bash
-$ sudo build-hootiso.sh <projectname> <newiso>
-```
-where `projectname` is an existing project directory, and `newiso` 
-is the path and name of the new iso file to be built, the path must exist, any 
-existing file will be overwritten.
+    This will build hootOS in the following directory structure:
+    
+    ```
+    ..
+    └── work
+        ├── baseos
+        └── test-build
+            ├── hootos
+            ├── staging
+            └── tmpo
+    ```
+    The script mounts the overlayfs filesystem, and builds the system in the 
+    `hootos` directory. This is done to speed up the build process and save
+    disk space. 
+ 
+    You can create any number of build directories, each build directory will
+    have its own `hootos` and `staging` directories, but they will all share
+    the same `baseos` directory.
 
-the command does two things, first it will build an ISO image in the 
-`projectname/isoimage` directory, then it will use the content of this 
-directory to generate an hootOS ISO file.
+    overlayfs is basically a COW (copy-on-write) filesystem, `baseos` directory 
+    is read-only, all changes are made in the `staging` directory, and `baseos` 
+    and `staging` are then merged into `hootos`. `hootos` appears empty when 
+    the build is done, to review and edit the contents, see #3 here below.
 
-### Modifying system-hoot after building
+    ### Review and editing the hootOS build
 
-If you need to edit or debug the system you have built, the command 
+3.  When desired, you can review or edit the built hootos system by running the 
+    script [edit-hootos.sh](/hoot-os/edit-hootos.sh). 
 
-```bash
-$ sudo modify-syshoot.sh <projectname>
-```
-will login (chroot) on the system in the `projectname/syshoot` directory and 
-present you with a system prompt, there you can make any changes you need. When 
-you are done, type `exit` to end the session.
+    ```bash
+    $ sudo edit-hootos.sh <command> <hootos-dir>
+    ```
+    where `hootos-dir` is an existing hootos directory, and `command` can
+    either be `mount` or `umount`. if `mount` is specified, the script will
+    mount the overlayfs and host filesystems to the hootos system in the
+    build directory. you can then `chroot` into the hootos system:
+    ```
+    $ sudo chroot <hootos-dir>
+    ```
+    ```
+    $ sudo chroot <hootos-dir> /usr/bin/env bash --login
+    ```
+    The first method you will simply present you with an interactive hootos
+    system prompt. The second method will first go through the login process.
+    
+    In either case you can revirew or make any changes you need, and when you 
+    are done, type `exit 0` to end the session. Then run this script again 
+    with the `umount` command to unmount the filesystems.
 
-If you modify the system, you should also build a new iso image.
+    ### Building the hootISO
+
+4.  When you are satisfied with the hootOS build, you can build the hootISO by
+    running the script [build-hootiso.sh](/hoot-os/build-hootiso.sh).
+
+    ```bash
+    $ sudo build-hootiso.sh test-build test.iso
+    ```
+    
+    Which will result in the following directory structure:
+    ```
+    ..
+    └── work
+        ├── baseos
+        └── test-build
+            ├── hootos
+            ├── staging
+            ├── tmpo
+            ├── isoimage
+            └── test.iso
+    ```
+    The `isoimage` directory contains all the files that are copied into 
+    the ISO file. The `test.iso` file is the final ISO file, ready to be
+    copied to a USB-stick, booted in a virtual machine, or for PXE booting.
 
 ## Contributing
 

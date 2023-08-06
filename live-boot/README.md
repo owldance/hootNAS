@@ -14,8 +14,8 @@ and contains `initramfs-tools` hooks for `live-boot`.
 user scenarios as possible. This is a impossible task, and therefore there 
 some customization is nessesary.
 
-ubuntu has made its own fork of `live-boot` called `casper`, which is used
-by canonical for their own ubuntu live distros. However `casper` lacks detailed 
+Canonical has made its own fork of `live-boot` called `casper`, which is used
+for their own ubuntu live distros. However `casper` lacks detailed 
 documentation and is therefore not used in this project.
 
 TODO: `live-boot` does not support zfs, therefore btrfs is used for persitence. 

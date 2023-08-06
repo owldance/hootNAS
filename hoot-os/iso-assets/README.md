@@ -1,4 +1,4 @@
-# hootOS - ubuntu ISO assets for booting hootOS
+# hootOS - Extracting ubuntu ISO assets
 
 The easiest way to create a new BIOS/UEFI bootable ISO, is to use some of the
 assets from the original ubuntu ISO, the assets we need are basically those 
@@ -12,22 +12,18 @@ booting from UEFI firmware.
 - /boot
 - /EFI
 
-The script [extract-assets-from-iso.sh](./extract-iso-assets.sh) will extract
-these assets to the `/hoot-os/iso-assets` directory, it will also create a 
-tarball `iso-assets.tar.gz` of the extracted assets, which is used by the 
-[build-hootiso.sh](../build-hootiso.sh) script to create the new ISO. 
-Extracting the assets is a one-time operation, and there is no need for 
-the devloper to download the original iso file if the tarball is present.
-
-Usage:
+The script [extract-iso-assets.sh](/hoot-os//iso-assets/extract-iso-assets.sh) 
+must be run in the `/hoot-os/iso-assets` directory, where it will extract above 
+assets and create a tarball `iso-assets.tar.gz` of them.
 
 ```bash
-     extract-assets-from-iso.sh <originaliso>
+$ ./extract-iso-assets.sh <originaliso>
 ```
 
- where `originaliso` is the path and name of the original ubuntu iso file 
- that must exist.
+where `originaliso` is the path and name of the original ubuntu iso file 
+that must exist.
 
-Making this iso file from scratch requires some more research. Using 
-[grub-mkrescue](https://www.gnu.org/software/grub/manual/grub/html_node/Making-a-GRUB-bootable-CD_002dROM.html) 
-will produce a BIOS bootable ISO, should be possible to add the MBR.
+The script is used by the [build-hootiso.sh](/hoot-os/build-hootiso.sh) script
+to extract the assets to the `/hoot-os/iso-assets` directory, if 
+the `/hoot-os/iso-assets/boot` directory does not exist.
+

@@ -1,32 +1,30 @@
 # hootNAS - Documentation
 
 1. Development
-    - [Getting started](/documentation/getstarted.md) - Get up and running 
-    reasonably quick.
+    - [Prepare your development environment](/documentation/prepare-development-environment.md) - 
+    If you want to start contribute to the project.
+    - [Developing the webapp](/webapp/README.md) - If you want to work with 
+    frontend JS with Vue 3 in Vite.
+    - [Developing the webapi](/webapi/README.md) - If you want to work with 
+    backend JS with node.js.
+    - [Developing hootOS](/hoot-os/README.md) - If you want to work with 
+    OS development.
+    - [live-boot](/live-boot/README.md) - The things that makes hootOS run 
+    in-memory
+    - [Scripts](/scripts/README.md) - Bash scripts used by hootOS software.
+    - [Database](/db/README.md) - The state management database
 
 2. General concepts
-    - [hootNAS architecture and boot process](/hoot-os/architecture-and-boot-process.md) - A detailed description of the hootOS architecture and boot process.
+    - [Create a hootNAS instance](/documentation/create-hootnas-instance.md) - 
+    Get hootNAS up and running in no time.
+    - [hootNAS architecture and boot process](/hoot-os/architecture-and-boot-process.md) - 
+    A detailed description of the hootOS architecture and boot process.
     - [ZFS concepts](./zfs-concepts.md) - A brief introduction to ZFS concepts 
     and definition of terms.
 
-3. The hootNAS operating system
-    - [hootOS](/hoot-os/README.md) - on which the hootNAS software runs.
-    - [live-boot](/live-boot/README.md) - The things that makes hootNAS run 
-    in-memory
-
-4. hootNas software
-    - [Web server](/webserver/README.md) - The hootNAS webserver, which serves 
-    the hootNAS webapp and api.
-    - [Web app](/webapp/README.md) - The hootNAS webapp, which is the user 
-    interface.
-    - [Web API](/webapi/README.md) - The hootNAS API, which is the interface 
-    to the api.
-    - [Scripts](/scripts/README.md) - Bash scripts used by the
-    hootNAS software.
-    - [Database](/db/README.md) - The state management database
-
-5. Technical blogs
-    - [Create a BIOS/UEFI hybrid ubuntu boot disk](./tech/create-bios-uefi-hybrid-boot-disk.md) - A guide to creating a ubuntu boot disk that can boot both BIOS and UEFI systems.
+3. Technical blogs
+    - [Create a BIOS/UEFI hybrid ubuntu boot disk](./tech/create-bios-uefi-hybrid-boot-disk.md) - 
+    A guide to creating a ubuntu boot disk that can boot both BIOS and UEFI systems.
 
 ## Writing documentation
 
