@@ -10,9 +10,10 @@ A three step buildflow is used to create a hootOS ISO file.
 ### Building the base system
 
 1.  This is a one-time operation, create a working directory e.g. `work` 
-    and `cd` into it. Then run the script 
-    [build-base.sh](/hoot-os/build-baseos.sh) to build the base system.
-    system. 
+    and `cd` into it. 
+    
+    Then run the script [build-base.sh](/hoot-os/build-baseos.sh) to build 
+    the base system. 
 
     ```bash
     $ sudo build-baseos.sh
@@ -45,15 +46,19 @@ A three step buildflow is used to create a hootOS ISO file.
         └── test-build
             ├── hootos
             ├── staging
-            └── tmpo
+            └── source
     ```
-    The script mounts the overlayfs filesystem, and builds the system in the 
-    `hootos` directory. This is done to speed up the build process and save
-    disk space. 
+    The script mounts the host and overlayfs filesystems, and builds the system 
+    in the `hootos` directory. The overlayfs is used to speed up the build 
+    process and save disk space. 
  
     You can create any number of build directories, each build directory will
     have its own `hootos` and `staging` directories, but they will all share
     the same `baseos` directory.
+
+    The `source` directory is used to store the script files that were used 
+    for this particualar build, which sometimes can be very helpful when 
+    debugging the scripts.
 
     overlayfs is basically a COW (copy-on-write) filesystem, `baseos` directory 
     is read-only, all changes are made in the `staging` directory, and `baseos` 
@@ -66,17 +71,16 @@ A three step buildflow is used to create a hootOS ISO file.
     script [edit-hootos.sh](/hoot-os/edit-hootos.sh). 
 
     ```bash
-    $ sudo edit-hootos.sh <command> <hootos-dir>
+    $ sudo edit-hootos.sh mount test-build/hootos
     ```
-    where `hootos-dir` is an existing hootos directory, and `command` can
-    either be `mount` or `umount`. if `mount` is specified, the script will
-    mount the overlayfs and host filesystems to the hootos system in the
-    build directory. you can then `chroot` into the hootos system:
+    when `mount` is specified, the script will mount the overlayfs and host 
+    filesystems to `test-build/hootos`, and you can then `chroot` into the 
+    hootos system:
     ```
-    $ sudo chroot <hootos-dir>
+    $ sudo chroot test-build/hootos
     ```
     ```
-    $ sudo chroot <hootos-dir> /usr/bin/env bash --login
+    $ sudo chroot test-build/hootos /usr/bin/env bash --login
     ```
     The first method you will simply present you with an interactive hootos
     system prompt. The second method will first go through the login process.
@@ -85,6 +89,10 @@ A three step buildflow is used to create a hootOS ISO file.
     are done, type `exit 0` to end the session. Then run this script again 
     with the `umount` command to unmount the filesystems.
 
+    ```bash
+    $ sudo edit-hootos.sh umount test-build/hootos
+    ```
+ 
     ### Building the hootISO
 
 4.  When you are satisfied with the hootOS build, you can build the hootISO by
@@ -102,7 +110,7 @@ A three step buildflow is used to create a hootOS ISO file.
         └── test-build
             ├── hootos
             ├── staging
-            ├── tmpo
+            ├── source
             ├── isoimage
             └── test.iso
     ```

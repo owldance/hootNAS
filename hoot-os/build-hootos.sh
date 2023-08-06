@@ -147,9 +147,12 @@ fi
 [ -z "$HOOT_CITY" ] && HOOT_CITY='Berlin'
 
 # create build directories
-mkdir -p $build_dir/{staging,tmpo,hootos}
+mkdir -p $build_dir/{staging,tmpo,hootos,source}
 # cd into build directory
 cd $build_dir 
+
+# copy this script to source directory for reference
+cp $HOOT_REPO/hoot-os/build-hootos.sh source
 
 # download node.js tarball if it does not exist
 if [ ! -f "node-$nodejs_version-linux-x64.tar.xz" ]; then

@@ -121,6 +121,9 @@ fi
 # cd into build directory
 cd $build_dir
 
+# copy this script to source directory for reference
+cp $HOOT_REPO/hoot-os/build-hootiso.sh source
+
 # mounting overlay filesystem
 echo "mounting overlay filesystem"
 # if directory tmpo does not exist, create it
