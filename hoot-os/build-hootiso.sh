@@ -122,7 +122,7 @@ fi
 cd $build_dir
 
 # copy this script to source directory for reference
-cp $HOOT_REPO/hoot-os/build-hootiso.sh source
+cp $HOOT_REPO/hoot-os/build-hootiso-$new_iso.sh source
 
 # mounting overlay filesystem
 echo "mounting overlay filesystem"
@@ -235,13 +235,13 @@ xorriso -outdev $new_iso \
 -volid $iso_vol_name \
 -volume_date uuid '2023022304134400' \
 -boot_image grub \
-        grub2_mbr="$HOOT_REPO/hoot-os/iso-assets/images/grub2-mbr.img" \
+        grub2_mbr="$HOOT_REPO/hoot-os/iso-assets/images/mbr_code_grub2.img" \
 -boot_image any partition_table=on \
 -boot_image any partition_cyl_align=off \
 -boot_image any partition_offset=16 \
 -boot_image any mbr_force_bootable=on \
 -append_partition 2 28732ac11ff8d211ba4b00a0c93ec93b \
-        $HOOT_REPO/hoot-os/iso-assets/images/efi-partition.img \
+        $HOOT_REPO/hoot-os/iso-assets/images/gpt_part2_efi.img \
 -boot_image any appended_part_as=gpt \
 -boot_image any iso_mbr_part_type=a2a0d0ebe5b9334487c068b6b72699c7 \
 -map isoimage / \

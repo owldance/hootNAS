@@ -66,9 +66,9 @@ function trapper {
     echo
     echo "if required, you can now logon to hootos, review and edit its"
     echo "content by running:"
-    echo "  sudo edit-hootos.sh $build_dir"
+    echo "  sudo edit-hootos.sh mount $build_dir"
     echo "or you create an iso file by running:"
-    echo "  sudo build-hootiso.sh $build_dir"
+    echo "  sudo build-hootiso.sh $build_dir my-filename.iso"
     echo
   fi
   # lazy umount because it's mounted recusively with --rbind

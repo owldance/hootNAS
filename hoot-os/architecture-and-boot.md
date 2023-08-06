@@ -93,7 +93,6 @@ The script [build-hootiso.sh](/hoot-os/build-hootiso.sh) generates following
 files:
 ```
 /boot.catalog 
-/boot/grub/eltorito.img
 /boot/grub/grub.cfg
 /boot/grub/loopback.cfg
 /live/filesystem.manifest

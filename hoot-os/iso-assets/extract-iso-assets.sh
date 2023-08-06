@@ -36,40 +36,21 @@ mkdir boot EFI images
 # extract the files from the ISO
 osirrox -indev $ORIGINAL_ISO \
          -extract boot boot \
-         -extract EFI EFI
+         -extract EFI EFI \
+         -osirrox on \
+         -extract_boot_images images
 # change permissions
-chmod -R 764 EFI
-chmod -R 764 boot
+chmod -R 764 EFI boot images
+# chmod -R 764 boot
+# chmod -R 764 images
 
 # these files are created by build-hootiso.sh so we can remove them
 rm boot/grub/grub.cfg
 rm boot/grub/loopback.cfg
-rm boot/grub/i386-pc/eltorito.img
-
-# extract the MBR from original iso
-# the MBR is 512 bytes large and is located in sector 1 of a disk, 
-# it is a hybrid protective EFI GPT (type 0xEE) MBR.
-# we only need the x86 code, so we copy 432 bytes. all partition stuff will 
-# be updated by xorriso in build-hootiso.sh
-dd if=$original_iso \
-    bs=1 \
-    count=432 \
-    of=images/grub2-mbr.img
-
-# extract the EFI System Partition (ESP) from original iso
-# bs= Sector size (logical) = 512 bytes, i.e. starting after MBR 
-# skip= Start (sector) = 9613460
-# count= Start (sector) - End (sector) + 1 = 10068
-#
-# parse output of gdisk -l command, and calculate skip and count
-skip=$(gdisk -l $original_iso | grep -Eo '2\s+[0-9]+\s+[0-9]+' | awk '{print $2}')
-count=$(gdisk -l $original_iso | grep -Eo '2\s+[0-9]+\s+[0-9]+' | awk '{print $3-$2+1}')
-
-dd if=$original_iso \
-    bs=512 \
-    skip=$skip \
-    count=$count \
-    of=images/efi-partition.img
+rm images/eltorito_catalog.img
+rm images/systemarea.img
+rm images/eltorito_img1_bios.img
+rm images/eltorito_img2_uefi.img
 
 # efi files are usually created when executing grub-install or 
 # grub-update which then uses grub-mkimage to generate the image files. 
