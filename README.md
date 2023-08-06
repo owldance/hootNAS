@@ -60,7 +60,8 @@ The technology stack consists of
 [SAMBA](https://www.samba.org/), 
 [Linux-NFS](https://linux-nfs.org/wiki/index.php/Main_Page) and 
 [Open-iSCSI](https://www.open-iscsi.com/) for serving storage, LDAP and 
-Active Directory clients for authentication, and SQLite for state management.
+Active Directory clients for authentication, and 
+[SQLite](https://www.sqlite.org/index.html) for state management.
 
 ## Where to go from here
 

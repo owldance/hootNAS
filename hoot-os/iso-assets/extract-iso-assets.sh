@@ -50,6 +50,9 @@ rm images/systemarea.img
 rm images/eltorito_img1_bios.img
 rm images/eltorito_img2_uefi.img
 
+# the content of .img files can be viewed with 7z (7-zip)
+# 7z l images/eltorito_img2_uefi.img
+
 # efi files are usually created when executing grub-install or 
 # grub-update which then uses grub-mkimage to generate the image files. 
 
