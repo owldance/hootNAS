@@ -1,16 +1,21 @@
 #!/bin/bash
 #
+# this script will create a new hybrid BIOS/UEFI bootable iso file.
+#
 # usage:
 #
-#     sudo build-hootiso.sh <projectname> <originaliso> <newiso>
+#     sudo build-hootiso.sh <build-dir> <newiso> <nosquash>
 #
-# where <projectname> is an existing project directory, and <originaliso> is 
-# the path and name of the original ubuntu iso file that must exist, 
-# and <newiso> is the path and name of the new iso file to be built, the path 
-# must exist, any existing file will be overwritten. 
+# where <build-dir> is an existing build directory, and <newiso> is the 
+# path and/or name of the new iso file to be built, if no path is given, the 
+# iso will be created in the <build-dir>/<newiso> directory, any existing 
+# file will be overwritten. if a path is given, it must exist.
 #
-# this script will create a new hybrid BIOS/UEFI bootable iso file with the 
-# system in the syshoot folder of the project directory.
+# <nosquash> is an optional command, if specified, no compression of
+# hootos will be done to save time. this is useful if you only have made
+# changes to build-hootiso.sh and want to test them quickly. you must run
+# build-hootiso.sh the first time without nosquash, so that the squashfs
+# file is created."
 #
 # requirements:
 # - squashfs-tools and xorriso packages installed
@@ -30,16 +35,58 @@ disk_uuid_generic='6fa987c2-37b1-43ef-a880-77284b5f614f'
 #
 ################################################################################
 
+# start measuring time
+SECONDS=0
+
+# set bash options
+# -e            exit immediately if any command returns non-zero exit status
+# -o pipefail   use exit status of the last command as exit status
+set -e -o pipefail
+# error handler, called on non-zero exit codes
+function trapper {
+  if [ $? -ne 0 ]; then
+    echo "some error occured"
+  else
+    echo "done.. iso file can be found here:"
+    # check if $new_iso has a path, if so, display path
+        if [ "$(dirname $new_iso)" = "." ]; then
+          echo "$PWD/$new_iso"
+        else
+          echo "$new_iso"
+        fi
+    echo
+  fi
+  # unmount overlay filesystem
+  [ "$(mountpoint -q $PWD/hootos ; echo $?)" = 0 ] && \
+    umount $PWD/hootos
+  # delete tmpo directory
+  [ -d "tmpo" ] && rm -r tmpo
+  # restore original working directory
+  cd $owd
+  # calculate duration
+  duration=$SECONDS
+  duration_min=$(($duration / 60))
+  duration_sec=$(($duration % 60))
+  echo "runtime $duration_min minutes and $duration_sec seconds"
+}
+trap trapper EXIT
+
+# get current working directory
+owd=$PWD
+# get commandline parameters
+build_dir=$1
+new_iso=$2
+
 # check user input
 user_err=0
 if [ "$EUID" -ne 0 ]; then
   echo "you must run this script as root"
   user_err=1
-elif [ ! -d "$1/syshoot" ]; then 
-  echo "hootOS system directory $1/syshoot not found"
+elif [ ! -d "$build_dir/hootos" ]; then 
+  echo "directory $build_dir/hootos not found"
   user_err=1
-elif [ ! -d "$(dirname $2)" ] || [ ! "${2##*.}" = "iso" ]; then
-  echo "$2 is not an existing path, or filename does not end with .iso"
+elif [ ! -d "$(dirname $new_iso)" ] || [ ! "${new_iso##*.}" = "iso" ]; then
+  echo "$new_iso is not an existing path, or filename does not end with .iso"
   user_err=1
 fi
 
@@ -47,11 +94,18 @@ if [ $user_err = 1 ]; then
   echo
   echo "usage:"
   echo
-  echo "    sudo ./build-hootiso.sh <projectname> <newiso>"
+  echo "    sudo ./build-hootiso.sh <build-dir> <newiso> <nosquash>"
   echo
-  echo "where <projectname> is an existing project directory,"
-  echo "and <newiso> is the path and name of the new iso file to be built,"
-  echo "the path must exist, any existing file will be overwritten."
+  echo "where <build-dir> is an existing build directory, and <newiso> is the" 
+  echo "path and/or name of the new iso file to be built, if no path is given, the"
+  echo "iso will be created in the <build-dir>/<newiso> directory, any existing"
+  echo "file will be overwritten. if a path is given, it must exist."
+  echo
+  echo "<nosquash> is an optional command, if specified, no compression of"
+  echo "hootos will be done to save time. this is useful if you only have made"
+  echo "changes to build-hootiso.sh and want to test them quickly. you must run"
+  echo "build-hootiso.sh the first time without nosquash, so that the squashfs"
+  echo "file is created."
   echo
   exit 1
 fi
@@ -64,34 +118,45 @@ if [ ! -d "$HOOT_REPO/hoot-os/iso-assets/boot" ]; then
         -C $HOOT_REPO/hoot-os/iso-assets
 fi
 
-project_dir=$1
-new_iso=$2
+# cd into build directory
+cd $build_dir
 
-# cd into project directory
-cd $project_dir
+# mounting overlay filesystem
+echo "mounting overlay filesystem"
+# if directory tmpo does not exist, create it
+[ ! -d "tmpo" ] && mkdir tmpo
+mount -t overlay overlay \
+    -o lowerdir=../baseos,upperdir=staging,workdir=tmpo \
+    $PWD/hootos
 
 # create and populate the image directory 
 mkdir -p isoimage/{live,install,assets}
 cp -r $HOOT_REPO/hoot-os/iso-assets/boot isoimage
 cp -r $HOOT_REPO/hoot-os/iso-assets/EFI isoimage
-cp syshoot/boot/vmlinuz isoimage/live/vmlinuz
-cp syshoot/boot/initrd.img isoimage/live/initrd
+cp hootos/boot/vmlinuz isoimage/live/vmlinuz
+cp hootos/boot/initrd.img isoimage/live/initrd
 
-# # create manifest
-# chroot syshoot \
-# dpkg-query -W --showformat='${Package} ${Version}\n' | \
-# tee isoimage/live/filesystem.manifest > /dev/null
+# if $3 is not "nosquash", compress system folder
+if [ ! "$3" = "nosquash" ]; then
+  # create manifest
+  echo "creating manifest"
+  chroot hootos \
+  dpkg-query -W --showformat='${Package} ${Version}\n' | \
+  tee isoimage/live/filesystem.manifest > /dev/null
+  
+  # compress (squash) system folder
+  echo "compressing system folder"
+  echo "ignore warnings about unrecognised xattr prefix"
+  if [ -f "isoimage/live/filesystem.squashfs" ]; then 
+      rm isoimage/live/filesystem.squashfs # delete old
+  fi
+  mksquashfs hootos isoimage/live/filesystem.squashfs
 
-# # compress (squash) system folder
-# echo "ignore any warnings about any unrecognised xattr prefix"
-# if [ -f "isoimage/live/filesystem.squashfs" ]; then 
-#     rm isoimage/live/filesystem.squashfs # delete old
-# fi
-# mksquashfs syshoot isoimage/live/filesystem.squashfs
-
-# # calculate filesize
-# printf $(du -sx --block-size=1 syshoot | cut -f1) > \
-# isoimage/live/filesystem.size
+  # calculate filesize
+  echo "calculating filesystem.size"
+  printf $(du -sx --block-size=1 hootos | cut -f1) > \
+  isoimage/live/filesystem.size
+fi
 
 # This section is needed to make the USB Creator work with this custom iso image
 if [ ! -L "isoimage/ubuntu" ]; then
@@ -181,6 +246,7 @@ xorriso -outdev $new_iso \
 -boot_image grub bin_path='/boot/grub/i386-pc/eltorito.img' \
 -boot_image any platform_id=0x00 \
 -boot_image any emul_type=no_emulation \
+-boot_image any load_size=2048 \
 -boot_image any boot_info_table=on \
 -boot_image grub grub2_boot_info=on \
 -boot_image any next \
@@ -188,10 +254,6 @@ xorriso -outdev $new_iso \
 -boot_image any platform_id=0xef \
 -boot_image any emul_type=no_emulation 
 
-# cd out of project dir
-cd ..
 
-echo "done.. iso file can be found here:"
-echo $new_iso
-echo
+
 
