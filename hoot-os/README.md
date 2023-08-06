@@ -85,7 +85,7 @@ A three step buildflow is used to create a hootOS ISO file.
     The first method you will simply present you with an interactive hootos
     system prompt. The second method will first go through the login process.
     
-    In either case you can revirew or make any changes you need, and when you 
+    In either case you can review or make any changes you need, and when you 
     are done, type `exit 0` to end the session. Then run this script again 
     with the `umount` command to unmount the filesystems.
 

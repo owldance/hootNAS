@@ -33,7 +33,7 @@ cd $HOOT_REPO/hoot-os/iso-assets
 # create required directories
 mkdir boot EFI images
 
-# extract the files from the ISO
+# extract assets from the ISO
 osirrox -indev $ORIGINAL_ISO \
          -extract boot boot \
          -extract EFI EFI \
@@ -41,8 +41,6 @@ osirrox -indev $ORIGINAL_ISO \
          -extract_boot_images images
 # change permissions
 chmod -R 764 EFI boot images
-# chmod -R 764 boot
-# chmod -R 764 images
 
 # these files are created by build-hootiso.sh so we can remove them
 rm boot/grub/grub.cfg
