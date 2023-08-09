@@ -227,9 +227,8 @@ fi
 #
 # the following command is a modified version of the original iso recipie,
 # it will create the new iso file, overwrite if it already exists.
-# files created by xorriso 
+# files created by xorriso:
 # /boot.catalog 
-# /boot/grub/i386-pc/eltorito.img (dir must exist)
 xorriso -outdev $new_iso \
 -blank as_needed \
 -volid $iso_vol_name \

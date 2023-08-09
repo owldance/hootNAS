@@ -60,10 +60,13 @@ A three step buildflow is used to create a hootOS ISO file.
     for this particualar build, which sometimes can be very helpful when 
     debugging the scripts.
 
-    overlayfs is basically a COW (copy-on-write) filesystem, `baseos` directory 
-    is read-only, all changes are made in the `staging` directory, and `baseos` 
-    and `staging` are then merged into `hootos`. `hootos` appears empty when 
-    the build is done, to review and edit the contents, see #3 here below.
+    The directory `hootos` appears empty when the build is done, because the 
+    host and overlayfs filesystems are unmounted. to review and edit the 
+    contents, see #3 here below. 
+    
+    overlayfs is a COW (copy-on-write) filesystem, `baseos` directory is 
+    read-only, all changes are made in the `staging` directory, and `baseos` 
+    and `staging` are then merged into `hootos`. 
 
     ### Review and editing the hootOS build
 
@@ -117,6 +120,11 @@ A three step buildflow is used to create a hootOS ISO file.
     The `isoimage` directory contains all the files that are copied into 
     the ISO file. The `test.iso` file is the final ISO file, ready to be
     copied to a USB-stick, booted in a virtual machine, or for PXE booting.
+
+    This script uses 
+    [boot assets from the original ubuntu ISO file](/hoot-os/iso-assets/README.md), 
+    which are included in this repository, you don't need to download anything.
+
 
 ## Contributing
 

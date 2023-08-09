@@ -14,7 +14,8 @@ booting from UEFI firmware.
 
 The script [extract-iso-assets.sh](/hoot-os//iso-assets/extract-iso-assets.sh) 
 must be run in the `/hoot-os/iso-assets` directory, where it will extract above 
-assets and create a tarball `iso-assets.tar.gz` of them.
+assets and create a tarball `iso-assets.tar.gz` of them. If the tarball already
+exists, you don't need to run the script.
 
 ```bash
 $ ./extract-iso-assets.sh <originaliso>
@@ -25,6 +26,7 @@ that must exist.
 
 If the script [build-hootiso.sh](/hoot-os/build-hootiso.sh) can't find a 
 `/hoot-os/iso-assets/boot` directory, it will extract the assets from the
-`iso-assets.tar.gz` tarball, which ships with the hootNAS source code. 
+`iso-assets.tar.gz` tarball, which are included in this repository, you don't 
+need to download anyting.
 
 
