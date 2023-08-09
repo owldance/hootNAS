@@ -53,8 +53,8 @@ A three step buildflow is used to create a hootOS ISO file.
     process and save disk space. 
  
     You can create any number of build directories, each build directory will
-    have its own `hootos` and `staging` directories, but they will all share
-    the same `baseos` directory.
+    have its own `hootos`, `staging` and `source` directories, but they will 
+    all share the same `baseos` directory.
 
     The `source` directory is used to store the script files that were used 
     for this particualar build, which sometimes can be very helpful when 
