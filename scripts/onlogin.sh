@@ -13,16 +13,16 @@
 # auto login and prevent itself from running again.
 
 # check if zpool has been created by user
-zpool import dpool
-if [ $? -eq 0 ]; then
+# zpool import dpool
+#if [ $? -eq 0 ]; then
     # zpool is now imported, `/etc/zfs/zpool.cache` is created and is
     # persistent.
     # remove line 6 in the file /root/.profile to prevent this script
     # from running again.
-    sed -i '6d' /root/.profile
+    #sed -i '6d' /root/.profile
     # remove root auto login from /lib/systemd/system/getty@.service
-    sed -i "s|ExecStart.*|ExecStart=-/sbin/agetty -o '-p -- \\\\u' --noclear %I \$TERM|g" \
-        /lib/systemd/system/getty@.service
-else
-    /root/scripts/network-config.sh
-fi
+    #sed -i "s|ExecStart.*|ExecStart=-/sbin/agetty -o '-p -- \\\\u' --noclear %I \$TERM|g" \
+    #    /lib/systemd/system/getty@.service
+#else
+    #/root/scripts/network-config.sh
+#fi

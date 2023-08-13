@@ -786,12 +786,9 @@ mount_persistence_media ()
 		then
 			mount_opts="ro,noatime"
 		fi
-
-		# if mount -t "${fstype}" -o "${mount_opts}" "${device}" "${backing}" >/dev/null 2>&1
 		live_debug_log "    mount -t '${fstype}' -o '${mount_opts}' '${device}' '${backing}'"
-		mret=$(mount -t "${fstype}" -o "${mount_opts}" "${device}" "${backing}" 2>&1)
-
-		if $mret
+		# if mount -t "${fstype}" -o "${mount_opts}" "${device}" "${backing}" >/dev/null 2>&1
+		if mret=$(mount -t "${fstype}" -o "${mount_opts}" "${device}" "${backing}" 2>&1)
 		then
 			echo ${backing}
 			live_debug_log "9990-misc-helpers.sh: mount_persistence_media END"
@@ -961,7 +958,6 @@ is_gpt_device ()
     [ "$(blkid -s PART_ENTRY_SCHEME -p -o value ${dev} 2>/dev/null)" = "gpt" ]
 }
 
-# probes for partition name
 probe_for_gpt_name ()
 {
 	local overlays dev gpt_dev gpt_name
@@ -978,18 +974,14 @@ probe_for_gpt_name ()
 		# GPT stuff on the backing device
 		gpt_dev=$(get_luks_backing_device "${dev}")
 	fi
-	# if $dev do not end with zd[0-9] check GPT stuff
-	if ! echo "${gpt_dev}" | grep -q "zd[0-9]$"
+
+	if ! is_gpt_device ${gpt_dev}
 	then
-		if ! is_gpt_device ${gpt_dev}
-		then
 		live_debug_log "    ${gpt_dev} is not a GPT device"
 		live_debug_log "9990-misc-helpers.sh: probe_for_gpt_name END"
 		return
-		fi
 	fi
-	
-	# probe for partition name
+
 	gpt_name=$(get_gpt_name ${gpt_dev})
 	for label in ${overlays}
 	do
@@ -1123,20 +1115,6 @@ find_persistence_media ()
 	ret=""
 	live_debug_log "9990-misc-helpers.sh: find_persistence_media BEGIN"
 	live_debug_log "    overlays: ${overlays} white_listed_devices: ${white_listed_devices}"
-
-	echo "<7>live-boot: we need zfs at this point" > /dev/kmsg
-	live_debug_log "    zpool import: $(/sbin/zpool import -f dpool 2>&1)"
-	# zpool import: cannot import 'dpool': pool was previously in use from another system.
-	# Last accessed by hootnas (hostid=644c9657) at Sun Aug 13 15:55:19 2023
-	# The pool can be imported, use 'zpool import -f' to import the pool.
-
-	live_debug_log "    zfs list: $(/sbin/zfs list 2>&1)"
-	live_debug_log "    ls /dev/zvol: $(ls /dev/zvol 2>&1)"
-	live_debug_log "    ls /dev/zd*: $(ls /dev/zd* 2>&1)"
-	live_debug_log "    blkid: $(blkid 2>&1)"
-
-		# move /etc/zfs/zpool.cache to persistence after boot
-
 	#
 	# The devices that are hosting the actual live rootfs should not be
 	# used for persistence storage since otherwise you might mount a
@@ -1198,7 +1176,7 @@ find_persistence_media ()
 			if [ -n "${result}" ]
 			then
 				ret="${ret} ${result}"
-				live_debug_log "    its got filesystem lable: ${ret}"
+				live_debug_log "    its got filesystem lables ${ret}"
 				continue
 			fi
 		fi
@@ -1431,15 +1409,6 @@ link_files ()
 	live_debug_log "9990-misc-helpers.sh: link_files END"
 }
 
-# Function: do_union
-# Description: Mounts a union filesystem using either aufs or overlayfs.
-# Parameters:
-#   $1: directory where the union is mounted
-#   $2: branch where the union changes are stored
-#   $3: space separated list of read-only branches (optional)
-# Returns: None
-# Usage: do_union <unionmountpoint> <unionrw> [<unionro>]
-# Example: do_union /mnt/union /mnt/union_rw /mnt/union_ro1 /mnt/union_ro2
 do_union ()
 {
 	local unionmountpoint unionrw unionro

@@ -36,6 +36,10 @@
 #
 # you can set all the following variables to your liking
 #
+# set the kernel version to be installed, we want to be in control of which 
+# kernel version is installed, so we can detect any problems that may arise
+# from a kernel upgrade.
+kernel_version="6.2.0-26-generic"
 # set the build variable to either 'metal' or 'virtual'
 # build 'metal' system which includes firmware and microcode, 
 # or 'virtual' system which doesn't include firmware and microcode
@@ -268,11 +272,16 @@ dpkg-reconfigure --frontend noninteractive console-setup
 EOF
 
 echo "installing kernels headers and modules"
-# install same kernel version as host
-chroot hootos apt install --yes linux-image-$(uname -r)
-# chroot hootos apt install --yes linux-headers-$(uname -r)
+# check if host kernel version is the same as $kernel_version
+if [ ! "$(uname -r)" = "$kernel_version" ]; then
+  echo "WARNING: host kernel version $(uname -r) is not the same"
+  echo "as $kernel_version which is the kernel version that will be"
+  echo "installed. Beware of any problems that may arise from this."
+fi
+chroot hootos apt install --yes linux-image-$kernel_version
+# chroot hootos apt install --yes linux-headers-$kernel_version
 # zfs module is in linux-modules-extra
-chroot hootos apt install --yes linux-modules-extra-$(uname -r)
+chroot hootos apt install --yes linux-modules-extra-$kernel_version
 
 # if metal, install firmware
 if [ "$build" = "metal" ]; then
@@ -291,8 +300,9 @@ apt install --yes openssh-server
 apt install --yes gdisk 
 apt install --yes dialog
 apt install --yes zfsutils-linux
-apt install --yes btrfs-progs
-apt install --yes live-boot # hook for initramfs-tools
+apt install --yes zfs-initramfs
+# apt install --yes btrfs-progs
+apt install --yes live-boot 
 apt install --yes nfs-kernel-server
 apt install --yes tgt
 apt install --yes samba
@@ -300,7 +310,7 @@ apt install --yes sqlite3
 EOF
 
 # copy in custom live-boot scripts directory if it exists
-custom_live_boot=$HOOT_REPO/live-boot/src/lib/live/boot
+custom_live_boot=$HOOT_REPO/live-boot/src/live-boot/lib/live/boot
 if [ -d "$custom_live_boot" ]; then
   echo "copy in custom live-boot scripts"
   cp -r $custom_live_boot/* hootos/lib/live/boot

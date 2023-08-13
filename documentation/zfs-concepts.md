@@ -107,7 +107,7 @@ described above.
 A dataset is identified by a unique path within the ZFS namespace e.g. 
 `pool/{filesystem,volume,snapshot}` and can be one of the following types:
 
-### file system
+### filesystem
 - Can be mounted within the standard system namespace and behaves like other 
 file systems.
 

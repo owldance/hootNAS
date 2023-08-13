@@ -122,7 +122,7 @@ fi
 cd $build_dir
 
 # copy this script to source directory for reference
-cp $HOOT_REPO/hoot-os/build-hootiso-$new_iso.sh source
+cp $HOOT_REPO/hoot-os/build-hootiso.sh source/build-hootiso-$new_iso.sh
 
 # mounting overlay filesystem
 echo "mounting overlay filesystem"
@@ -183,7 +183,7 @@ set menu_color_normal=white/black
 set menu_color_highlight=black/light-gray
 
 menuentry 'Boot hootNAS' {
-        linux   /live/vmlinuz boot=live noeject persistence
+        linux   /live/vmlinuz boot=live noeject persistence quiet splash
         initrd  /live/initrd 
 }
 grub_platform

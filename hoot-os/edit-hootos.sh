@@ -73,7 +73,7 @@ elif [ ! -d "$hootos_dir/../../baseos" ]; then
   user_err=1
 
 # if 'mount' command, check if hootos directory is empty 
-elif [ "$user_command" = "mount" ] && ["$(ls -A $hootos_dir)" ]; then
+elif [ "$user_command" = "mount" ] && [ "$(ls -A $hootos_dir)" ]; then
   echo "hootos directory is not empty, either it is not a hootos directory, or"
   echo "it is already mounted, if you wish to unmount it, run:"
   echo "edit-hootos.sh umount $hootos_dir"

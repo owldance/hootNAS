@@ -1,4 +1,4 @@
-# Using btrfs RAID1 for live-boot persistence 
+# Adding btrfs RAID1 for live-boot persistence 
 
 Using btrfs RAID1 for live-boot persistence is very convenient, because btrfs 
 supports RAID1 creation and management out-of-the-box, and mounting a btrfs 
@@ -12,9 +12,9 @@ a raid.
 
 The raid configuration is done by `/webapi/blockdevices/initialSetup.mjs`
 
-The only modification done to `live-boot` is to add the command
+The only `live-boot` modification required is to add the command
 `mknod /dev/btrfs-control c 10 234` to `/etc/live/boot/0001-init-vars.sh` 
-which will create a missing udev node that enables the kernel to recognize
+which will create a missing udev node that enables `udev` to recognize
 a btrfs raid.
 
 The following is a description of the debugging process that led to this
