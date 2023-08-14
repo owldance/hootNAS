@@ -1,5 +1,12 @@
 #!/bin/bash
 #
+#
+# do we move /etc/zfs/zpool.cache to persistence storage after boot, now that
+# the zpool is imported in live-boot? or do we just leave it in the
+# live-boot ramdisk?
+#
+
+
 # This script is executed during the first boot when root is automatically
 # logged in and the user is expected to setup the storagepool via the webapp.
 #

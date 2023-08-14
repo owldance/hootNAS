@@ -29,8 +29,10 @@ Debug ()
 
 live_debug_log ()
 {
+	# if $1 starts with 'live-boot:' then also drop a message to the kernel log
+	if [ "${1}" = "${1#live-boot:}" ]; then
+		echo "<7>live-boot: $1" > /dev/kmsg
+	fi
 	echo "${1}" >> /run/live/boot-live.log
-	# write to the kernel log
-	# echo "<7>whatever: A message from early userspace aptxk" > /dev/kmsg
 }
 

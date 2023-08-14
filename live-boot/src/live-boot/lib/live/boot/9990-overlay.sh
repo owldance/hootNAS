@@ -202,15 +202,19 @@ setup_unionfs ()
 
 		
 		# Looking for persistence media
-		local overlay_devices
+		local overlay_devices discovered_media
 		overlay_devices=""
 		live_debug_log "    Looking for persistence media"
 		if [ "${whitelistdev}" != "ignore_all_devices" ]
 		then
-			for media in $(find_persistence_media "${overlays}" "${whitelistdev}")
+			discovered_media=$(find_zvol_persistence "${overlays}" "${whitelistdev}")
+			if [ -z "${discovered_media}" ]; then
+				# original persistence media search
+				discovered_media=$(find_persistence_media "${overlays}" "${whitelistdev}")
+			fi
+			for media in ${discovered_media}
 			do
 				media="$(echo ${media} | tr ":" " ")"
-
 				for overlay_label in ${custom_overlay_label}
 				do
 					case ${media} in

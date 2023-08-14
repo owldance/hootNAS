@@ -1098,6 +1098,35 @@ probe_for_directory_name ()
 	live_debug_log "9990-misc-helpers.sh: probe_for_directory_name END"
 }
 
+find_zvol_persistence ()
+{
+	overlays="${1}"
+	white_listed_devices="${2}"
+	ret=""
+	live_debug_log "9990-misc-helpers.sh: find_zvol_persistence BEGIN"
+	live_debug_log "    overlays: ${overlays} white_listed_devices: ${white_listed_devices}"
+	echo "<7>live-boot: we need zfs at this point" > /dev/kmsg
+	live_debug_log "    modprobe zfs: $(modprobe zfs 2>&1)"
+	# for sake of good order, wait for udev to settle
+	live_debug_log "    udevadm settle: $(udevadm settle 2>&1)"
+	# using '-f' in case pool was previously in use from another system
+	live_debug_log "    zpool import: $(zpool import -f dpool 2>&1)"
+	live_debug_log "    zfs list: $(zfs list 2>&1)"
+	# iterate over all devices in /dev that satisfies zd[0-9]+ and check if 
+	# LABEL equal to one of the labels in ${overlays},
+	# if so, add them to the return value.
+	for zdev in $(ls /dev | sed -n '/^zd[0-9]\+$/p'); do
+		for label in ${overlays}; do
+			if [ "$(blkid -s LABEL -o value /dev/${zdev})" = "${label}" ]; then
+				live_debug_log "    found zvol /dev/${zdev} with label ${label}"
+				ret="${ret} ${label}=/dev/${zdev}"
+			fi
+		done
+	done
+	echo ${ret}
+	live_debug_log "9990-misc-helpers.sh: find_zvol_persistence END"
+}
+
 find_persistence_media ()
 {
 	# Scans devices for overlays, and returns a whitespace
@@ -1123,20 +1152,6 @@ find_persistence_media ()
 	ret=""
 	live_debug_log "9990-misc-helpers.sh: find_persistence_media BEGIN"
 	live_debug_log "    overlays: ${overlays} white_listed_devices: ${white_listed_devices}"
-
-	echo "<7>live-boot: we need zfs at this point" > /dev/kmsg
-	live_debug_log "    zpool import: $(/sbin/zpool import -f dpool 2>&1)"
-	# zpool import: cannot import 'dpool': pool was previously in use from another system.
-	# Last accessed by hootnas (hostid=644c9657) at Sun Aug 13 15:55:19 2023
-	# The pool can be imported, use 'zpool import -f' to import the pool.
-
-	live_debug_log "    zfs list: $(/sbin/zfs list 2>&1)"
-	live_debug_log "    ls /dev/zvol: $(ls /dev/zvol 2>&1)"
-	live_debug_log "    ls /dev/zd*: $(ls /dev/zd* 2>&1)"
-	live_debug_log "    blkid: $(blkid 2>&1)"
-
-		# move /etc/zfs/zpool.cache to persistence after boot
-
 	#
 	# The devices that are hosting the actual live rootfs should not be
 	# used for persistence storage since otherwise you might mount a

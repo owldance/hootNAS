@@ -41,9 +41,9 @@ called, it iterates over all files in:
 /lib/live/boot/????-*
 ```
 It sources the files using the source `.` (dot) command, which executes the 
-commands in the file in the current shell environment. Nothing gets executed 
-during the sourceing of the files, only functions and some variables are 
-defined.
+commands in the file in the current shell environment. Nothing actually gets 
+executed during the sourceing of these files, only functions and some variables 
+are defined.
 
 The files in `/lib/live/boot/` are sourced in alphabetical order, so 
 `0001-init-vars.sh` is sourced first, and `9990-toram-todisk.sh` is 
@@ -53,7 +53,7 @@ sourced last.
 
 With the scripts in `/lib/live/boot/` sourced, something calls the `Live ()` 
 function in `9990-main.sh` it remains unclear where and when exactly it is 
-called, however with one disk and substantial logging added to the scripts (see 
+called, however with one disk and logging added to the scripts (see 
 `/live-boot/src/boot-dir-original-with-debug` directory),
 
 ```

@@ -30,28 +30,29 @@ The zfs kernel module must be loaded
 ```
 $ modprobe zfs
 ```
-The zpool must be imported
+The zpool must be imported using `-f` in case pool was previously in use from 
+another system
 ```
-$ zpool import dpool
+$ zpool import -f dpool
 ```
-In `9990-misc-helpers.sh`  the function `find_persistence_media ()` calls 
+In `9990-overlay.sh` the function  `setup_unionfs ()` calls the function 
+`find_persistence_media ()` in `9990-misc-helpers.sh`, which calls 
 `probe_for_gpt_name ()` which calls `is_gpt_device ()` which checks if a device 
-is a gpt device, zvols fail this check because they do not have a gpt partition.
+is a gpt device. zvols fail this check because they do not have a gpt partition.
 
-The solution is modify the function `find_persistence_media ()`, have it 
-find the zvol with `LABEL` equal to `persistence`, for the hootnas application 
-we expect only one zvol with such label, if found, then skip the rest of the 
-function. This way we also avoid that the function mounts further volumes and 
-zvols to check for persistence files, when using default value (i.e. 
-`file,filesystem` when not set) for kernel parameter `persistence-storage`. 
+The solution is modify the function `setup_unionfs ()` and have it call a new
+function `find_zvol_persistence ()` in `9990-misc-helpers.sh` which will find
+the zvol with `LABEL` equal to `persistence`, This way we also avoid that the 
+function mounts further volumes and zvols to check for persistence files, when 
+using default value (i.e. `file,filesystem` when not set) for kernel parameter 
+`persistence-storage`.  If `find_zvol_persistence ()` search fails, then media 
+search is performed with the original function `find_persistence_media ()`, 
+this way compatibility with the original `live-boot` is maintained.
 
+## clean boot log with `find_zvol_persistence ()` 
 
-
-blkid -s LABEL -o value /dev/zd0 
-
-
-## with zfs zvol
-
+```
+$ cat /run/live/boot-live.log 
 9990-main.sh: Live BEGIN
 9990-cmdline-old.sh: Cmdline_old BEGIN
     live_boot_cmdline: BOOT_IMAGE=/live/vmlinuz boot=live noeject persistence quiet splash
@@ -84,102 +85,17 @@ blkid -s LABEL -o value /dev/zd0
     NOPERSISTENCE=
     Loading USB modules
     Looking for persistence media
-9990-misc-helpers.sh: find_persistence_media BEGIN
+9990-misc-helpers.sh: find_zvol_persistence BEGIN
     overlays: persistence white_listed_devices: 
+    modprobe zfs: 
+    udevadm settle: 
     zpool import: 
     zfs list: NAME            USED  AVAIL     REFER  MOUNTPOINT
-dpool          1.03G  2.59G       96K  /dpool
-dpool/hootnas  1.03G  3.58G     48.9M  -
-    ls /dev/zvol: ls: /dev/zvol: No such file or directory
-    ls /dev/zd*: /dev/zd0
-    blkid: /dev/sr0: BLOCK_SIZE="2048" UUID="2023-02-23-04-13-44-00" LABEL="HOOTNAS_22_04_2" TYPE="iso9660" PTTYPE="PMBR"
-/dev/loop0: TYPE="squashfs"
-/dev/sda1: LABEL="dpool" UUID="9480873778270881037" UUID_SUB="2853057586373339989" BLOCK_SIZE="4096" TYPE="zfs_member" PARTUUID="cdb888d5-26bf-4cb2-9dcc-ce3c73a51121"
-/dev/zd0: LABEL="persistence" UUID="e9b22836-abd9-49be-9e25-1223bbcdd670" BLOCK_SIZE="4096" TYPE="ext4"
-    black_listed_devices:    
-    checking device /dev/sda1
-    checking device /dev/sda1 for GPT partition names or filesystem labels
-    PERSISTENCE_STORAGE: filesystem,file
-    checking for GPT partition names
-9990-misc-helpers.sh: probe_for_gpt_name BEGIN
-    overlays: persistence
-    dev: /dev/sda1
-9990-misc-helpers.sh: probe_for_gpt_name END
-    checking device for filesystem labels
-9990-misc-helpers.sh: probe_for_fs_label BEGIN
-9990-misc-helpers.sh: probe_for_fs_label END
-    checking device for files with matching name on mounted partition
-9990-misc-helpers.sh: probe_for_file_name BEGIN
-    overlays: persistence dev: /dev/sda1
-9990-misc-helpers.sh: mount_persistence_media BEGIN
-    device: /dev/sda1 probe: probe
-    backing: /run/live/persistence/sda1
-    old_backing: 
-    mount -t 'zfs_member' -o 'rw,noatime' '/dev/sda1' '/run/live/persistence/sda1'
-    Failed to mount persistence media /dev/sda1 : mount: mounting /dev/sda1 on /run/live/persistence/sda1 failed: No such device
-9990-misc-helpers.sh: mount_persistence_media END
-    backing: 
-9990-misc-helpers.sh: probe_for_file_name END
-    checking device /dev/sda
-    checking device /dev/sda for GPT partition names or filesystem labels
-    PERSISTENCE_STORAGE: filesystem,file
-    checking for GPT partition names
-9990-misc-helpers.sh: probe_for_gpt_name BEGIN
-    overlays: persistence
-    dev: /dev/sda
-    /dev/sda is not a GPT device
-9990-misc-helpers.sh: probe_for_gpt_name END
-    checking device for filesystem labels
-9990-misc-helpers.sh: probe_for_fs_label BEGIN
-9990-misc-helpers.sh: probe_for_fs_label END
-    checking device for files with matching name on mounted partition
-9990-misc-helpers.sh: probe_for_file_name BEGIN
-    overlays: persistence dev: /dev/sda
-9990-misc-helpers.sh: mount_persistence_media BEGIN
-    device: /dev/sda probe: probe
-    backing: /run/live/persistence/sda
-    old_backing: 
-    mount -t '' -o 'rw,noatime' '/dev/sda' '/run/live/persistence/sda'
-    Failed to mount persistence media /dev/sda : mount: mounting /dev/sda on /run/live/persistence/sda failed: No such device
-9990-misc-helpers.sh: mount_persistence_media END
-    backing: 
-9990-misc-helpers.sh: probe_for_file_name END
-    checking device /dev/sr0
-    checking device /dev/sr0 for GPT partition names or filesystem labels
-    PERSISTENCE_STORAGE: filesystem,file
-    checking for GPT partition names
-9990-misc-helpers.sh: probe_for_gpt_name BEGIN
-    overlays: persistence
-    dev: /dev/sr0
-    /dev/sr0 is not a GPT device
-9990-misc-helpers.sh: probe_for_gpt_name END
-    checking device for filesystem labels
-9990-misc-helpers.sh: probe_for_fs_label BEGIN
-9990-misc-helpers.sh: probe_for_fs_label END
-    checking device for files with matching name on mounted partition
-9990-misc-helpers.sh: probe_for_file_name BEGIN
-    overlays: persistence dev: /dev/sr0
-9990-misc-helpers.sh: mount_persistence_media BEGIN
-    device: /dev/sr0 probe: probe
-    backing: /run/live/persistence/sr0
-    old_backing: /run/live/medium
-9990-misc-helpers.sh: mount_persistence_media END
-    backing: /run/live/persistence/sr0
-    unmounting and removing /run/live/persistence/sr0
-9990-misc-helpers.sh: probe_for_file_name END
-    checking device /dev/zd0
-    checking device /dev/zd0 for GPT partition names or filesystem labels
-    PERSISTENCE_STORAGE: filesystem,file
-    checking for GPT partition names
-9990-misc-helpers.sh: probe_for_gpt_name BEGIN
-    overlays: persistence
-    dev: /dev/zd0
-9990-misc-helpers.sh: probe_for_gpt_name END
-    checking device for filesystem labels
-9990-misc-helpers.sh: probe_for_fs_label BEGIN
-9990-misc-helpers.sh: probe_for_fs_label END
-    its got filesystem lable:  persistence=/dev/zd0
-9990-misc-helpers.sh: find_persistence_media END
+dpool           146M  3.48G       96K  /dpool
+dpool/data       96K  3.48G       96K  /data
+dpool/hootnas   145M  3.48G      145M  -
+    found zvol /dev/zd0 with label persistence
+9990-misc-helpers.sh: find_zvol_persistence END
     overlay_devices:  /dev/zd0
 9990-misc-helpers.sh: do_union BEGIN
     unionmountpoint: /root
@@ -259,14 +175,12 @@ dpool/hootnas  1.03G  3.58G     48.9M  -
 9990-overlay.sh: setup_unionfs END
     mount_images_in_directory /run/live/medium /root 5254001218DE
 9990-fstab.sh: Fstab BEGIN
-    adding overlay / overlay rw 0 0 to /root/etc/fstab
-    tmpfs /tmp tmpfs nosuid,nodev 0 0
 9990-fstab.sh: Fstab END
 9990-netbase.sh: Netbase BEGIN
 9990-netbase.sh: Netbase END
 3020-swap.sh: Swap BEGIN
 3020-swap.sh: Swap END
 9990-main.sh: Live END
-
+```
 
 

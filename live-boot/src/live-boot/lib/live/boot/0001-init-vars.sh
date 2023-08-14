@@ -10,10 +10,4 @@ persistence_list="persistence.conf"
 mkdir -p "${mountpoint}"
 mkdir -p /var/lib/live/boot
 
-# the device node /dev/btrfs-control is missing. this is usually set up by udev
-# echo $(mknod /dev/btrfs-control c 10 234 2>&1) >> /run/live/boot-live.log
-# echo $(modprobe btrfs 2>&1) >> /run/live/boot-live.log
-echo $(modprobe zfs 2>&1) >> /run/live/boot-live.log # apt install --yes zfs-initramfs
-# echo $(btrfs device scan 2>&1) >> /run/live/boot-live.log
-
 
