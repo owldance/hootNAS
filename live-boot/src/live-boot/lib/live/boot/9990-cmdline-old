@@ -6,9 +6,19 @@ Cmdline_old ()
 {
 	live_debug_log "9990-cmdline-old.sh: Cmdline_old BEGIN"
 	live_debug_log "    live_boot_cmdline: ${LIVE_BOOT_CMDLINE}"
+	local tmp_string
 	for _PARAMETER in ${LIVE_BOOT_CMDLINE}
 	do
 		case "${_PARAMETER}" in
+			persistence-zvol=*)
+				tmp_string="${_PARAMETER#persistence-zvol=}"
+				ZPOOL="${tmp_string%%/*}"
+				ZVOL="${tmp_string#*/}"
+				export ZPOOL ZVOL
+				live_debug_log "    ZPOOL: ${ZPOOL}"
+				live_debug_log "    ZVOL: ${ZVOL}"
+				;;
+
 			skipconfig)
 				NOFSTAB="true"
 				NONETWORKING="true"

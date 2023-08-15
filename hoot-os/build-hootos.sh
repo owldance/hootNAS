@@ -289,6 +289,10 @@ if [ "$build" = "metal" ]; then
   chroot hootos apt install --yes intel-microcode
   chroot hootos apt install --yes amd64-microcode
   chroot hootos apt install --yes thermald
+else
+  # just install what's needed for live-boot
+  tar -xzf $HOOT_REPO/hoot-os/assets/i915-firmware.tar.gz \
+      -C hootos/lib/firmware
 fi
 
 echo "installing packages"
@@ -312,8 +316,9 @@ EOF
 # copy in custom live-boot scripts directory if it exists
 custom_live_boot=$HOOT_REPO/live-boot/src/live-boot/lib/live/boot
 if [ -d "$custom_live_boot" ]; then
+  [ -d "hootos/lib/live/boot" ] && rm -r hootos/lib/live/boot
   echo "copy in custom live-boot scripts"
-  cp -r $custom_live_boot/* hootos/lib/live/boot
+  cp -r $custom_live_boot hootos/lib/live
 fi
 
 echo "cleaning up"

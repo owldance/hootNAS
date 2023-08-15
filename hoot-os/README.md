@@ -122,9 +122,8 @@ A three step buildflow is used to create a hootOS ISO file.
     copied to a USB-stick, booted in a virtual machine, or for PXE booting.
 
     This script uses 
-    [boot assets from the original ubuntu ISO file](/hoot-os/iso-assets/README.md), 
+    [boot assets from the original ubuntu ISO file](/hoot-os/assets/README.md), 
     which are included in this repository, you don't need to download anything.
-
 
 ## Contributing
 

@@ -29,7 +29,7 @@ Netbase ()
 		log_end_msg
 		return
 	fi
-
+# in terminal, says /init cant create /root/etc/network/interfaces: no such file or directory
 cat > "${IFFILE}" << EOF
 auto lo
 iface lo inet loopback

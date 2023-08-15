@@ -1,7 +1,7 @@
 # Adding ZFS support for live-boot persistence
 
 ZFS support is possible using ZVOL's (blockdevices in a zpool) with some 
-major changes to the `live-boot` scripts.
+minor changes to the `live-boot` scripts.
 
 As noted previously `live-boot` does not support zfs and zfs filesystems 
 out-of-the-box, because `live-boot` uses `overlayfs` for persistence, and 
@@ -21,7 +21,7 @@ $ apt install --yes zfs-initramfs
 ```
 and the following kernel parameters:
 ```
-linux   /live/vmlinuz boot=live noeject persistence quiet splash
+linux   /live/vmlinuz boot=live noeject persistence skipconfig persistence-zvol=dpool/hootnas quiet splash
 ```
 See [live-boot - System Boot Components](https://manpages.ubuntu.com/manpages/jammy/man7/live-boot.7.html) for more details.
 
@@ -55,8 +55,12 @@ this way compatibility with the original `live-boot` is maintained.
 $ cat /run/live/boot-live.log 
 9990-main.sh: Live BEGIN
 9990-cmdline-old.sh: Cmdline_old BEGIN
-    live_boot_cmdline: BOOT_IMAGE=/live/vmlinuz boot=live noeject persistence quiet splash
+    live_boot_cmdline: BOOT_IMAGE=/live/vmlinuz boot=live persistence noeject skipconfig persistence-zvol=dpool/hootnas quiet splash
     PERSISTENCE: true
+    NOFSTAB: true
+    NONETWORKING: true
+    ZPOOL: dpool
+    ZVOL: hootnas
     NETBOOT=
     MODULE=filesystem
     UNIONTYPE=overlay
@@ -87,13 +91,7 @@ $ cat /run/live/boot-live.log
     Looking for persistence media
 9990-misc-helpers.sh: find_zvol_persistence BEGIN
     overlays: persistence white_listed_devices: 
-    modprobe zfs: 
-    udevadm settle: 
-    zpool import: 
-    zfs list: NAME            USED  AVAIL     REFER  MOUNTPOINT
-dpool           146M  3.48G       96K  /dpool
-dpool/data       96K  3.48G       96K  /data
-dpool/hootnas   145M  3.48G      145M  -
+    live-boot: we need zfs at this point
     found zvol /dev/zd0 with label persistence
 9990-misc-helpers.sh: find_zvol_persistence END
     overlay_devices:  /dev/zd0
@@ -180,6 +178,8 @@ dpool/hootnas   145M  3.48G      145M  -
 9990-netbase.sh: Netbase END
 3020-swap.sh: Swap BEGIN
 3020-swap.sh: Swap END
+9990-misc-helpers.sh: remove_first_boot_stuff BEGIN
+9990-misc-helpers.sh: remove_first_boot_stuff END
 9990-main.sh: Live END
 ```
 

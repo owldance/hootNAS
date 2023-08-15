@@ -30,15 +30,15 @@ function trapper {
       rm -rf baseos
       echo "done"
     fi
-  # if dir baseos exists, display success message
-  elif [ -d "baseos" ]; then
+  # if dir baseos exists and user_error is not 1, sucess
+  elif [ -d "baseos" ] && [ "$user_error" -ne 1 ]; then
     echo
     echo "base system created successfully!"
     echo 
     echo "this new system will be used as a base for the hootos. to build the"
-    echo "baseos, run the following command:"
+    echo "hootos, run the following command:"
     echo 
-    echo "sudo build-baseos.sh <buildname>"
+    echo "sudo build-hootos.sh <buildname>"
     echo
     echo "where <buildname> is a unique name of the build you want to create."
     echo
@@ -51,6 +51,7 @@ function trapper {
 }
 trap trapper EXIT
 
+user_error=0
 # if $1 is not empty, display usage and exit
 if [ ! -z "$1" ]; then
   echo 
@@ -67,16 +68,19 @@ if [ ! -z "$1" ]; then
   echo "- internet connection"
   echo "- must be run as root on a jammy distro"
   echo "- debootstrap package installed."
-  exit 0
+  user_error=1
 fi
 
 # check user input
 if [ "$EUID" -ne 0 ]; then
   echo "you must run this script as root"
-  exit 1
+  user_error=1
 elif [ ! "$(lsb_release -sc)" = "jammy" ]; then
   echo "this script must run on a jammy distro"
-  exit 1
+  user_error=1
+elif [ -d "baseos" ]; then
+  echo "baseos directory already exists"
+  user_error=1
   # check if debootstrap is installed
 elif [ ! -x "$(command -v debootstrap)" ]; then
   echo "debootstrap is not installed"
@@ -84,8 +88,11 @@ elif [ ! -x "$(command -v debootstrap)" ]; then
   echo
   echo "sudo apt install --yes debootstrap"
   echo
-  exit 1
+  user_error=1
 fi
+
+# exit if user error
+[ "$user_error" -eq 1 ] &&  exit 0
 
 echo "creating baseos directory"
 mkdir baseos

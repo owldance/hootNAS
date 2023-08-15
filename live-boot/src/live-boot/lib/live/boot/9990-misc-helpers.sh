@@ -988,7 +988,7 @@ probe_for_gpt_name ()
 		return
 		fi
 	fi
-	
+
 	# probe for partition name
 	gpt_name=$(get_gpt_name ${gpt_dev})
 	for label in ${overlays}
@@ -1098,23 +1098,74 @@ probe_for_directory_name ()
 	live_debug_log "9990-misc-helpers.sh: probe_for_directory_name END"
 }
 
+
+remove_first_boot_stuff ()
+{
+	# TODO: use parameters instead of hardcoded values
+	# ZPOOL: dpool
+    # ZVOL: hootnas
+	live_debug_log "9990-misc-helpers.sh: remove_first_boot_stuff BEGIN"
+	local zmount zdev
+	# we know the persistence zvol by its name, and when the pool has
+	# been imported it will appear as /dev/zvol/dpool/hootnas, this is a
+	# symlink to the device /dev/zd0, which live-boot will mount on both
+	# /run/live/persistence/zd0
+	# due to 'side-effects' in get_custom_mounts(), and (not a side-effect)
+	# /usr/lib/live/mount/persistence/zd0
+	#
+	# read the symlink to get the real zvol device
+	zdev=$(readlink "/dev/zvol/dpool/hootnas" | cut -f3 -d '/')
+	# get the first mountpoint
+	zmount=$(grep -m1 /dev/$zdev /proc/mounts | cut -f2 -d ' ')
+	if echo $zmount | grep persistence; then
+		# if we are here, then this is not the first boot and we can start
+		# removing the first boot stuff.
+		#
+    	# remove line containing 'onlogin' from /root/.profile
+		sed -i '/onlogin/d' ${zmount}/root/rw/.profile
+		# remove root auto login from /lib/systemd/system/getty@.service
+		# ExecStart=-/sbin/agetty -o '-p -- \u' --noclear %I $TERM
+		live_debug_log "	ls -l ${zmount}/usr/rw/lib/systemd/system/getty@.service: $(ls -l ${zmount}/usr/rw/lib/systemd/system/getty@.service)"
+		sed -i "s|ExecStart.*|ExecStart=-/sbin/agetty -o '-p -- \\\\u' --noclear %I \$TERM|g" \
+			${zmount}/usr/rw/lib/systemd/system/getty@.service
+	else
+    	live_debug_log "    /dev/zvol/dpool/hootnas is not mounted"
+	fi
+	live_debug_log "9990-misc-helpers.sh: remove_first_boot_stuff END"
+}
+
+# Find zvol persistence by iterating over devices in /dev that satisfies
+# zd[0-9]+ and check if LABEL equal to one of the labels in ${overlays},
+# if so, add them to the return value.
+#
+# Arguments:
+#   1. overlays: A space-separated list of labels to check for.
+#   2. white_listed_devices: A space-separated list of devices to whitelist.
+#
+# Returns:
+#   A space-separated list of labels and their corresponding devices,
+#   e.g. "label1=/dev/zd0 label2=/dev/zd1".
 find_zvol_persistence ()
 {
+	local ret cmdret
 	overlays="${1}"
 	white_listed_devices="${2}"
 	ret=""
 	live_debug_log "9990-misc-helpers.sh: find_zvol_persistence BEGIN"
 	live_debug_log "    overlays: ${overlays} white_listed_devices: ${white_listed_devices}"
-	echo "<7>live-boot: we need zfs at this point" > /dev/kmsg
-	live_debug_log "    modprobe zfs: $(modprobe zfs 2>&1)"
-	# for sake of good order, wait for udev to settle
-	live_debug_log "    udevadm settle: $(udevadm settle 2>&1)"
+	live_debug_log "live-boot: we need zfs at this point"
+	cmdret=$(modprobe zfs 2>&1)
+	[ -n "$cmdret" ] && live_debug_log "    modprobe zfs: $cmdret"
+	cmdret=$(udevadm trigger 2>&1)
+	[ -n "$cmdret" ] && live_debug_log "    udevadm trigger: $cmdret"
+	cmdret=$(udevadm settle 2>&1)
+	[ -n "$cmdret" ] && live_debug_log "    udevadm settle: $cmdret"
 	# using '-f' in case pool was previously in use from another system
-	live_debug_log "    zpool import: $(zpool import -f dpool 2>&1)"
-	live_debug_log "    zfs list: $(zfs list 2>&1)"
-	# iterate over all devices in /dev that satisfies zd[0-9]+ and check if 
-	# LABEL equal to one of the labels in ${overlays},
-	# if so, add them to the return value.
+	cmdret=$(zpool import -f dpool 2>&1)
+	[ -n "$cmdret" ] && live_debug_log "    zpool import -f dpool: $cmdret"
+	# iterate over devices in /dev that satisfies zd[0-9]+ and check if
+	# LABEL equal to one of the labels in ${overlays}, if so, add them to
+	# the return value.
 	for zdev in $(ls /dev | sed -n '/^zd[0-9]\+$/p'); do
 		for label in ${overlays}; do
 			if [ "$(blkid -s LABEL -o value /dev/${zdev})" = "${label}" ]; then
@@ -1508,20 +1559,20 @@ do_union ()
 	live_debug_log "9990-misc-helpers.sh: do_union END"
 }
 
-# The function stores a list of custom mounts in a file specified by the 
-# `custom_mounts` parameter. The function takes a list of `devices` as input, 
-# which are used to mount the persistence media and read the `persistence.conf` 
+# The function stores a list of custom mounts in a file specified by the
+# `custom_mounts` parameter. The function takes a list of `devices` as input,
+# which are used to mount the persistence media and read the `persistence.conf`
 # file that contains the list of user-defined mount points.
-# The function iterates over each device in the `devices` list and mounts the 
+# The function iterates over each device in the `devices` list and mounts the
 # persistence media using the `mount_persistence_media` function. It then reads
-# the `persistence.conf` file from the mounted media and extracts the list of 
-# user-defined mount points. For each mount point, the function checks if it 
+# the `persistence.conf` file from the mounted media and extracts the list of
+# user-defined mount points. For each mount point, the function checks if it
 # is safe to mount and constructs the mount command with the appropriate options.
 #
-# The function then writes the mount commands to temporary files 
-# `bindings` and `links`, depending on whether the mount point is a bind 
-# mount or a symlink. Finally, the function sorts and concatenates the mount 
-# commands from the temporary files into the `custom_mounts` file, which 
+# The function then writes the mount commands to temporary files
+# `bindings` and `links`, depending on whether the mount point is a bind
+# mount or a symlink. Finally, the function sorts and concatenates the mount
+# commands from the temporary files into the `custom_mounts` file, which
 # contains the complete list of custom mounts.
 get_custom_mounts ()
 {
@@ -1544,12 +1595,12 @@ get_custom_mounts ()
 		device_name="$(basename ${device})"
 		backing=$(mount_persistence_media ${device})
 		live_debug_log "    backing: ${backing}"
-		
+
 		if [ -z "${backing}" ]
 		then
 			continue
 		fi
-		# in 0001-init-vars.sh, persistence_list="persistence.conf" 
+		# in 0001-init-vars.sh, persistence_list="persistence.conf"
 		if [ -r "${backing}/${persistence_list}" ]
 		then
 			include_list="${backing}/${persistence_list}"

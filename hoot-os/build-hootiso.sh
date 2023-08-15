@@ -57,8 +57,10 @@ function trapper {
     echo
   fi
   # unmount overlay filesystem
-  [ "$(mountpoint -q $PWD/hootos ; echo $?)" = 0 ] && \
+  if [ "$(mountpoint -q $PWD/hootos ; echo $?)" = 0 ]; then
+    echo "unmounting overlay filesystem"
     umount $PWD/hootos
+  fi
   # delete tmpo directory
   [ -d "tmpo" ] && rm -r tmpo
   # restore original working directory
@@ -110,12 +112,12 @@ if [ $user_err = 1 ]; then
   exit 1
 fi
 
-# if $HOOT_REPO/hoot-os/iso-assets/boot directory does not exist, 
-# extract assets from tar file $HOOT_REPO/hoot-os/iso-assets/iso-assets.tar.gz
-if [ ! -d "$HOOT_REPO/hoot-os/iso-assets/boot" ]; then
-  echo "extracting iso assets from tar file"
-  tar -xzf $HOOT_REPO/hoot-os/iso-assets/iso-assets.tar.gz \
-        -C $HOOT_REPO/hoot-os/iso-assets
+# if $HOOT_REPO/hoot-os/assets/images directory does not exist, 
+# extract 'images' directory from tarball, this is required for xorriso
+if [ ! -d "$HOOT_REPO/hoot-os/assets/images" ]; then
+  echo "extracting 'images' directory from tar file"
+  tar -xzf $HOOT_REPO/hoot-os/assets/iso-assets.tar.gz \
+        -C $HOOT_REPO/hoot-os/assets images
 fi
 
 # cd into build directory
@@ -132,10 +134,10 @@ mount -t overlay overlay \
     -o lowerdir=../baseos,upperdir=staging,workdir=tmpo \
     $PWD/hootos
 
-# create and populate the image directory 
+# create and populate the isoimage directory 
 mkdir -p isoimage/{live,install,assets}
-cp -r $HOOT_REPO/hoot-os/iso-assets/boot isoimage
-cp -r $HOOT_REPO/hoot-os/iso-assets/EFI isoimage
+tar -xzf $HOOT_REPO/hoot-os/assets/iso-assets.tar.gz -C isoimage boot
+tar -xzf $HOOT_REPO/hoot-os/assets/iso-assets.tar.gz -C isoimage EFI
 cp hootos/boot/vmlinuz isoimage/live/vmlinuz
 cp hootos/boot/initrd.img isoimage/live/initrd
 
@@ -183,7 +185,7 @@ set menu_color_normal=white/black
 set menu_color_highlight=black/light-gray
 
 menuentry 'Boot hootNAS' {
-        linux   /live/vmlinuz boot=live noeject persistence quiet splash
+        linux   /live/vmlinuz boot=live persistence noeject skipconfig persistence-zvol=dpool/hootnas quiet splash
         initrd  /live/initrd 
 }
 grub_platform
@@ -234,13 +236,13 @@ xorriso -outdev $new_iso \
 -volid $iso_vol_name \
 -volume_date uuid '2023022304134400' \
 -boot_image grub \
-        grub2_mbr="$HOOT_REPO/hoot-os/iso-assets/images/mbr_code_grub2.img" \
+        grub2_mbr="$HOOT_REPO/hoot-os/assets/images/mbr_code_grub2.img" \
 -boot_image any partition_table=on \
 -boot_image any partition_cyl_align=off \
 -boot_image any partition_offset=16 \
 -boot_image any mbr_force_bootable=on \
 -append_partition 2 28732ac11ff8d211ba4b00a0c93ec93b \
-        $HOOT_REPO/hoot-os/iso-assets/images/gpt_part2_efi.img \
+        $HOOT_REPO/hoot-os/assets/images/gpt_part2_efi.img \
 -boot_image any appended_part_as=gpt \
 -boot_image any iso_mbr_part_type=a2a0d0ebe5b9334487c068b6b72699c7 \
 -map isoimage / \
@@ -256,6 +258,9 @@ xorriso -outdev $new_iso \
 -boot_image any platform_id=0xef \
 -boot_image any emul_type=no_emulation 
 
-
+# remove $HOOT_REPO/hoot-os/assets/images directory if it exists
+if [ -d "$HOOT_REPO/hoot-os/assets/images" ]; then
+  rm -r $HOOT_REPO/hoot-os/assets/images
+fi
 
 

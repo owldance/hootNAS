@@ -47,7 +47,7 @@ Part   Start (sector)  End (sector) Size       Code   Name
 ### Sector 1
 Sector 1 (not shown above) is 512 byte and contains a hybrid protective 
 EFI GPT (type 0xEE) MBR partition. For convenience the MBR is 
-[extracted from the original ubuntu ISO file](/hoot-os/iso-assets/README.md)
+[extracted from the original ubuntu ISO file](/hoot-os/assets/README.md)
 
 ### Partition 1
 Partition 1 is the ISO9660 filesystem which contains the following files:
@@ -87,7 +87,7 @@ Partition 1 is the ISO9660 filesystem which contains the following files:
 └── ubuntu -> .
 ```
 For convenience the `/boot` and `/EFI` directories are 
-[extracted from the original ubuntu ISO file](/hoot-os/iso-assets/README.md)
+[extracted from the original ubuntu ISO file](/hoot-os/assets/README.md)
 
 The script [build-hootiso.sh](/hoot-os/build-hootiso.sh) generates following 
 files:
@@ -125,7 +125,7 @@ the following files:
 ```
 
 For convenience the entire partition is 
-[extracted from the original ubuntu ISO file](/hoot-os/iso-assets/README.md)
+[extracted from the original ubuntu ISO file](/hoot-os/assets/README.md)
 
 ## The boot process
 After the BIOS/UEFI firmware has located and selected one of the GRUB2 

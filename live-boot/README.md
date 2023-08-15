@@ -31,6 +31,15 @@ apt download <package-name>
 dpkg-deb -R <package-name> <destination-dir>
 ```
 
+## Repacking
+```
+dpkg-deb -b <source-dir> <package-name>
+```
+However, we do not repack the package, but instead simply overwite the 
+installed original files with the modified files from this repository when 
+building hootos.
+
+
 ## Boot sequence
 
 When the package is installed, `/bin/live-boot` is the main script that is 
@@ -53,8 +62,7 @@ sourced last.
 
 With the scripts in `/lib/live/boot/` sourced, something calls the `Live ()` 
 function in `9990-main.sh` it remains unclear where and when exactly it is 
-called, however with one disk and logging added to the scripts (see 
-`/live-boot/src/boot-dir-original-with-debug` directory),
+called, however with one disk and logging added to the scripts, 
 
 ```
 $ lsblk -e7,11 -o KNAME,TYPE,PATH,FSTYPE,MOUNTPOINT,LABEL,PARTLABEL
@@ -64,10 +72,13 @@ sda1  part /dev/sda1 ext4              persistence
 ```
 and the following kernel parameters:
 ```
-linux   /live/vmlinuz boot=live noeject persistence quiet splash
+linux   /live/vmlinuz boot=live noeject persistence skipconfig quiet splash
 ```
-the following occurs:
+where `skipconfig` skips pre-configuration of networking in 
+`9990-netbase.sh: Netbase`, and fstab in `9990-fstab.sh: Fstab`, the parameter 
+`noeject` is due to the known issues described further below,
 
+Then the following occurs when `live-boot` is umodified in its original state:
 ```
 9990-main.sh: Live
     9990-cmdline-old.sh: Cmdline_old
@@ -88,18 +99,42 @@ the following occurs:
         9990-misc-helpers.sh: activate_custom_mounts
             9990-misc-helpers.sh: do_union 
             ...
-    9990-fstab.sh: Fstab
-    9990-netbase.sh: Netbase
     3020-swap.sh: Swap
 ```
 
 ## Coustomization
 
-This will be an ever growing list of customizations.
+This will be an ever growing list of customizations:
 
-1. [Adding live-boot support for ZFS](/live-boot/zfs-support.md)
+1. [Adding logging](/live-boot/logging-support.md)
 
-2. [Adding live-boot support for btrfs RAID](/live-boot/btrfs-raid-support.md)
+2. [Adding support for ZFS](/live-boot/zfs-support.md)
+
+3. [Adding support for btrfs RAID](/live-boot/btrfs-raid-support.md)
+
+4. [Adding new (kernel) commandline parameters](/live-boot/commandline-parameters.md)
+
+## Known issues
+
+During boot and shutdown some cosmetic errors relating to mounting and 
+unmounting are printed to the terminal. When `/bin/eject` is executed by 
+systemd it waits for the user to eject the media and then press enter, this 
+behavior is not desirable when PXE booting.
+
+With the `noeject` kernel parameter specified, hootos will shutdown without 
+ejecting the media.
+
+This is a known issue with systemd and should have been upstream fixed jun 2023 
+with version 254-rc2, see:
+[https://github.com/systemd/systemd/issues/17988](https://github.com/systemd/systemd/issues/17988)
+[https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=986721](https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=986721)
+
+In the meantime, ubuntu is still (aug 2023) using 
+```
+$ systemctl --version
+systemd 249 (249.11-0ubuntu3.9)
+```
+
 
 
 

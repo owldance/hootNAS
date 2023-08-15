@@ -32,29 +32,6 @@ BTRFS error (device sdb1): failed to read the system array: -2
 BTRFS error (device sdb1): open_ctree failed
 ```
 
-### Debugging in early userspace
-
-`live-boot` does accept a commandline parameter `debug`, but it's of very 
-limited use. The scripts use LSB init script functions e.g. 
-`log_warning_msg` and `log_failure_msg`, and it us unclear where the output
-of these functions end up.
-
-There are two alternative options for debugging `live-boot` or any other script:
-
-1. Writing to the kernel log using
-```
-    echo "<7>whatever: A message from early userspace" > /dev/kmsg
-```
-Where the number in the angle brackets is the kernel log level. This produces 
-perfectly formatted kernel log messages with a timestamp, that are available 
-in `journald` and `dmesg`.
-
-2. Writing to a file in the `/run` directory, e.g. `/run/live` 
-```
-    echo "A message from early userspace" >> /run/live/boot-live.log
-```
-This allows for large amounts of data to be logged.
-
 ### Problem identification
 
 According to the `live-boot` source code, when the `/bin/live-boot` script 
@@ -63,8 +40,8 @@ directory. One of theses scripts `/etc/live/boot/9990-misc-helpers.sh`
 contains a function `mount_persistence_media` which is responsible for 
 mounting the persistence device(s).
 
-Adding appropriate logging to the `mount` commands in the function 
-`mount_persistence_media`, it produces the error message 
+[Adding appropriate logging](/live-boot/logging-support.md) to the `mount` 
+commands in the function `mount_persistence_media`, it produces the error message 
 `mount: mounting /dev/sda1 on /run/live/persistence/sda1 failed: Invalid argument` 
 which is not very helpful. However it only occurs on devices that are part of a 
 btrfs raid, and not on btrfs devices that are not part of a raid, which means 
@@ -88,8 +65,3 @@ Adding the command `mknod /dev/btrfs-control c 10 234` to
 the btrfs raid can now be mounted in early userspace. The command 
 `btrfs device scan` is no longer needed, and can be removed.
 
-References:
-
-[https://elinux.org/Debugging_by_printing](https://elinux.org/Debugging_by_printing)
-
-[https://lists.ubuntu.com/archives/foundations-bugs/2021-November/463901.html](https://lists.ubuntu.com/archives/foundations-bugs/2021-November/463901.html)

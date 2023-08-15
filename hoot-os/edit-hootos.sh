@@ -15,8 +15,6 @@
 # in either case you can revirew or make any changes you need,"
 # and when you are done, type 'exit 0' to end the session. Then run this"
 # script again with the 'umount' command to unmount the filesystems."
-#
-#
 set -e -o pipefail
 function trapper {
   # if error is 2, then user input was incorrect, print usage
