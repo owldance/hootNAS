@@ -56,6 +56,10 @@ function trapper {
         fi
     echo
   fi
+  # remove $HOOT_REPO/hoot-os/assets/images directory if it exists
+  if [ -d "$HOOT_REPO/hoot-os/assets/images" ]; then
+    rm -r $HOOT_REPO/hoot-os/assets/images
+  fi
   # unmount overlay filesystem
   if [ "$(mountpoint -q $PWD/hootos ; echo $?)" = 0 ]; then
     echo "unmounting overlay filesystem"
@@ -185,7 +189,7 @@ set menu_color_normal=white/black
 set menu_color_highlight=black/light-gray
 
 menuentry 'Boot hootNAS' {
-        linux   /live/vmlinuz boot=live persistence noeject skipconfig persistence-zvol=dpool/hootnas quiet splash
+        linux   /live/vmlinuz boot=live persistence noeject skipconfig quiet splash
         initrd  /live/initrd 
 }
 grub_platform
@@ -258,9 +262,6 @@ xorriso -outdev $new_iso \
 -boot_image any platform_id=0xef \
 -boot_image any emul_type=no_emulation 
 
-# remove $HOOT_REPO/hoot-os/assets/images directory if it exists
-if [ -d "$HOOT_REPO/hoot-os/assets/images" ]; then
-  rm -r $HOOT_REPO/hoot-os/assets/images
-fi
+
 
 

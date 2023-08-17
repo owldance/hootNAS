@@ -202,17 +202,12 @@ setup_unionfs ()
 
 		
 		# Looking for persistence media
-		local overlay_devices discovered_media
+		local overlay_devices #discovered_media
 		overlay_devices=""
 		live_debug_log "    Looking for persistence media"
 		if [ "${whitelistdev}" != "ignore_all_devices" ]
 		then
-			discovered_media=$(find_zvol_persistence "${overlays}" "${whitelistdev}")
-			if [ -z "${discovered_media}" ]; then
-				# original persistence media search
-				discovered_media=$(find_persistence_media "${overlays}" "${whitelistdev}")
-			fi
-			for media in ${discovered_media}
+			for media in $(find_zvol_persistence "${overlays}" "${whitelistdev}")
 			do
 				media="$(echo ${media} | tr ":" " ")"
 				for overlay_label in ${custom_overlay_label}
@@ -348,6 +343,8 @@ setup_unionfs ()
 
 		# Gather information about custom mounts from devies detected as overlays
 		get_custom_mounts ${custom_mounts} ${overlay_devices}
+		live_debug_log "    copying custom_mounts.list to /run/live for your debuging pleasure"
+		cp ${custom_mounts} "/run/live"
 
 		[ -n "${LIVE_BOOT_DEBUG}" ] && cp ${custom_mounts} "/run/live/persistence"
 
@@ -355,6 +352,7 @@ setup_unionfs ()
 		local used_overlays
 		used_overlays=""
 		used_overlays=$(activate_custom_mounts ${custom_mounts})
+		live_debug_log "    used_overlays: $used_overlays"
 		rm -f ${custom_mounts}
 
 		# Close unused overlays (e.g. due to missing $persistence_list)

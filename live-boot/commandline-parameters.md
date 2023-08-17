@@ -17,7 +17,10 @@ The parameters are parsed in `9990-cmdline-old` in the function
 Adding a new parameter requires the appropriate modifications to the function
 `Cmdline_old ()` in `9990-cmdline-old.sh`.
 
-## Adding `persistence-zvol` parameter
+### Example: `persistence-zvol` parameter
+
+This is not implemented, but is an example of how to add a new
+parameter.
 
 ```
     persistence-zvol=*)

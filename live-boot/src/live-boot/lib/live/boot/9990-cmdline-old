@@ -10,15 +10,6 @@ Cmdline_old ()
 	for _PARAMETER in ${LIVE_BOOT_CMDLINE}
 	do
 		case "${_PARAMETER}" in
-			persistence-zvol=*)
-				tmp_string="${_PARAMETER#persistence-zvol=}"
-				ZPOOL="${tmp_string%%/*}"
-				ZVOL="${tmp_string#*/}"
-				export ZPOOL ZVOL
-				live_debug_log "    ZPOOL: ${ZPOOL}"
-				live_debug_log "    ZVOL: ${ZVOL}"
-				;;
-
 			skipconfig)
 				NOFSTAB="true"
 				NONETWORKING="true"
@@ -263,7 +254,7 @@ Cmdline_old ()
 				live_debug_log "    NOPERSISTENCE: ${NOPERSISTENCE}"
 				;;
 
-			quickusbmodules)
+			quickusbmodules) #remove
 				QUICKUSBMODULES="true"
 				export QUICKUSBMODULES
 				live_debug_log "    QUICKUSBMODULES: ${QUICKUSBMODULES}"
@@ -294,7 +285,7 @@ Cmdline_old ()
 				export EXPOSED_ROOT
 				;;
 
-			plainroot)
+			plainroot) # remove
 				PLAIN_ROOT="true"
 				export PLAIN_ROOT
 				live_debug_log "    PLAIN_ROOT: ${PLAIN_ROOT}"
@@ -312,7 +303,7 @@ Cmdline_old ()
 				live_debug_log "    ROOT: ${ROOT}"
 				;;
 
-			union=*)
+			union=*) # remove
 				UNIONTYPE="${_PARAMETER#union=}"
 				export UNIONTYPE
 				live_debug_log "    UNIONTYPE: ${UNIONTYPE}"

@@ -10,9 +10,9 @@ In addition to `live-boot`, a backend for the initrd generation is required,
 such as `live-boot-initramfs-tools`, which is a wrapper around initramfs-tools 
 and contains `initramfs-tools` hooks for `live-boot`.
 
-`live-boot` aims to be distribution agnostic, and tries to support as many 
-user scenarios as possible. This is a impossible task, and therefore there 
-some customization is nessesary.
+The ambition of `live-boot` is to be distribution agnostic and support as many 
+use cases as possible. This is indeed an ambitious task, which is reflected 
+in the code. 
 
 Canonical has made its own fork of `live-boot` called `casper`, which is used
 for their own ubuntu live distros. However `casper` lacks detailed 
@@ -102,9 +102,11 @@ Then the following occurs when `live-boot` is umodified in its original state:
     3020-swap.sh: Swap
 ```
 
-## Coustomization
+## Customization
 
-This will be an ever growing list of customizations:
+As the hootnas project only has one use case, it is an ideal opportunity to 
+prune out redundant functionality from the original codebase, making it easier 
+to read and understand. 
 
 1. [Adding logging](/live-boot/logging-support.md)
 
@@ -113,6 +115,40 @@ This will be an ever growing list of customizations:
 3. [Adding support for btrfs RAID](/live-boot/btrfs-raid-support.md)
 
 4. [Adding new (kernel) commandline parameters](/live-boot/commandline-parameters.md)
+
+### Things up for removal
+1. `find_persistence_media ()` and any functions it calls (check that) in 
+    `9990-misc-helpers.sh` is not needed anymore, as 
+    `find_zvol_persistence ()` is called directly from 
+    `9990-overlay.sh: setup_unionfs ()` instead and it does not call any other 
+    functions. 
+2.  the not PLAIN_ROOT starting line 30 of `9990-overlay.sh: setup_unionfs ()` 
+    is not needed, as the `PLAIN_ROOT` variable is not used.
+3.  the functions `9990-netbase.sh: Netbase` and `9990-fstab.sh: Fstab` are 
+    not needed, as the kernel parameters `skipconfig` is used. We have 
+    no need for networking in early userspace.
+4.  The function `9990-misc-helpers.sh: get_custom_mounts` 
+    calls `9990-misc-helpers.sh: mount_persistence_media` reads 
+    `persistence.conf` parses and verifies it, then creates file 
+    `custom_mounts.list` which is then sourced by 
+    `9990-misc-helpers.sh: activate_custom_mounts`.
+
+    Instead of this, we can simply source `persistence.conf` in 
+    `custom_mounts.list` format:
+    ```
+    custom_mounts: /tmp/custom_mounts.list
+    /dev/zd0 /run/live/persistence/zd0/etc /root/etc union
+    /dev/zd0 /run/live/persistence/zd0/home /root/home union
+    /dev/zd0 /run/live/persistence/zd0/opt /root/opt union
+    /dev/zd0 /run/live/persistence/zd0/root /root/root union
+    /dev/zd0 /run/live/persistence/zd0/srv /root/srv union
+    /dev/zd0 /run/live/persistence/zd0/usr /root/usr union
+    /dev/zd0 /run/live/persistence/zd0/var /root/var union
+    ```
+    directly from 
+    `9990-misc-helpers.sh: activate_custom_mounts` and do without the
+    `9990-misc-helpers.sh: get_custom_mounts` function. We don't need parsing
+    and verification of user input, as we have only one use case.
 
 ## Known issues
 

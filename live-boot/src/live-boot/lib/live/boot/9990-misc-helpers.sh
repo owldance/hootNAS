@@ -1098,42 +1098,6 @@ probe_for_directory_name ()
 	live_debug_log "9990-misc-helpers.sh: probe_for_directory_name END"
 }
 
-
-remove_first_boot_stuff ()
-{
-	# TODO: use parameters instead of hardcoded values
-	# ZPOOL: dpool
-    # ZVOL: hootnas
-	live_debug_log "9990-misc-helpers.sh: remove_first_boot_stuff BEGIN"
-	local zmount zdev
-	# we know the persistence zvol by its name, and when the pool has
-	# been imported it will appear as /dev/zvol/dpool/hootnas, this is a
-	# symlink to the device /dev/zd0, which live-boot will mount on both
-	# /run/live/persistence/zd0
-	# due to 'side-effects' in get_custom_mounts(), and (not a side-effect)
-	# /usr/lib/live/mount/persistence/zd0
-	#
-	# read the symlink to get the real zvol device
-	zdev=$(readlink "/dev/zvol/dpool/hootnas" | cut -f3 -d '/')
-	# get the first mountpoint
-	zmount=$(grep -m1 /dev/$zdev /proc/mounts | cut -f2 -d ' ')
-	if echo $zmount | grep persistence; then
-		# if we are here, then this is not the first boot and we can start
-		# removing the first boot stuff.
-		#
-    	# remove line containing 'onlogin' from /root/.profile
-		sed -i '/onlogin/d' ${zmount}/root/rw/.profile
-		# remove root auto login from /lib/systemd/system/getty@.service
-		# ExecStart=-/sbin/agetty -o '-p -- \u' --noclear %I $TERM
-		live_debug_log "	ls -l ${zmount}/usr/rw/lib/systemd/system/getty@.service: $(ls -l ${zmount}/usr/rw/lib/systemd/system/getty@.service)"
-		sed -i "s|ExecStart.*|ExecStart=-/sbin/agetty -o '-p -- \\\\u' --noclear %I \$TERM|g" \
-			${zmount}/usr/rw/lib/systemd/system/getty@.service
-	else
-    	live_debug_log "    /dev/zvol/dpool/hootnas is not mounted"
-	fi
-	live_debug_log "9990-misc-helpers.sh: remove_first_boot_stuff END"
-}
-
 # Find zvol persistence by iterating over devices in /dev that satisfies
 # zd[0-9]+ and check if LABEL equal to one of the labels in ${overlays},
 # if so, add them to the return value.

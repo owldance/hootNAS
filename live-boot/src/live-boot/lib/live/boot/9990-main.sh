@@ -225,8 +225,9 @@ Live ()
 	[ -w "${rootmnt}/var/log/" ] && mkdir -p "${rootmnt}/var/log/live" && ( \
 				cp boot.log "${rootmnt}/var/log/live" 2>/dev/null; \
 				cp fsck.log "${rootmnt}/var/log/live" 2>/dev/null )
-	# if there is persistence, it should be mounted by now, so we can now 
-	# remove the first boot stuff
-	remove_first_boot_stuff
+
+	live_debug_log "    copying mounts to /run/live for your debuging pleasure"
+	cp /proc/mounts /run/live
+	
 	live_debug_log "9990-main.sh: Live END"
 }
