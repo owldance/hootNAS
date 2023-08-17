@@ -59,17 +59,23 @@ get_backing_device ()
 
 mount_images_in_directory ()
 {
+	live_debug_log "9990-misc-helpers.sh: mount_images_in_directory BEGIN"
 	directory="${1}"
 	rootmnt="${2}"
 	mac="${3}"
+	live_debug_log "    directory: ${directory}"
+	live_debug_log "    rootmnt: ${rootmnt}"
+	live_debug_log "    mac: ${mac}"
 
 	if is_live_path "${directory}"
 	then
 		[ -n "${mac}" ] && adddirectory="${directory}/${LIVE_MEDIA_PATH}/${mac}"
 		setup_unionfs "${directory}/${LIVE_MEDIA_PATH}" "${rootmnt}" "${adddirectory}"
 	else
+		live_debug_log "    No supported filesystem images found at /${LIVE_MEDIA_PATH}."
 		panic "No supported filesystem images found at /${LIVE_MEDIA_PATH}."
 	fi
+	live_debug_log "9990-misc-helpers.sh: mount_images_in_directory END"
 }
 
 is_nice_device ()
@@ -848,6 +854,7 @@ close_persistence_media ()
 	live_debug_log "    close_persistence_media: ${device} : ${backing}"
 	if [ -d "${backing}" ]
 	then
+		live_debug_log "	umount ${backing}"
 		umount "${backing}" >/dev/null 2>&1
 		rmdir "${backing}" >/dev/null 2>&1
 	fi
@@ -1098,17 +1105,19 @@ probe_for_directory_name ()
 	live_debug_log "9990-misc-helpers.sh: probe_for_directory_name END"
 }
 
-# Find zvol persistence by iterating over devices in /dev that satisfies
-# zd[0-9]+ and check if LABEL equal to one of the labels in ${overlays},
-# if so, add them to the return value.
+# Find the first zvol persistence by iterating over devices in /dev that 
+# satisfies zd[0-9]+ and checks if LABEL equal to one of the labels 
+# in ${overlays}, if so, it picks the first one and returns it.
 #
 # Arguments:
 #   1. overlays: A space-separated list of labels to check for.
 #   2. white_listed_devices: A space-separated list of devices to whitelist.
+#      It's not used for anything here, but it is used by 
+#      `find_persistence_media ()` which searches for media everywhere.
 #
 # Returns:
-#   A space-separated list of labels and their corresponding devices,
-#   e.g. "label1=/dev/zd0 label2=/dev/zd1".
+#   One label and its corresponding devices in this format:
+#   "label1=/dev/zd0 label2=/dev/zd1"
 find_zvol_persistence ()
 {
 	local ret cmdret
@@ -1116,7 +1125,8 @@ find_zvol_persistence ()
 	white_listed_devices="${2}"
 	ret=""
 	live_debug_log "9990-misc-helpers.sh: find_zvol_persistence BEGIN"
-	live_debug_log "    overlays: ${overlays} white_listed_devices: ${white_listed_devices}"
+	live_debug_log "    overlays: ${overlays}"
+	live_debug_log "    white_listed_devices: ${white_listed_devices}"
 	live_debug_log "live-boot: we need zfs at this point"
 	cmdret=$(modprobe zfs 2>&1)
 	[ -n "$cmdret" ] && live_debug_log "    modprobe zfs: $cmdret"
@@ -1128,13 +1138,14 @@ find_zvol_persistence ()
 	cmdret=$(zpool import -f dpool 2>&1)
 	[ -n "$cmdret" ] && live_debug_log "    zpool import -f dpool: $cmdret"
 	# iterate over devices in /dev that satisfies zd[0-9]+ and check if
-	# LABEL equal to one of the labels in ${overlays}, if so, add them to
-	# the return value.
+	# LABEL equal to one of the labels in ${overlays}, if so, add it to
+	# the return value and break the loop.
 	for zdev in $(ls /dev | sed -n '/^zd[0-9]\+$/p'); do
 		for label in ${overlays}; do
 			if [ "$(blkid -s LABEL -o value /dev/${zdev})" = "${label}" ]; then
 				live_debug_log "    found zvol /dev/${zdev} with label ${label}"
 				ret="${ret} ${label}=/dev/${zdev}"
+				break
 			fi
 		done
 	done

@@ -4,7 +4,6 @@
 
 setup_unionfs ()
 {
-	
 	image_directory="${1}"
 	rootmnt="${2}"
 	addimage_directory="${3}"
@@ -197,12 +196,12 @@ setup_unionfs ()
 
 		if is_in_comma_sep_list overlay ${PERSISTENCE_METHOD}
 		then
-			overlays="${custom_overlay_label}"
+		overlays="${custom_overlay_label}"
 		fi
 
 		
 		# Looking for persistence media
-		local overlay_devices #discovered_media
+		local overlay_devices 
 		overlay_devices=""
 		live_debug_log "    Looking for persistence media"
 		if [ "${whitelistdev}" != "ignore_all_devices" ]
@@ -239,7 +238,7 @@ setup_unionfs ()
 		then
 			nfs_cow_opts="${nfs_cow_opts},nocto,ro"
 		fi
-
+		
 		mac="$(get_mac)"
 		if [ -n "${mac}" ]
 		then
@@ -256,14 +255,14 @@ setup_unionfs ()
 		cow_fstype="tmpfs"
 		cow_mountopt="rw,noatime,mode=755,size=${OVERLAY_SIZE:-50%}"
 	fi
-
+	
 	if [ -n "${PERSISTENCE_READONLY}" ] && [ "${cowdevice}" != "tmpfs" ]
 	then
 		mount -t tmpfs -o rw,noatime,mode=755,size=${OVERLAY_SIZE:-50%} tmpfs "/run/live/overlay"
 		root_backing="/run/live/persistence/$(basename ${cowdevice})-root"
 		mkdir -p ${root_backing}
 	else
-		root_backing="/run/live/overlay"
+	root_backing="/run/live/overlay"
 	fi
 
 	if [ "${cow_fstype}" = "nfs" ]
@@ -273,8 +272,8 @@ setup_unionfs ()
 		nfsmount ${nfs_cow_opts} ${cowdevice} ${root_backing} || \
 			panic "Can not mount ${cowdevice} (n: ${cow_fstype}) on ${root_backing}"
 	else
-		mount -t ${cow_fstype} -o ${cow_mountopt} ${cowdevice} ${root_backing} || \
-			panic "Can not mount ${cowdevice} (o: ${cow_fstype}) on ${root_backing}"
+	mount -t ${cow_fstype} -o ${cow_mountopt} ${cowdevice} ${root_backing} || \
+		panic "Can not mount ${cowdevice} (o: ${cow_fstype}) on ${root_backing}"
 	fi
 
 	rootfscount=$(echo ${rootfslist} |wc -w)
@@ -298,7 +297,7 @@ setup_unionfs ()
 			cow_dirs=''
 		fi
 	else
-		cow_dirs="/"
+	cow_dirs="/"
 	fi
 
 	for dir in ${cow_dirs}; do
@@ -324,12 +323,14 @@ setup_unionfs ()
 	# Correct the permission of /tmp:
 	if [ -d "${rootmnt}/tmp" ]
 	then
+		live_debug_log "    Correcting the permission of /tmp"
 		chmod 1777 "${rootmnt}"/tmp
 	fi
 
 	# Correct the permission of /var/tmp:
 	if [ -d "${rootmnt}/var/tmp" ]
 	then
+		live_debug_log "    Correcting the permission of /var/tmp"
 		chmod 1777 "${rootmnt}"/var/tmp
 	fi
 

@@ -6,7 +6,6 @@ Cmdline_old ()
 {
 	live_debug_log "9990-cmdline-old.sh: Cmdline_old BEGIN"
 	live_debug_log "    live_boot_cmdline: ${LIVE_BOOT_CMDLINE}"
-	local tmp_string
 	for _PARAMETER in ${LIVE_BOOT_CMDLINE}
 	do
 		case "${_PARAMETER}" in
@@ -254,7 +253,7 @@ Cmdline_old ()
 				live_debug_log "    NOPERSISTENCE: ${NOPERSISTENCE}"
 				;;
 
-			quickusbmodules) #remove
+			quickusbmodules)
 				QUICKUSBMODULES="true"
 				export QUICKUSBMODULES
 				live_debug_log "    QUICKUSBMODULES: ${QUICKUSBMODULES}"
@@ -285,7 +284,7 @@ Cmdline_old ()
 				export EXPOSED_ROOT
 				;;
 
-			plainroot) # remove
+			plainroot)
 				PLAIN_ROOT="true"
 				export PLAIN_ROOT
 				live_debug_log "    PLAIN_ROOT: ${PLAIN_ROOT}"
@@ -303,7 +302,7 @@ Cmdline_old ()
 				live_debug_log "    ROOT: ${ROOT}"
 				;;
 
-			union=*) # remove
+			union=*)
 				UNIONTYPE="${_PARAMETER#union=}"
 				export UNIONTYPE
 				live_debug_log "    UNIONTYPE: ${UNIONTYPE}"

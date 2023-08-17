@@ -41,6 +41,7 @@ Live ()
 		then
 			livefs_root="${mountpoint?}"
 		else
+			live_debug_log "    Unable to find a live file system on the network"
 			panic "Unable to find a live file system on the network"
 		fi
 	else
@@ -50,12 +51,15 @@ Live ()
 		elif [ -n "${PLAIN_ROOT}" ] && [ -n "${ROOT}" ]
 		then
 			# Do a local boot from hd
+			live_debug_log "    Do a local boot from hd"
 			livefs_root=${ROOT}
 		else
 			if [ -x /usr/bin/memdiskfind ]
 			then
+				live_debug_log "    looking for a memdisk"
 				if MEMDISK=$(/usr/bin/memdiskfind)
 				then
+					live_debug_log "    We found a memdisk"
 					# We found a memdisk, set up phram
 					# Sometimes "modprobe phram" can not successfully create /dev/mtd0.
 				        # Have to try several times.
@@ -81,7 +85,7 @@ Live ()
 			while [ "$i" -lt 60 ]
 			do
 				livefs_root=$(find_livefs ${i})
-
+				live_debug_log "    Scan local devices for the image:$livefs_root"
 				if [ -n "${livefs_root}" ]
 				then
 					break
@@ -95,6 +99,7 @@ Live ()
 
 	if [ -z "${livefs_root}" ]
 	then
+		live_debug_log "    Unable to find a medium containing a live file system"
 		panic "Unable to find a medium containing a live file system"
 	fi
 
@@ -121,11 +126,13 @@ Live ()
 	# rid of it when running from RAM
 	if [ -n "$FROMISO" ] && [ "${TORAM}" ]
 	then
+		live_debug_log "    1 FINDISO:$FINDISO TORAM:$TORAM"
 		losetup -d /dev/loop0
 
 		if is_mountpoint /run/live/fromiso
 		then
 			umount /run/live/fromiso
+			live_debug_log "    umount /run/live/findiso"
 			rmdir --ignore-fail-on-non-empty /run/live/fromiso \
 				>/dev/null 2>&1 || true
 		fi
@@ -138,16 +145,16 @@ Live ()
 	if [ -n "${MODULETORAMFILE}" ] || [ -n "${PLAIN_ROOT}" ]
 	then
 		setup_unionfs "${livefs_root}" "${rootmnt?}"
-		live_debug_log "    setup_unionfs ${livefs_root} ${rootmnt?}"
 	else
 		mac="$(get_mac)"
+		# remove hyphens from mac address
 		mac="$(echo "${mac}" | sed 's/-//g')"
 		mount_images_in_directory "${livefs_root}" "${rootmnt}" "${mac}"
-		live_debug_log "    mount_images_in_directory ${livefs_root} ${rootmnt} ${mac}"
 	fi
 
 	if [ -n "${ROOT_PID}" ]
 	then
+		live_debug_log "    ROOT_PID:$ROOT_PID"
 		echo "${ROOT_PID}" > "${rootmnt}"/lib/live/root.pid
 	fi
 
@@ -164,6 +171,7 @@ Live ()
 	# rid of it when running from RAM
 	if [ -n "$FINDISO" ] && [ "${TORAM}" ]
 	then
+		live_debug_log "    2 FINDISO:$FINDISO TORAM:$TORAM"
 		losetup -d /dev/loop0
 
 		if is_mountpoint /run/live/findiso
@@ -177,6 +185,7 @@ Live ()
 
 	if [ -f /etc/hostname ] && ! grep -E -q -v '^[[:space:]]*(#|$)' "${rootmnt}/etc/hostname"
 	then
+		live_debug_log "    Copying /etc/hostname to ${rootmnt}/etc/hostname"
 		log_begin_msg "Copying /etc/hostname to ${rootmnt}/etc/hostname"
 		cp -v /etc/hostname "${rootmnt}/etc/hostname"
 		log_end_msg
@@ -184,6 +193,7 @@ Live ()
 
 	if [ -f /etc/hosts ] && ! grep -E -q -v '^[[:space:]]*(#|$|(127.0.0.1|::1|ff02::[12])[[:space:]])' "${rootmnt}/etc/hosts"
 	then
+		live_debug_log "    Copying /etc/hosts to ${rootmnt}/etc/hosts"
 		log_begin_msg "Copying /etc/hosts to ${rootmnt}/etc/hosts"
 		cp -v /etc/hosts "${rootmnt}/etc/hosts"
 		log_end_msg
@@ -197,6 +207,7 @@ Live ()
 	fi
 	if [ -f /etc/resolv.conf ] && ! grep -E -q -v '^[[:space:]]*(#|$)' "${DNSFILE}"
 	then
+		live_debug_log "    Copying /etc/resolv.conf to ${DNSFILE}"
 		log_begin_msg "Copying /etc/resolv.conf to ${DNSFILE}"
 		cp -v /etc/resolv.conf "${DNSFILE}"
 		log_end_msg
@@ -204,6 +215,7 @@ Live ()
 
 	if ! [ -d "/lib/live/boot" ]
 	then
+		live_debug_log "    A wrong rootfs was mounted."
 		panic "A wrong rootfs was mounted."
 	fi
 
@@ -211,8 +223,8 @@ Live ()
 	# this includes code that checks what is mounted on /lib/live/mount/*
 	# (eg: grep /lib/live /proc/mount)
 	# XXX: to be removed before the bullseye release
-	mkdir -p "${rootmnt}/lib/live/mount"
-	mount --rbind /run/live "${rootmnt}/lib/live/mount"
+	# mkdir -p "${rootmnt}/lib/live/mount"
+	# mount --rbind /run/live "${rootmnt}/lib/live/mount"
 
 	Fstab
 	Netbase
