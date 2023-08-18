@@ -5,6 +5,7 @@ hoot-os/assets/EFI
 hoot-os/assets/images
 hoot-os/assets/i915
 live-boot/src/boot-dir-original-with-debug
+live-boot/src/live-boot/lib/live/old
 notes
 
 # compiled output
