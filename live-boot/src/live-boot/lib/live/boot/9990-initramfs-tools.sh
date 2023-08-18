@@ -27,6 +27,7 @@ maybe_break()
 # Override panic from scripts/functions
 panic()
 {
+	live_debug_log "PANIC: $@"
 	for _PARAMETER in ${LIVE_BOOT_CMDLINE}
 	do
 		case "${_PARAMETER}" in

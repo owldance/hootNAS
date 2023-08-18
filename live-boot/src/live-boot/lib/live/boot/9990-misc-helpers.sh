@@ -284,6 +284,7 @@ check_dev ()
 
 find_livefs ()
 {
+	live_debug_log "9990-misc-helpers.sh: find_livefs BEGIN"
 	timeout="${1}"
 
 	# don't start autodetection before timeout has expired
@@ -291,11 +292,13 @@ find_livefs ()
 	then
 		if [ "${timeout}" -lt "${LIVE_MEDIA_TIMEOUT}" ]
 		then
+			live_debug_log "9990-misc-helpers.sh: find_livefs END"
 			return 1
 		fi
 	fi
 
 	# first look at the one specified in the command line
+	live_debug_log "first look at the one specified in the command line LIVE_MEDIA: ${LIVE_MEDIA}"
 	case "${LIVE_MEDIA}" in
 		removable-usb)
 			for sysblock in $(removable_usb_dev "sys")
@@ -304,10 +307,12 @@ find_livefs ()
 				do
 					if check_dev "${dev}"
 					then
+						live_debug_log "9990-misc-helpers.sh: find_livefs END"
 						return 0
 					fi
 				done
 			done
+			live_debug_log "9990-misc-helpers.sh: find_livefs END"
 			return 1
 			;;
 
@@ -318,10 +323,12 @@ find_livefs ()
 				do
 					if check_dev "${dev}"
 					then
+						live_debug_log "9990-misc-helpers.sh: find_livefs END"
 						return 0
 					fi
 				done
 			done
+			live_debug_log "9990-misc-helpers.sh: find_livefs END"
 			return 1
 			;;
 
@@ -330,6 +337,7 @@ find_livefs ()
 			then
 				if check_dev "null" "${LIVE_MEDIA}" "skip_uuid_check"
 				then
+					live_debug_log "9990-misc-helpers.sh: find_livefs END"
 					return 0
 				fi
 			fi
@@ -339,7 +347,7 @@ find_livefs ()
 	# or do the scan of block devices
 	# prefer removable devices over non-removable devices, so scan them first
 	devices_to_scan="$(removable_dev 'sys') $(non_removable_dev 'sys')"
-
+	live_debug_log "or do the scan of devices_to_scan: ${devices_to_scan}"
 	for sysblock in $devices_to_scan
 	do
 		devname=$(sys2dev "${sysblock}")
@@ -350,6 +358,7 @@ find_livefs ()
 		then
 			if check_dev "null" "${devname}"
 			then
+				live_debug_log "9990-misc-helpers.sh: find_livefs END"
 				return 0
 			fi
 		elif is_nice_device "${sysblock}"
@@ -358,6 +367,7 @@ find_livefs ()
 			do
 				if check_dev "${dev}"
 				then
+					live_debug_log "9990-misc-helpers.sh: find_livefs END"
 					return 0
 				fi
 			done
@@ -372,11 +382,13 @@ find_livefs ()
 			# an image directly on it.  It's hopefully
 			# live-boot, so take it and run with it.
 			ln -s "${devname}" "${devname}.${fstype}"
+			live_debug_log "${devname}.${fstype} has an image on it"
+			live_debug_log "9990-misc-helpers.sh: find_livefs END"
 			echo "${devname}.${fstype}"
 			return 0
 		fi
 	done
-
+	live_debug_log "9990-misc-helpers.sh: find_livefs END"
 	return 1
 }
 
@@ -1183,7 +1195,8 @@ find_persistence_media ()
 	white_listed_devices="${2}"
 	ret=""
 	live_debug_log "9990-misc-helpers.sh: find_persistence_media BEGIN"
-	live_debug_log "overlays: ${overlays} white_listed_devices: ${white_listed_devices}"
+	live_debug_log "overlays: ${overlays}"
+	live_debug_log "white_listed_devices: ${white_listed_devices}"
 	#
 	# The devices that are hosting the actual live rootfs should not be
 	# used for persistence storage since otherwise you might mount a

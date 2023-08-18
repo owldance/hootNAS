@@ -258,6 +258,7 @@ setup_unionfs ()
 	
 	if [ -n "${PERSISTENCE_READONLY}" ] && [ "${cowdevice}" != "tmpfs" ]
 	then
+		live_debug_log "mount -t tmpfs -o rw,noatime,mode=755,size=${OVERLAY_SIZE:-50%} tmpfs /run/live/overlay"
 		mount -t tmpfs -o rw,noatime,mode=755,size=${OVERLAY_SIZE:-50%} tmpfs "/run/live/overlay"
 		root_backing="/run/live/persistence/$(basename ${cowdevice})-root"
 		mkdir -p ${root_backing}
@@ -269,9 +270,11 @@ setup_unionfs ()
 	then
 		log_begin_msg \
 			"Trying nfsmount ${nfs_cow_opts} ${cowdevice} ${root_backing}"
+		live_debug_log "nfsmount ${nfs_cow_opts} ${cowdevice} ${root_backing}"
 		nfsmount ${nfs_cow_opts} ${cowdevice} ${root_backing} || \
 			panic "Can not mount ${cowdevice} (n: ${cow_fstype}) on ${root_backing}"
 	else
+	live_debug_log "mount -t ${cow_fstype} -o ${cow_mountopt} ${cowdevice} ${root_backing}"
 	mount -t ${cow_fstype} -o ${cow_mountopt} ${cowdevice} ${root_backing} || \
 		panic "Can not mount ${cowdevice} (o: ${cow_fstype}) on ${root_backing}"
 	fi
@@ -286,7 +289,7 @@ setup_unionfs ()
 		then
 			panic "only one RO file system supported with exposedroot: ${rootfslist}"
 		fi
-
+		live_debug_log "mount -o bind ${rootfs} ${rootmnt}"
 		mount -o bind ${rootfs} ${rootmnt} || \
 			panic "bind mount of ${rootfs} failed"
 
@@ -308,8 +311,10 @@ setup_unionfs ()
 		mkdir -p ${cow_dir}
 		if [ -n "${PERSISTENCE_READONLY}" ] && [ "${cowdevice}" != "tmpfs" ]
 		then
+			live_debug_log "do_union ${unionmountpoint} ${cow_dir} ${root_backing} ${rootfs_dir}"
 			do_union ${unionmountpoint} ${cow_dir} ${root_backing} ${rootfs_dir}
 		else
+			live_debug_log "do_union ${unionmountpoint} ${cow_dir} ${rootfs_dir}"
 			do_union ${unionmountpoint} ${cow_dir} ${rootfs_dir}
 		fi || panic "mount ${UNIONTYPE} on ${unionmountpoint} failed with option ${unionmountopts}"
 	done

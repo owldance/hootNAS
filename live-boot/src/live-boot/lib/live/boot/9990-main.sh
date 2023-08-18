@@ -41,7 +41,6 @@ Live ()
 		then
 			livefs_root="${mountpoint?}"
 		else
-			live_debug_log "Unable to find a live file system on the network"
 			panic "Unable to find a live file system on the network"
 		fi
 	else
@@ -51,8 +50,8 @@ Live ()
 		elif [ -n "${PLAIN_ROOT}" ] && [ -n "${ROOT}" ]
 		then
 			# Do a local boot from hd
-			live_debug_log "Do a local boot from hd"
 			livefs_root=${ROOT}
+			live_debug_log "Do a local boot from hd livefs_root:$livefs_root"
 		else
 			if [ -x /usr/bin/memdiskfind ]
 			then
@@ -85,7 +84,7 @@ Live ()
 			while [ "$i" -lt 60 ]
 			do
 				livefs_root=$(find_livefs ${i})
-				live_debug_log "Scan local devices for the image:$livefs_root"
+				live_debug_log "livefs_root:$livefs_root"
 				if [ -n "${livefs_root}" ]
 				then
 					break
@@ -99,7 +98,6 @@ Live ()
 
 	if [ -z "${livefs_root}" ]
 	then
-		live_debug_log "Unable to find a medium containing a live file system"
 		panic "Unable to find a medium containing a live file system"
 	fi
 
@@ -215,7 +213,6 @@ Live ()
 
 	if ! [ -d "/lib/live/boot" ]
 	then
-		live_debug_log "A wrong rootfs was mounted."
 		panic "A wrong rootfs was mounted."
 	fi
 
