@@ -60,6 +60,14 @@ function trapper {
   if [ -d "$HOOT_REPO/hoot-os/assets/images" ]; then
     rm -r $HOOT_REPO/hoot-os/assets/images
   fi
+  # check if /tmp/hootos/boot is not empty, if so, move it back to hootos
+  if [ "$(ls -A /tmp/hootos/boot)" ]; then
+    mv /tmp/hootos/boot hootos
+  fi
+  # delete /tmp/hootos directory if exists
+  if [ -d "/tmp/hootos" ]; then
+    rm -r /tmp/hootos
+  fi
   # unmount overlay filesystem
   if [ "$(mountpoint -q $PWD/hootos ; echo $?)" = 0 ]; then
     echo "unmounting overlay filesystem"
@@ -116,13 +124,11 @@ if [ $user_err = 1 ]; then
   exit 1
 fi
 
-# if $HOOT_REPO/hoot-os/assets/images directory does not exist, 
 # extract 'images' directory from tarball, this is required for xorriso
-if [ ! -d "$HOOT_REPO/hoot-os/assets/images" ]; then
-  echo "extracting 'images' directory from tar file"
-  tar -xzf $HOOT_REPO/hoot-os/assets/iso-assets.tar.gz \
-        -C $HOOT_REPO/hoot-os/assets images
-fi
+echo "extracting 'images' directory from tar file"
+mkdir -p /tmp/hootos/assets
+tar -xzf $HOOT_REPO/hoot-os/assets/iso-assets.tar.gz \
+      -C /tmp/hootos/assets images
 
 # cd into build directory
 cd $build_dir
@@ -147,6 +153,11 @@ cp hootos/boot/initrd.img isoimage/live/initrd
 
 # if $3 is not "nosquash", compress system folder
 if [ ! "$3" = "nosquash" ]; then
+  # move hootos/boot to /tmp/hootos
+  # so it will not be included in filesystem.squashfs, this will save 
+  # +100MB of ram when booting the iso with 'toram' commandline option.
+  mkdir -p /tmp/hootos
+  mv hootos/boot /tmp/hootos
   # create manifest
   echo "creating manifest"
   chroot hootos \
@@ -240,13 +251,13 @@ xorriso -outdev $new_iso \
 -volid $iso_vol_name \
 -volume_date uuid '2023022304134400' \
 -boot_image grub \
-        grub2_mbr="$HOOT_REPO/hoot-os/assets/images/mbr_code_grub2.img" \
+        grub2_mbr="/tmp/hootos/assets/images/mbr_code_grub2.img" \
 -boot_image any partition_table=on \
 -boot_image any partition_cyl_align=off \
 -boot_image any partition_offset=16 \
 -boot_image any mbr_force_bootable=on \
 -append_partition 2 28732ac11ff8d211ba4b00a0c93ec93b \
-        $HOOT_REPO/hoot-os/assets/images/gpt_part2_efi.img \
+        /tmp/hootos/assets/images/gpt_part2_efi.img \
 -boot_image any appended_part_as=gpt \
 -boot_image any iso_mbr_part_type=a2a0d0ebe5b9334487c068b6b72699c7 \
 -map isoimage / \
@@ -265,3 +276,14 @@ xorriso -outdev $new_iso \
 
 
 
+# ls -l hootos/boot/
+# total 110028
+# -rw-r--r-- 1 root root   275465 Aug 18 18:45 config-6.2.0-26-generic
+# drwxr-xr-x 2 root root     4096 Aug 18 18:45 grub
+# lrwxrwxrwx 1 root root       27 Aug 18 18:45 initrd.img -> initrd.img-6.2.0-26-generic
+# -rw-r--r-- 1 root root 90647382 Aug 18 18:45 initrd.img-6.2.0-26-generic
+# lrwxrwxrwx 1 root root       27 Aug 18 18:45 initrd.img.old -> initrd.img-6.2.0-26-generic
+# -rw------- 1 root root  7963097 Aug 18 18:45 System.map-6.2.0-26-generic
+# lrwxrwxrwx 1 root root       24 Aug 18 18:45 vmlinuz -> vmlinuz-6.2.0-26-generic
+# -rw------- 1 root root 13770312 Aug 18 18:45 vmlinuz-6.2.0-26-generic
+# lrwxrwxrwx 1 root root       24 Aug 18 18:45 vmlinuz.old -> vmlinuz-6.2.0-26-generic

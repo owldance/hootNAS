@@ -91,7 +91,11 @@ $ cat /run/live/boot-live.log
     9990-select-eth-device.sh: Select_eth_device BEGIN
         Not a net boot : nothing to do
     9990-select-eth-device.sh: Select_eth_device END
-    Scan local devices for the image:/run/live/medium
+    9990-misc-helpers.sh: find_livefs BEGIN
+        first look at the one specified in the command line LIVE_MEDIA: 
+        or do the scan of devices_to_scan:  /sys/block/sr0  /sys/block/sda
+    9990-misc-helpers.sh: find_livefs END
+    livefs_root:/run/live/medium
     0030-verify-checksums: Verify_checksums BEGIN
     0030-verify-checksums: Verify_checksums END
     9990-misc-helpers.sh: mount_images_in_directory BEGIN
@@ -120,6 +124,8 @@ $ cat /run/live/boot-live.log
                 found zvol /dev/zd0 with label persistence
             9990-misc-helpers.sh: find_zvol_persistence END
             overlay_devices:  /dev/zd0
+            mount -t tmpfs -o rw,noatime,mode=755,size=50% tmpfs /run/live/overlay
+            do_union /root /run/live/overlay /run/live/rootfs/filesystem.squashfs/
             9990-misc-helpers.sh: do_union BEGIN
                 unionmountpoint: /root
                 unionrw: /run/live/overlay
@@ -208,5 +214,4 @@ $ cat /run/live/boot-live.log
     3020-swap.sh: Swap END
     copying mounts to /run/live for your debuging pleasure
 9990-main.sh: Live END
-
 ```

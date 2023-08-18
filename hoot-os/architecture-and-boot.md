@@ -153,6 +153,26 @@ dashboard.
 The service `hootsrv.service` (see [build-hootos.sh](/hoot-os/build-hootos.sh)) 
 starts the webserver target [webserver.mjs](/webserver/webserver.mjs).
 
+
+toram
+root@hootnas:~# free -h
+               total        used        free      shared  buff/cache   available
+Mem:           3,8Gi       233Mi       2,7Gi       659Mi       869Mi       2,7Gi
+Swap:             0B          0B          0B
+
+toram without vmlinuz and initrd and their symlinks in /boot
+root@hootnas:~# free -h
+               total        used        free      shared  buff/cache   available
+Mem:           3,8Gi       226Mi       2,8Gi       561Mi       774Mi       2,8Gi
+Swap:             0B          0B          0B
+
+without vmlinuz and initrd and their symlinks in /boot
+root@hootnas:~# free -h
+               total        used        free      shared  buff/cache   available
+Mem:           3,8Gi       218Mi       3,3Gi       2,0Mi       300Mi       3,4Gi
+Swap:             0B          0B          0B
+
+
 ## Contributing
 
 All contributors are required to sign the hootNAS Contributor License Agreement 
