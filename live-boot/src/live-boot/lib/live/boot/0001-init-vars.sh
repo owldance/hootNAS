@@ -10,4 +10,5 @@ persistence_list="persistence.conf"
 mkdir -p "${mountpoint}"
 mkdir -p /var/lib/live/boot
 
-
+# used by live_debug_log
+indent_tracker=0

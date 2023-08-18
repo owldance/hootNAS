@@ -9,6 +9,11 @@ Cmdline_old ()
 	for _PARAMETER in ${LIVE_BOOT_CMDLINE}
 	do
 		case "${_PARAMETER}" in
+			persistence-zfs=*)
+				PERSISTZFS="${_PARAMETER#persistence-zfs=}"
+				live_debug_log "    PERSISTZFS: ${PERSISTZFS}"
+				export PERSISTZFS
+				;;
 			skipconfig)
 				NOFSTAB="true"
 				NONETWORKING="true"

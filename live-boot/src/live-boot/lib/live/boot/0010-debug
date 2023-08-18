@@ -29,13 +29,39 @@ Debug ()
 
 live_debug_log ()
 {
+	local indentation
+	# indent_tracker is defined in 0001-init-vars.sh
+	# set the indentation level, one indent is 4 spaces
+	case "$1" in
+		*BEGIN)
+			indentation=$(printf "%$(($indent_tracker * 4))s" "")
+			;;
+		*END)
+			indentation=$(printf "%$((($indent_tracker - 1) * 4))s" "")
+			;;
+		*)
+			indentation=$(printf "%$((($indent_tracker + 1) * 4))s" "")
+			;;
+	esac
+
 	# if $1 starts with 'live-boot:' then also drop a message to the kernel log
 	if echo "$1" | grep -q "^live-boot:"; then
     	echo "<7>live-boot: $1" > /dev/kmsg
-		echo "    ${1}" >> /run/live/boot-live.log
+		echo "${indentation}${1}" >> /run/live/boot-live.log
 	else
-    	echo "${1}" >> /run/live/boot-live.log	
+    	echo "${indentation}${1}" >> /run/live/boot-live.log	
 	fi
+
+	# set the indentation level
+	case "${1}" in
+		*END)
+			indent_tracker=$((indent_tracker-1))
+			;;
+		*BEGIN)
+			indent_tracker=$((indent_tracker+1))
+			;;
+	esac
+
 
 	
 }

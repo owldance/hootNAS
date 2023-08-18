@@ -1120,14 +1120,17 @@ probe_for_directory_name ()
 #   "label1=/dev/zd0 label2=/dev/zd1"
 find_zvol_persistence ()
 {
-	local ret cmdret
+	local ret cmdret zpoolname datasetname zdev label
 	overlays="${1}"
 	white_listed_devices="${2}"
 	ret=""
 	live_debug_log "9990-misc-helpers.sh: find_zvol_persistence BEGIN"
 	live_debug_log "    overlays: ${overlays}"
 	live_debug_log "    white_listed_devices: ${white_listed_devices}"
-	live_debug_log "live-boot: we need zfs at this point"
+	zpoolname="$(echo "$PERSISTZFS" | grep -o '^[^/]*')"
+	datasetname="$(echo "$PERSISTZFS" | grep -o '[^/]*$')"
+	live_debug_log "    zpoolname: ${zpoolname}"
+	live_debug_log "    datasetname: ${datasetname}"
 	cmdret=$(modprobe zfs 2>&1)
 	[ -n "$cmdret" ] && live_debug_log "    modprobe zfs: $cmdret"
 	cmdret=$(udevadm trigger 2>&1)
@@ -1135,8 +1138,8 @@ find_zvol_persistence ()
 	cmdret=$(udevadm settle 2>&1)
 	[ -n "$cmdret" ] && live_debug_log "    udevadm settle: $cmdret"
 	# using '-f' in case pool was previously in use from another system
-	cmdret=$(zpool import -f dpool 2>&1)
-	[ -n "$cmdret" ] && live_debug_log "    zpool import -f dpool: $cmdret"
+	cmdret=$(zpool import -f $zpoolname 2>&1)
+	[ -n "$cmdret" ] && live_debug_log "    zpool import -f $zpoolname: $cmdret"
 	# iterate over devices in /dev that satisfies zd[0-9]+ and check if
 	# LABEL equal to one of the labels in ${overlays}, if so, add it to
 	# the return value and break the loop.
@@ -1148,6 +1151,9 @@ find_zvol_persistence ()
 				break
 			fi
 		done
+		# if ret is not empty, we have found a zvol persistence, so we
+		# can break the loop.
+		[ -n "${ret}" ] && break
 	done
 	echo ${ret}
 	live_debug_log "9990-misc-helpers.sh: find_zvol_persistence END"

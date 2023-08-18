@@ -189,7 +189,7 @@ set menu_color_normal=white/black
 set menu_color_highlight=black/light-gray
 
 menuentry 'Boot hootNAS' {
-        linux   /live/vmlinuz boot=live persistence noeject skipconfig quiet splash
+        linux   /live/vmlinuz boot=live persistence persistence-zfs=dpool/sysstate noeject skipconfig quiet splash
         initrd  /live/initrd 
 }
 grub_platform
@@ -211,7 +211,7 @@ EOF
 # filesystem rather than an actual physical CD. 
 cat <<EOF > isoimage/boot/grub/loopback.cfg
 menuentry 'Boot hootNAS' {
-        linux   /live/vmlinuz boot=live noeject persistent iso-scan/filename=\${iso_path} quiet splash 
+        linux   /live/vmlinuz boot=live noeject persistence persistence-zfs=dpool/sysstate iso-scan/filename=\${iso_path} quiet splash 
         initrd  /live/initrd
 }
 EOF

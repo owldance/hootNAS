@@ -15,7 +15,8 @@ use cases as possible. This is indeed an ambitious task, which is reflected
 in the code. 
 
 Canonical has made its own fork of `live-boot` called `casper`, which is used
-for their own ubuntu live distros. However `casper` lacks detailed 
+for their own ubuntu live distros integrated with `ubiquity`, `subiquity` 
+installers and the `plymouth` package. However `casper` lacks detailed 
 documentation and is therefore not used in this project.
 
 `live-boot` does not support zfs and zfs filesystems out-of-the-box, because 

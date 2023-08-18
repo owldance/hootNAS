@@ -6,7 +6,7 @@
 limited use. The scripts use LSB init script functions e.g. 
 `log_warning_msg` and `log_failure_msg`, and the ouput of these end up on the 
 terminal, but not in the kernel log or in `journald`. Filming the terminal 
-screen while loads of debug messages whiz by with a camera is not a viable 
+screen while loads of debug messages whizzing by with a camera is not a viable 
 option.
 
 There are two alternative options for debugging `live-boot` or any other 

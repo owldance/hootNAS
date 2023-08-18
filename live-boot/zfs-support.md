@@ -44,17 +44,29 @@ calls `probe_for_gpt_name ()` which calls `is_gpt_device ()` which checks if a
 device is a gpt device. zvols fail this check because they do not have a gpt 
 partition.
 
-The solution is modify the function `setup_unionfs ()` and subsitute 
-`find_persistence_media ()` with a new function `find_zvol_persistence ()` 
-which will find a zvol with filesystem `LABEL` equal to `persistence`. Because 
-of this substitution, the following (kernel) commandline parameters have 
-no effect:
+The solution is make a drop-in replacement for `find_persistence_media ()` 
+with a new function `find_zvol_persistence ()` which will search for a zvol 
+with filesystem `LABEL` equal to `persistence`. Because of this replacement, 
+the following (kernel) commandline parameters have no effect:
 ``` 
 persistence-media
 persistence-method
 persistence-path
 persistence-storage
 persistence-label
+```
+Instead a new parameter `persistence-zfs` is introduced, which is the name of
+the dataset to use for persistence, in this format: `<poolname>/<datasetname>`
+```
+persistence-zfs=dpool/backingstore
+```
+The parameter is added to the commandline parsing in `9990-cmdline-old.sh`:
+```bash
+persistence-zfs=*)
+    PERSISTZFS="${_PARAMETER#persistence-zfs=}"
+    live_debug_log "    PERSISTZFS: ${PERSISTZFS}"
+    EXPORT PERSISTZFS
+    ;;
 ```
 ## clean boot log with `find_zvol_persistence ()` 
 
