@@ -41,7 +41,7 @@ Read_only ()
 		fi
 
 		echo -n "live-boot: Setting ${_DEVICE} read-only..." > /dev/console
-		live_debug_log "    Setting ${_DEVICE} read-only..."
+		live_debug_log "Setting ${_DEVICE} read-only..."
 
 		blockdev --setro ${_DEVICE}
 		_RETURN="${?}"
@@ -49,12 +49,12 @@ Read_only ()
 		case "${_RETURN}" in
 			0)
 				echo " done, use 'blockdev --setrw ${_DEVICE}' to set read-write." > /dev/console
-				live_debug_log "    done, use 'blockdev --setrw ${_DEVICE}' to set read-write."
+				live_debug_log "done, use 'blockdev --setrw ${_DEVICE}' to set read-write."
 				;;
 
 			*)
 				echo " failed." > /dev/console
-				live_debug_log "    failed."
+				live_debug_log "failed."
 				;;
 		esac
 	done
@@ -62,7 +62,7 @@ Read_only ()
 	if grep -qw persistence /proc/cmdline
 		then
 		printf " * Persistence mode enabled, searching for persistency related devices to unlock\n" >/dev/console
-		live_debug_log "    Persistence mode enabled, searching for persistency related devices to unlock"
+		live_debug_log "Persistence mode enabled, searching for persistency related devices to unlock"
 
 		for label in custom-ov home-rw home-sn live-rw live-sn persistence
 		do
@@ -70,9 +70,9 @@ Read_only ()
 			then
 				device=$(blkid -t LABEL="$label" | awk -F: '{print $1}')
 				printf "   - Setting device %-9s with label '%s' to write mode for persistence mode: " "$device" "$label" >/dev/console
-				live_debug_log "    Setting device $device with label '$label' to write mode for persistence mode: "
+				live_debug_log "Setting device $device with label '$label' to write mode for persistence mode: "
 				# blockdev --setrw $device && printf "done\n" >/dev/console || printf "failed\n" >/dev/console
-				blockdev --setrw $device && live_debug_log "    done" || live_debug_log "0020-read-only: failed"
+				blockdev --setrw $device && live_debug_log "done" || live_debug_log "0020-read-only: failed"
 			fi
 		done
 	fi

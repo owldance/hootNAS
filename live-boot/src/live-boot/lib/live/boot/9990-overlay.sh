@@ -8,10 +8,10 @@ setup_unionfs ()
 	rootmnt="${2}"
 	addimage_directory="${3}"
 	live_debug_log "9990-overlay.sh: setup_unionfs BEGIN"
-	live_debug_log "    image_directory=${image_directory}"
-	live_debug_log "    rootmnt=${rootmnt}"
-	live_debug_log "    addimage_directory=${addimage_directory}"
-	live_debug_log "    UNIONTYPE=${UNIONTYPE}"	
+	live_debug_log "image_directory=${image_directory}"
+	live_debug_log "rootmnt=${rootmnt}"
+	live_debug_log "addimage_directory=${addimage_directory}"
+	live_debug_log "UNIONTYPE=${UNIONTYPE}"	
 
 	modprobe -q -b ${UNIONTYPE}
 
@@ -23,12 +23,12 @@ setup_unionfs ()
 	croot="/run/live/rootfs"
 
 	# Let's just mount the read-only file systems first
-	live_debug_log "    Mounting the read-only file systems first"
+	live_debug_log "Mounting the read-only file systems first"
 	rootfslist=""
-	live_debug_log "    PLAIN_ROOT=${PLAIN_ROOT}"
+	live_debug_log "PLAIN_ROOT=${PLAIN_ROOT}"
 	if [ -z "${PLAIN_ROOT}" ]
 	then
-		live_debug_log "    not PLAIN_ROOT"
+		live_debug_log "not PLAIN_ROOT"
 		# Read image names from ${MODULE}.module if it exists
 		if [ -e "${image_directory}/filesystem.${MODULE}.module" ]
 		then
@@ -117,7 +117,7 @@ setup_unionfs ()
 
 				mkdir -p "${mpoint}"
 				log_begin_msg "Mounting \"${image}\" on \"${mpoint}\" via \"${backdev}\""
-				live_debug_log "    Mounting ${image} on ${mpoint} via ${backdev}"
+				live_debug_log "Mounting ${image} on ${mpoint} via ${backdev}"
 				mount -t "${fstype}" -o ro,noatime "${backdev}" "${mpoint}" || panic "Can not mount ${backdev} (${image}) on ${mpoint}"
 				log_end_msg
 			else
@@ -126,7 +126,7 @@ setup_unionfs ()
 		done
 	else
 		# we have a plain root system
-		live_debug_log "    we have a plain root system"
+		live_debug_log "we have a plain root system"
 		mkdir -p "${croot}/filesystem"
 		log_begin_msg "Mounting \"${image_directory}\" on \"${croot}/filesystem\""
 		mount -t $(get_fstype "${image_directory}") -o ro,noatime "${image_directory}" "${croot}/filesystem" || \
@@ -136,7 +136,7 @@ setup_unionfs ()
 		mount -o bind ${croot}/filesystem $mountpoint
 		log_end_msg
 	fi
-	live_debug_log "    Done mounting the read-only file systems"
+	live_debug_log "Done mounting the read-only file systems"
 
 	# tmpfs file systems
 	touch /etc/fstab
@@ -145,12 +145,12 @@ setup_unionfs ()
 	# Looking for persistence devices or files
 	if [ -n "${PERSISTENCE}" ] && [ -z "${NOPERSISTENCE}" ]
 	then
-		live_debug_log "    PERISTENCE=${PERSISTENCE}"
-		live_debug_log "    NOPERSISTENCE=${NOPERSISTENCE}"
+		live_debug_log "PERISTENCE=${PERSISTENCE}"
+		live_debug_log "NOPERSISTENCE=${NOPERSISTENCE}"
 		if [ -z "${QUICKUSBMODULES}" ]
 		then
 			# Load USB modules
-			live_debug_log "    Loading USB modules"
+			live_debug_log "Loading USB modules"
 			num_block=$(ls -l /sys/block | wc -l)
 			for module in sd_mod uhci-hcd ehci-hcd ohci-hcd usb-storage
 			do
@@ -203,7 +203,7 @@ setup_unionfs ()
 		# Looking for persistence media
 		local overlay_devices 
 		overlay_devices=""
-		live_debug_log "    Looking for persistence media"
+		live_debug_log "Looking for persistence media"
 		if [ "${whitelistdev}" != "ignore_all_devices" ]
 		then
 			for media in $(find_zvol_persistence "${overlays}" "${whitelistdev}")
@@ -219,12 +219,12 @@ setup_unionfs ()
 					esac
 				done
 			done
-			live_debug_log "    overlay_devices: ${overlay_devices}"
+			live_debug_log "overlay_devices: ${overlay_devices}"
 		fi
 	elif [ -n "${NFS_COW}" ] && [ -z "${NOPERSISTENCE}" ]
 	then
 		# check if there are any nfs options
-		live_debug_log "    Looking for NFS persistence media"
+		live_debug_log "Looking for NFS persistence media"
 		if echo ${NFS_COW} | grep -q ','
 		then
 			nfs_cow_opts="-o nolock,$(echo ${NFS_COW}|cut -d, -f2-)"
@@ -323,28 +323,28 @@ setup_unionfs ()
 	# Correct the permission of /tmp:
 	if [ -d "${rootmnt}/tmp" ]
 	then
-		live_debug_log "    Correcting the permission of /tmp"
+		live_debug_log "Correcting the permission of /tmp"
 		chmod 1777 "${rootmnt}"/tmp
 	fi
 
 	# Correct the permission of /var/tmp:
 	if [ -d "${rootmnt}/var/tmp" ]
 	then
-		live_debug_log "    Correcting the permission of /var/tmp"
+		live_debug_log "Correcting the permission of /var/tmp"
 		chmod 1777 "${rootmnt}"/var/tmp
 	fi
 
 	# Adding custom persistence
 	if [ -n "${PERSISTENCE}" ] && [ -z "${NOPERSISTENCE}" ]
 	then
-		live_debug_log "    Adding custom persistence"
+		live_debug_log "Adding custom persistence"
 		local custom_mounts
 		custom_mounts="/tmp/custom_mounts.list"
 		rm -f ${custom_mounts}
 
 		# Gather information about custom mounts from devies detected as overlays
 		get_custom_mounts ${custom_mounts} ${overlay_devices}
-		live_debug_log "    copying custom_mounts.list to /run/live for your debuging pleasure"
+		live_debug_log "copying custom_mounts.list to /run/live for your debuging pleasure"
 		cp ${custom_mounts} "/run/live"
 
 		[ -n "${LIVE_BOOT_DEBUG}" ] && cp ${custom_mounts} "/run/live/persistence"
@@ -353,7 +353,7 @@ setup_unionfs ()
 		local used_overlays
 		used_overlays=""
 		used_overlays=$(activate_custom_mounts ${custom_mounts})
-		live_debug_log "    used_overlays: $used_overlays"
+		live_debug_log "used_overlays: $used_overlays"
 		rm -f ${custom_mounts}
 
 		# Close unused overlays (e.g. due to missing $persistence_list)

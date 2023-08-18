@@ -26,7 +26,26 @@ Debug ()
 	set -x
 }
 
-
+# Function: live_debug_log
+# Description: Logs debug messages to /run/live/boot-live.log and optionally 
+# to the kernel log if the message starts with 'live-boot:'.
+#
+# To keep the log file readable, the indentation level is tracked and applied, 
+# therefore when logging inside a function, it is important that both 
+# function entry and all exits are marked with BEGIN and END respectively.
+#
+# Example logging:
+#
+#  live_debug_log "source-filename.sh: myfunction BEGIN"
+#     ...
+#     live_debug_log "This is a log message"
+#     live_debug_log "live-boot:This is a kernel log message"
+#     ...
+#  live_debug_log "source-filename.sh: myfunction END"
+#
+# Parameters:
+#   $1: The debug message to log.
+# Returns: None
 live_debug_log ()
 {
 	local indentation
@@ -40,7 +59,7 @@ live_debug_log ()
 			indentation=$(printf "%$((($indent_tracker - 1) * 4))s" "")
 			;;
 		*)
-			indentation=$(printf "%$((($indent_tracker + 1) * 4))s" "")
+			indentation=$(printf "%$((($indent_tracker) * 4))s" "")
 			;;
 	esac
 
@@ -61,8 +80,5 @@ live_debug_log ()
 			indent_tracker=$((indent_tracker+1))
 			;;
 	esac
-
-
-	
 }
 

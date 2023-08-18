@@ -46,12 +46,12 @@ Select_eth_device ()
 	if [ "$bootconf" != "BOOT=nfs" ] && [ -z "$NETBOOT" ] && [ -z "$FETCH" ] && [ -z "$FTPFS" ] && [ -z "$HTTPFS" ]
 	then
 		# Not a net boot : nothing to do
-		live_debug_log "    Not a net boot : nothing to do"
+		live_debug_log "Not a net boot : nothing to do"
 		live_debug_log "9990-select-eth-device.sh: Select_eth_device END"
 		return
 	fi
 
-	live_debug_log "    it is a net boot"
+	live_debug_log "it is a net boot"
 	# we want to do some basic IP
 	modprobe -q af_packet
 

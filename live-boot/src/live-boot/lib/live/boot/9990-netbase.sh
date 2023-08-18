@@ -24,7 +24,7 @@ Netbase ()
 	if [ "${STATICIP}" = "frommedia" ] && [ -e "${IFFILE}" ]
 	then
 		# will use existent /etc/network/interfaces
-		live_debug_log "    using existent /etc/network/interfaces"
+		live_debug_log "using existent /etc/network/interfaces"
 		live_debug_log "9990-netbase.sh: Netbase END"
 		log_end_msg
 		return

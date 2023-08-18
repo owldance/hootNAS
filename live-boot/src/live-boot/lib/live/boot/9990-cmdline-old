@@ -5,13 +5,13 @@
 Cmdline_old ()
 {
 	live_debug_log "9990-cmdline-old.sh: Cmdline_old BEGIN"
-	live_debug_log "    live_boot_cmdline: ${LIVE_BOOT_CMDLINE}"
+	live_debug_log "live_boot_cmdline: ${LIVE_BOOT_CMDLINE}"
 	for _PARAMETER in ${LIVE_BOOT_CMDLINE}
 	do
 		case "${_PARAMETER}" in
 			persistence-zfs=*)
 				PERSISTZFS="${_PARAMETER#persistence-zfs=}"
-				live_debug_log "    PERSISTZFS: ${PERSISTZFS}"
+				live_debug_log "PERSISTZFS: ${PERSISTZFS}"
 				export PERSISTZFS
 				;;
 			skipconfig)
@@ -19,8 +19,8 @@ Cmdline_old ()
 				NONETWORKING="true"
 
 				export NOFSTAB NONETWORKING
-				live_debug_log "    NOFSTAB: ${NOFSTAB}"
-				live_debug_log "    NONETWORKING: ${NONETWORKING}"
+				live_debug_log "NOFSTAB: ${NOFSTAB}"
+				live_debug_log "NONETWORKING: ${NONETWORKING}"
 				;;
 
 			BOOTIF=*)
@@ -30,7 +30,7 @@ Cmdline_old ()
 				DNS=${_PARAMETER#dns=}
 				DNSSERVERS=$(echo ${DNS} | sed 's/,/ /g')
 				export DNSSERVERS
-				live_debug_log "    DNSSERVERS: ${DNSSERVERS}"
+				live_debug_log "DNSSERVERS: ${DNSSERVERS}"
 				unset DNS
 				;;
 			dhcp)
@@ -38,54 +38,54 @@ Cmdline_old ()
 				# Use for debugging in case somebody works on fixing dhclient
 				DHCP="true";
 				export DHCP
-				live_debug_log "    DHCP: ${DHCP}"
+				live_debug_log "DHCP: ${DHCP}"
 				;;
 
 			nodhcp)
 				DHCP=""
 				export DHCP
-				live_debug_log "    DHCP: ${DHCP}"
+				live_debug_log "DHCP: ${DHCP}"
 				NODHCP="true"
 				export NODHCP
-				live_debug_log "    NODHCP: ${NODHCP}"
+				live_debug_log "NODHCP: ${NODHCP}"
 				;;
 
 			ethdevice=*)
 				DEVICE="${_PARAMETER#ethdevice=}"
 				ETHDEVICE="${DEVICE}"
 				export DEVICE ETHDEVICE
-				live_debug_log "    DEVICE: ${DEVICE}"
-				live_debug_log "    ETHDEVICE: ${ETHDEVICE}"
+				live_debug_log "DEVICE: ${DEVICE}"
+				live_debug_log "ETHDEVICE: ${ETHDEVICE}"
 				;;
 
 			ethdevice-timeout=*)
 				ETHDEV_TIMEOUT="${_PARAMETER#ethdevice-timeout=}"
 				export ETHDEV_TIMEOUT
-				live_debug_log "    ETHDEV_TIMEOUT: ${ETHDEV_TIMEOUT}"
+				live_debug_log "ETHDEV_TIMEOUT: ${ETHDEV_TIMEOUT}"
 				;;
 
 			fetch=*)
 				FETCH="${_PARAMETER#fetch=}"
 				export FETCH
-				live_debug_log "    FETCH: ${FETCH}"
+				live_debug_log "FETCH: ${FETCH}"
 				;;
 
 			findiso=*)
 				FINDISO="${_PARAMETER#findiso=}"
 				export FINDISO
-				live_debug_log "    FINDISO: ${FINDISO}"
+				live_debug_log "FINDISO: ${FINDISO}"
 				;;
 
 			ftpfs=*)
 				FTPFS="${_PARAMETER#ftpfs=}"
 				export FTPFS
-				live_debug_log "    FTPFS: ${FTPFS}"
+				live_debug_log "FTPFS: ${FTPFS}"
 				;;
 
 			httpfs=*)
 				HTTPFS="${_PARAMETER#httpfs=}"
 				export HTTPFS
-				live_debug_log "    HTTPFS: ${HTTPFS}"
+				live_debug_log "HTTPFS: ${HTTPFS}"
 				;;
 
 			iscsi=*)
@@ -99,23 +99,23 @@ Cmdline_old ()
 				#target name
 				ISCSI_TARGET="${ISCSI#*;}"
 				export ISCSI ISCSI_PORTAL ISCSI_TARGET ISCSI_SERVER ISCSI_PORT
-				live_debug_log "    ISCSI: ${ISCSI}"
-				live_debug_log "    ISCSI_PORTAL: ${ISCSI_PORTAL}"
-				live_debug_log "    ISCSI_SERVER: ${ISCSI_SERVER}"
-				live_debug_log "    ISCSI_PORT: ${ISCSI_PORT}"
-				live_debug_log "    ISCSI_TARGET: ${ISCSI_TARGET}"
+				live_debug_log "ISCSI: ${ISCSI}"
+				live_debug_log "ISCSI_PORTAL: ${ISCSI_PORTAL}"
+				live_debug_log "ISCSI_SERVER: ${ISCSI_SERVER}"
+				live_debug_log "ISCSI_PORT: ${ISCSI_PORT}"
+				live_debug_log "ISCSI_TARGET: ${ISCSI_TARGET}"
 				;;
 
 			isofrom=*|fromiso=*)
 				FROMISO="${_PARAMETER#*=}"
 				export FROMISO
-				live_debug_log "    FROMISO: ${FROMISO}"
+				live_debug_log "FROMISO: ${FROMISO}"
 				;;
 
 			ignore_uuid)
 				IGNORE_UUID="true"
 				export IGNORE_UUID
-				live_debug_log "    IGNORE_UUID: ${IGNORE_UUID}"
+				live_debug_log "IGNORE_UUID: ${IGNORE_UUID}"
 				;;
 
 			ip=*)
@@ -127,161 +127,161 @@ Cmdline_old ()
 				fi
 
 				export STATICIP
-				live_debug_log "    STATICIP: ${STATICIP}"
+				live_debug_log "STATICIP: ${STATICIP}"
 				;;
 
 			live-media=*|bootfrom=*)
 				LIVE_MEDIA="${_PARAMETER#*=}"
 				export LIVE_MEDIA
-				live_debug_log "    LIVE_MEDIA: ${LIVE_MEDIA}"
+				live_debug_log "LIVE_MEDIA: ${LIVE_MEDIA}"
 				;;
 
 			live-media-encryption=*|encryption=*)
 				LIVE_MEDIA_ENCRYPTION="${_PARAMETER#*=}"
 				export LIVE_MEDIA_ENCRYPTION
-				live_debug_log "    LIVE_MEDIA_ENCRYPTION: ${LIVE_MEDIA_ENCRYPTION}"
+				live_debug_log "LIVE_MEDIA_ENCRYPTION: ${LIVE_MEDIA_ENCRYPTION}"
 				;;
 
 			live-media-offset=*)
 				LIVE_MEDIA_OFFSET="${_PARAMETER#live-media-offset=}"
 				export LIVE_MEDIA_OFFSET
-				live_debug_log "    LIVE_MEDIA_OFFSET: ${LIVE_MEDIA_OFFSET}"
+				live_debug_log "LIVE_MEDIA_OFFSET: ${LIVE_MEDIA_OFFSET}"
 				;;
 
 			live-media-path=*)
 				LIVE_MEDIA_PATH="${_PARAMETER#live-media-path=}"
 				export LIVE_MEDIA_PATH
-				live_debug_log "    LIVE_MEDIA_PATH: ${LIVE_MEDIA_PATH}"
+				live_debug_log "LIVE_MEDIA_PATH: ${LIVE_MEDIA_PATH}"
 				;;
 
 			live-media-timeout=*)
 				LIVE_MEDIA_TIMEOUT="${_PARAMETER#live-media-timeout=}"
 				export LIVE_MEDIA_TIMEOUT
-				live_debug_log "    LIVE_MEDIA_TIMEOUT: ${LIVE_MEDIA_TIMEOUT}"
+				live_debug_log "LIVE_MEDIA_TIMEOUT: ${LIVE_MEDIA_TIMEOUT}"
 				;;
 
 			module=*)
 				MODULE="${_PARAMETER#module=}"
 				export MODULE
-				live_debug_log "    MODULE: ${MODULE}"
+				live_debug_log "MODULE: ${MODULE}"
 				;;
 
 			netboot=*)
 				NETBOOT="${_PARAMETER#netboot=}"
 				export NETBOOT
-				live_debug_log "    NETBOOT: ${NETBOOT}"
+				live_debug_log "NETBOOT: ${NETBOOT}"
 				;;
 
 			nfsopts=*)
 				NFSOPTS="${_PARAMETER#nfsopts=}"
 				export NFSOPTS
-				live_debug_log "    NFSOPTS: ${NFSOPTS}"
+				live_debug_log "NFSOPTS: ${NFSOPTS}"
 				;;
 
 			nfsoverlay=*)
 				NFS_COW="${_PARAMETER#nfsoverlay=}"
 				export NFS_COW
-				live_debug_log "    NFS_COW: ${NFS_COW}"
+				live_debug_log "NFS_COW: ${NFS_COW}"
 				;;
 
 			nofstab)
 				NOFSTAB="true"
 				export NOFSTAB
-				live_debug_log "    NOFSTAB: ${NOFSTAB}"
+				live_debug_log "NOFSTAB: ${NOFSTAB}"
 				;;
 
 			nonetworking)
 				NONETWORKING="true"
 				export NONETWORKING
-				live_debug_log "    NONETWORKING: ${NONETWORKING}"
+				live_debug_log "NONETWORKING: ${NONETWORKING}"
 				;;
 
 			ramdisk-size=*)
 				ramdisk_size="${_PARAMETER#ramdisk-size=}"
-				live_debug_log "    ramdisk_size: ${ramdisk_size}"
+				live_debug_log "ramdisk_size: ${ramdisk_size}"
 				;;
 
 			overlay-size=*)
 				OVERLAY_SIZE="${_PARAMETER#overlay-size=}"
 				export OVERLAY_SIZE
-				live_debug_log "    OVERLAY_SIZE: ${OVERLAY_SIZE}"
+				live_debug_log "OVERLAY_SIZE: ${OVERLAY_SIZE}"
 				;;
 
 			persistence)
 				PERSISTENCE="true"
 				export PERSISTENCE
-				live_debug_log "    PERSISTENCE: ${PERSISTENCE}"
+				live_debug_log "PERSISTENCE: ${PERSISTENCE}"
 				;;
 
 			persistence-encryption=*)
 				PERSISTENCE_ENCRYPTION="${_PARAMETER#*=}"
 				export PERSISTENCE_ENCRYPTION
-				live_debug_log "    PERSISTENCE_ENCRYPTION: ${PERSISTENCE_ENCRYPTION}"
+				live_debug_log "PERSISTENCE_ENCRYPTION: ${PERSISTENCE_ENCRYPTION}"
 				;;
 
 			persistence-media=*)
 				PERSISTENCE_MEDIA="${_PARAMETER#*=}"
 				export PERSISTENCE_MEDIA
-				live_debug_log "    PERSISTENCE_MEDIA: ${PERSISTENCE_MEDIA}"
+				live_debug_log "PERSISTENCE_MEDIA: ${PERSISTENCE_MEDIA}"
 				;;
 			persistence-method=*)
 				PERSISTENCE_METHOD="${_PARAMETER#*=}"
 				export PERSISTENCE_METHOD
-				live_debug_log "    PERSISTENCE_METHOD: ${PERSISTENCE_METHOD}"
+				live_debug_log "PERSISTENCE_METHOD: ${PERSISTENCE_METHOD}"
 				;;
 
 			persistence-path=*)
 				PERSISTENCE_PATH="${_PARAMETER#persistence-path=}"
 				export PERSISTENCE_PATH
-				live_debug_log "    PERSISTENCE_PATH: ${PERSISTENCE_PATH}"
+				live_debug_log "PERSISTENCE_PATH: ${PERSISTENCE_PATH}"
 				;;
 			persistence-read-only)
 				PERSISTENCE_READONLY="true"
 				export PERSISTENCE_READONLY
-				live_debug_log "    PERSISTENCE_READONLY: ${PERSISTENCE_READONLY}"
+				live_debug_log "PERSISTENCE_READONLY: ${PERSISTENCE_READONLY}"
 				;;
 
 			persistence-storage=*)
 				PERSISTENCE_STORAGE="${_PARAMETER#persistence-storage=}"
 				export PERSISTENCE_STORAGE
-				live_debug_log "    PERSISTENCE_STORAGE: ${PERSISTENCE_STORAGE}"
+				live_debug_log "PERSISTENCE_STORAGE: ${PERSISTENCE_STORAGE}"
 				;;
 
 			persistence-label=*)
 				custom_overlay_label=$(echo ${_PARAMETER#persistence-label=*} | sed -e 's/,/ /g')
-				live_debug_log "    custom_overlay_label: ${custom_overlay_label}"
+				live_debug_log "custom_overlay_label: ${custom_overlay_label}"
 				;;
 
 			nopersistence)
 				NOPERSISTENCE="true"
 				export NOPERSISTENCE
-				live_debug_log "    NOPERSISTENCE: ${NOPERSISTENCE}"
+				live_debug_log "NOPERSISTENCE: ${NOPERSISTENCE}"
 				;;
 
 			quickusbmodules)
 				QUICKUSBMODULES="true"
 				export QUICKUSBMODULES
-				live_debug_log "    QUICKUSBMODULES: ${QUICKUSBMODULES}"
+				live_debug_log "QUICKUSBMODULES: ${QUICKUSBMODULES}"
 				;;
 
 			todisk=*)
 				TODISK="${_PARAMETER#todisk=}"
 				export TODISK
-				live_debug_log "    TODISK: ${TODISK}"
+				live_debug_log "TODISK: ${TODISK}"
 				;;
 
 			toram)
 				TORAM="true"
 				export TORAM
-				live_debug_log "    TORAM: ${TORAM}"
+				live_debug_log "TORAM: ${TORAM}"
 				;;
 
 			toram=*)
 				TORAM="true"
 				MODULETORAM="${_PARAMETER#toram=}"
 				export TORAM MODULETORAM
-				live_debug_log "    TORAM: ${TORAM}"
-				live_debug_log "    MODULETORAM: ${MODULETORAM}"
+				live_debug_log "TORAM: ${TORAM}"
+				live_debug_log "MODULETORAM: ${MODULETORAM}"
 				;;
 
 			exposedroot)
@@ -292,25 +292,25 @@ Cmdline_old ()
 			plainroot)
 				PLAIN_ROOT="true"
 				export PLAIN_ROOT
-				live_debug_log "    PLAIN_ROOT: ${PLAIN_ROOT}"
+				live_debug_log "PLAIN_ROOT: ${PLAIN_ROOT}"
 				;;
 
 			skipunion)
 				SKIP_UNION_MOUNTS="true"
 				export SKIP_UNION_MOUNTS
-				live_debug_log "    SKIP_UNION_MOUNTS: ${SKIP_UNION_MOUNTS}"
+				live_debug_log "SKIP_UNION_MOUNTS: ${SKIP_UNION_MOUNTS}"
 				;;
 
 			root=*)
 				ROOT="${_PARAMETER#root=}"
 				export ROOT
-				live_debug_log "    ROOT: ${ROOT}"
+				live_debug_log "ROOT: ${ROOT}"
 				;;
 
 			union=*)
 				UNIONTYPE="${_PARAMETER#union=}"
 				export UNIONTYPE
-				live_debug_log "    UNIONTYPE: ${UNIONTYPE}"
+				live_debug_log "UNIONTYPE: ${UNIONTYPE}"
 				;;
 		esac
 	done
@@ -327,28 +327,28 @@ Cmdline_old ()
 			NETBOOT="cifs"
 			export NETBOOT
 		fi
-		live_debug_log "    NETBOOT=${NETBOOT}"
+		live_debug_log "NETBOOT=${NETBOOT}"
 	fi
 
 	if [ -z "${MODULE}" ]
 	then
 		MODULE="filesystem"
 		export MODULE
-		live_debug_log "    MODULE=${MODULE}"
+		live_debug_log "MODULE=${MODULE}"
 	fi
 
 	if [ -z "${UNIONTYPE}" ]
 	then
 		UNIONTYPE="overlay"
 		export UNIONTYPE
-		live_debug_log "    UNIONTYPE=${UNIONTYPE}"
+		live_debug_log "UNIONTYPE=${UNIONTYPE}"
 	fi
 
 	if [ -z "${PERSISTENCE_ENCRYPTION}" ]
 	then
 		PERSISTENCE_ENCRYPTION="none"
 		export PERSISTENCE_ENCRYPTION
-		live_debug_log "    PERSISTENCE_ENCRYPTION=${PERSISTENCE_ENCRYPTION}"
+		live_debug_log "PERSISTENCE_ENCRYPTION=${PERSISTENCE_ENCRYPTION}"
 	elif is_in_comma_sep_list luks ${PERSISTENCE_ENCRYPTION}
 	then
 		if ! modprobe dm-crypt
@@ -356,7 +356,7 @@ Cmdline_old ()
 			log_warning_msg "Unable to load module dm-crypt"
 			PERSISTENCE_ENCRYPTION=$(echo ${PERSISTENCE_ENCRYPTION} | sed -e 's/\<luks,\|,\?luks$//g')
 			export PERSISTENCE_ENCRYPTION
-			live_debug_log "    PERSISTENCE_ENCRYPTION=${PERSISTENCE_ENCRYPTION}"
+			live_debug_log "PERSISTENCE_ENCRYPTION=${PERSISTENCE_ENCRYPTION}"
 		fi
 
 		if [ ! -x /lib/cryptsetup/askpass ] || [ ! -x /sbin/cryptsetup ]
@@ -364,7 +364,7 @@ Cmdline_old ()
 			log_warning_msg "cryptsetup is unavailable"
 			PERSISTENCE_ENCRYPTION=$(echo ${PERSISTENCE_ENCRYPTION} | sed -e 's/\<luks,\|,\?luks$//g')
 			export PERSISTENCE_ENCRYPTION
-			live_debug_log "    PERSISTENCE_ENCRYPTION=${PERSISTENCE_ENCRYPTION}"
+			live_debug_log "PERSISTENCE_ENCRYPTION=${PERSISTENCE_ENCRYPTION}"
 		fi
 	fi
 
@@ -372,14 +372,14 @@ Cmdline_old ()
 	then
 		PERSISTENCE_METHOD="overlay"
 		export PERSISTENCE_METHOD
-		live_debug_log "    PERSISTENCE_METHOD=${PERSISTENCE_METHOD}"
+		live_debug_log "PERSISTENCE_METHOD=${PERSISTENCE_METHOD}"
 	fi
 
 	if [ -z "${PERSISTENCE_STORAGE}" ]
 	then
 		PERSISTENCE_STORAGE="filesystem,file"
 		export PERSISTENCE_STORAGE
-		live_debug_log "    PERSISTENCE_STORAGE=${PERSISTENCE_STORAGE}"
+		live_debug_log "PERSISTENCE_STORAGE=${PERSISTENCE_STORAGE}"
 	fi
 	live_debug_log "9990-cmdline-old.sh: Cmdline_old END"
 }

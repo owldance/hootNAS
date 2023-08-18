@@ -63,16 +63,16 @@ mount_images_in_directory ()
 	directory="${1}"
 	rootmnt="${2}"
 	mac="${3}"
-	live_debug_log "    directory: ${directory}"
-	live_debug_log "    rootmnt: ${rootmnt}"
-	live_debug_log "    mac: ${mac}"
+	live_debug_log "directory: ${directory}"
+	live_debug_log "rootmnt: ${rootmnt}"
+	live_debug_log "mac: ${mac}"
 
 	if is_live_path "${directory}"
 	then
 		[ -n "${mac}" ] && adddirectory="${directory}/${LIVE_MEDIA_PATH}/${mac}"
 		setup_unionfs "${directory}/${LIVE_MEDIA_PATH}" "${rootmnt}" "${adddirectory}"
 	else
-		live_debug_log "    No supported filesystem images found at /${LIVE_MEDIA_PATH}."
+		live_debug_log "No supported filesystem images found at /${LIVE_MEDIA_PATH}."
 		panic "No supported filesystem images found at /${LIVE_MEDIA_PATH}."
 	fi
 	live_debug_log "9990-misc-helpers.sh: mount_images_in_directory END"
@@ -760,30 +760,30 @@ mount_persistence_media ()
 	device=${1}
 	probe=${2}
 	live_debug_log "9990-misc-helpers.sh: mount_persistence_media BEGIN"
-	live_debug_log "    device: ${device} probe: ${probe}"
+	live_debug_log "device: ${device} probe: ${probe}"
 	# get_custom_mounts() might call this with a directory path instead
 	# of a block device path. This means we have found sub-directory path
 	# underneath /run/live/persistence, so we're done
 	if [ -d "${device}" ]
 	then
 		echo "${device}"
-		live_debug_log "    ${device} is a directory, nothing to do here"
+		live_debug_log "${device} is a directory, nothing to do here"
 		live_debug_log "9990-misc-helpers.sh: mount_persistence_media END"
 		return 0
 	fi
 
 	if [ ! -b "${device}" ]
 	then
-		live_debug_log "    ${device} is not a block device, nothing to do here"
+		live_debug_log "${device} is not a block device, nothing to do here"
 		live_debug_log "9990-misc-helpers.sh: mount_persistence_media END"
 		return 1
 	fi
 
 	backing="/run/live/persistence/$(basename ${device})"
 	mkdir -p "${backing}"
-	live_debug_log "    backing: ${backing}"
+	live_debug_log "backing: ${backing}"
 	old_backing="$(where_is_mounted ${device})"
-	live_debug_log "    old_backing: ${old_backing}"
+	live_debug_log "old_backing: ${old_backing}"
 	if [ -z "${old_backing}" ]
 	then
 		fstype="$(get_fstype ${device})"
@@ -794,7 +794,7 @@ mount_persistence_media ()
 		fi
 
 		# if mount -t "${fstype}" -o "${mount_opts}" "${device}" "${backing}" >/dev/null 2>&1
-		live_debug_log "    mount -t '${fstype}' -o '${mount_opts}' '${device}' '${backing}'"
+		live_debug_log "mount -t '${fstype}' -o '${mount_opts}' '${device}' '${backing}'"
 		mret=$(mount -t "${fstype}" -o "${mount_opts}" "${device}" "${backing}" 2>&1)
 
 		if $mret
@@ -803,7 +803,7 @@ mount_persistence_media ()
 			live_debug_log "9990-misc-helpers.sh: mount_persistence_media END"
 			return 0
 		else
-			live_debug_log "    Failed to mount persistence media ${device} : ${mret}"
+			live_debug_log "Failed to mount persistence media ${device} : ${mret}"
 			# [ -z "${probe}" ] && log_warning_msg "Failed to mount persistence media ${device}"
 			rmdir "${backing}"
 			live_debug_log "9990-misc-helpers.sh: mount_persistence_media END"
@@ -813,7 +813,7 @@ mount_persistence_media ()
 	then
 		if ! mount -o move ${old_backing} ${backing} >/dev/null
 		then
-			[ -z "${probe}" ] && live_debug_log "    Failed to move persistence media ${device}"
+			[ -z "${probe}" ] && live_debug_log "Failed to move persistence media ${device}"
 			# [ -z "${probe}" ] && log_warning_msg "Failed to move persistence media ${device}"
 			rmdir "${backing}"
 			live_debug_log "9990-misc-helpers.sh: mount_persistence_media END"
@@ -826,7 +826,7 @@ mount_persistence_media ()
 		fi
 		if ! mount -o "remount,${mount_opts}" "${backing}" >/dev/null
 		then
-			live_debug_log "    Failed to remount persistence media ${device} writable"
+			live_debug_log "Failed to remount persistence media ${device} writable"
 			# log_warning_msg "Failed to remount persistence media ${device} writable"
 			# Don't unmount or rmdir the new mountpoint in this case
 		fi
@@ -834,7 +834,7 @@ mount_persistence_media ()
 		live_debug_log "9990-misc-helpers.sh: mount_persistence_media END"
 		return 0
 	else
-		live_debug_log "    ${device} has already been mounted on the place expected by live-boot"
+		live_debug_log "${device} has already been mounted on the place expected by live-boot"
 		# This means that $device has already been mounted on
 		# the place expected by live-boot, so we're done.
 		echo ${backing}
@@ -851,7 +851,7 @@ close_persistence_media ()
 	device=${1}
 	backing="$(where_is_mounted ${device})"
 	live_debug_log "9990-misc-helpers.sh: close_persistence_media BEGIN"
-	live_debug_log "    close_persistence_media: ${device} : ${backing}"
+	live_debug_log "close_persistence_media: ${device} : ${backing}"
 	if [ -d "${backing}" ]
 	then
 		live_debug_log "	umount ${backing}"
@@ -975,8 +975,8 @@ probe_for_gpt_name ()
 	overlays="${1}"
 	dev="${2}"
 	live_debug_log "9990-misc-helpers.sh: probe_for_gpt_name BEGIN"
-	live_debug_log "    overlays: ${overlays}"
-	live_debug_log "    dev: ${dev}"
+	live_debug_log "overlays: ${overlays}"
+	live_debug_log "dev: ${dev}"
 
 	gpt_dev="${dev}"
 	if is_active_luks_mapping ${dev}
@@ -990,7 +990,7 @@ probe_for_gpt_name ()
 	then
 		if ! is_gpt_device ${gpt_dev}
 		then
-		live_debug_log "    ${gpt_dev} is not a GPT device"
+		live_debug_log "${gpt_dev} is not a GPT device"
 		live_debug_log "9990-misc-helpers.sh: probe_for_gpt_name END"
 		return
 		fi
@@ -1033,9 +1033,9 @@ probe_for_file_name ()
 
 	ret=""
 	live_debug_log "9990-misc-helpers.sh: probe_for_file_name BEGIN"
-	live_debug_log "    overlays: ${overlays} dev: ${dev}"
+	live_debug_log "overlays: ${overlays} dev: ${dev}"
 	backing="$(mount_persistence_media ${dev} probe)"
-	live_debug_log "    backing: ${backing}"
+	live_debug_log "backing: ${backing}"
 	if [ -z "${backing}" ]
 	then
 		live_debug_log "9990-misc-helpers.sh: probe_for_file_name END"
@@ -1058,7 +1058,7 @@ probe_for_file_name ()
 		echo ${ret}
 	else
 		# unmount and remove mountpoint
-		live_debug_log "    unmounting and removing ${backing}"
+		live_debug_log "unmounting and removing ${backing}"
 		umount ${backing} > /dev/null 2>&1 || true
 		rmdir ${backing} > /dev/null 2>&1 || true
 	fi
@@ -1073,9 +1073,9 @@ probe_for_directory_name ()
 
 	ret=""
 	live_debug_log "9990-misc-helpers.sh: probe_for_directory_name BEGIN"
-	live_debug_log "    overlays: ${overlays} dev: ${dev}"
+	live_debug_log "overlays: ${overlays} dev: ${dev}"
 	backing="$(mount_persistence_media ${dev} probe)"
-	live_debug_log "    backing: ${backing}"
+	live_debug_log "backing: ${backing}"
 	if [ -z "${backing}" ]
 	then
 		live_debug_log "9990-misc-helpers.sh: probe_for_directory_name END"
@@ -1085,7 +1085,7 @@ probe_for_directory_name ()
 	for label in ${overlays}
 	do
 		path=${backing}/${PERSISTENCE_PATH}/${label}
-		live_debug_log "    checking ${path}"
+		live_debug_log "checking ${path}"
 		if [ -d "${path}" ]
 		then
 			# in this case the "device" ends with a "/"
@@ -1098,7 +1098,7 @@ probe_for_directory_name ()
 		echo ${ret}
 	else
 		# unmount and remove mountpoint
-		live_debug_log "    unmounting and removing ${backing}"
+		live_debug_log "unmounting and removing ${backing}"
 		umount ${backing} > /dev/null 2>&1 || true
 		rmdir ${backing} > /dev/null 2>&1 || true
 	fi
@@ -1125,28 +1125,28 @@ find_zvol_persistence ()
 	white_listed_devices="${2}"
 	ret=""
 	live_debug_log "9990-misc-helpers.sh: find_zvol_persistence BEGIN"
-	live_debug_log "    overlays: ${overlays}"
-	live_debug_log "    white_listed_devices: ${white_listed_devices}"
+	live_debug_log "overlays: ${overlays}"
+	live_debug_log "white_listed_devices: ${white_listed_devices}"
 	zpoolname="$(echo "$PERSISTZFS" | grep -o '^[^/]*')"
 	datasetname="$(echo "$PERSISTZFS" | grep -o '[^/]*$')"
-	live_debug_log "    zpoolname: ${zpoolname}"
-	live_debug_log "    datasetname: ${datasetname}"
+	live_debug_log "zpoolname: ${zpoolname}"
+	live_debug_log "datasetname: ${datasetname}"
 	cmdret=$(modprobe zfs 2>&1)
-	[ -n "$cmdret" ] && live_debug_log "    modprobe zfs: $cmdret"
+	[ -n "$cmdret" ] && live_debug_log "modprobe zfs: $cmdret"
 	cmdret=$(udevadm trigger 2>&1)
-	[ -n "$cmdret" ] && live_debug_log "    udevadm trigger: $cmdret"
+	[ -n "$cmdret" ] && live_debug_log "udevadm trigger: $cmdret"
 	cmdret=$(udevadm settle 2>&1)
-	[ -n "$cmdret" ] && live_debug_log "    udevadm settle: $cmdret"
+	[ -n "$cmdret" ] && live_debug_log "udevadm settle: $cmdret"
 	# using '-f' in case pool was previously in use from another system
 	cmdret=$(zpool import -f $zpoolname 2>&1)
-	[ -n "$cmdret" ] && live_debug_log "    zpool import -f $zpoolname: $cmdret"
+	[ -n "$cmdret" ] && live_debug_log "zpool import -f $zpoolname: $cmdret"
 	# iterate over devices in /dev that satisfies zd[0-9]+ and check if
 	# LABEL equal to one of the labels in ${overlays}, if so, add it to
 	# the return value and break the loop.
 	for zdev in $(ls /dev | sed -n '/^zd[0-9]\+$/p'); do
 		for label in ${overlays}; do
 			if [ "$(blkid -s LABEL -o value /dev/${zdev})" = "${label}" ]; then
-				live_debug_log "    found zvol /dev/${zdev} with label ${label}"
+				live_debug_log "found zvol /dev/${zdev} with label ${label}"
 				ret="${ret} ${label}=/dev/${zdev}"
 				break
 			fi
@@ -1183,7 +1183,7 @@ find_persistence_media ()
 	white_listed_devices="${2}"
 	ret=""
 	live_debug_log "9990-misc-helpers.sh: find_persistence_media BEGIN"
-	live_debug_log "    overlays: ${overlays} white_listed_devices: ${white_listed_devices}"
+	live_debug_log "overlays: ${overlays} white_listed_devices: ${white_listed_devices}"
 	#
 	# The devices that are hosting the actual live rootfs should not be
 	# used for persistence storage since otherwise you might mount a
@@ -1195,11 +1195,11 @@ find_persistence_media ()
 	do
 		black_listed_devices="${black_listed_devices} $(what_is_mounted_on d)"
 	done
-	live_debug_log "    black_listed_devices: ${black_listed_devices}"
+	live_debug_log "black_listed_devices: ${black_listed_devices}"
 
 	for dev in $(storage_devices "${black_listed_devices}" "${white_listed_devices}")
 	do
-		live_debug_log "    checking device ${dev}"
+		live_debug_log "checking device ${dev}"
 		local result luks_device
 		result=""
 
@@ -1210,42 +1210,42 @@ find_persistence_media ()
 		# device already has been opened.
 		if is_in_comma_sep_list luks ${PERSISTENCE_ENCRYPTION} && is_luks_partition ${dev}
 		then
-			live_debug_log "    checking device for luks"
+			live_debug_log "checking device for luks"
 			if luks_device=$(open_luks_device "${dev}")
 			then
 				dev="${luks_device}"
-				live_debug_log "    its a luks_device: ${luks_device}"
+				live_debug_log "its a luks_device: ${luks_device}"
 			else
 				# skip $dev since we failed/chose not to open it
-				live_debug_log "    its a luks_device: ${luks_device} but we failed to open it"
+				live_debug_log "its a luks_device: ${luks_device} but we failed to open it"
 				continue
 			fi
 		elif ! is_in_comma_sep_list none ${PERSISTENCE_ENCRYPTION}
 		then
 			# skip $dev since we don't allow unencrypted storage
-			live_debug_log "    its not a luks_device and we don't allow unencrypted storage"
+			live_debug_log "its not a luks_device and we don't allow unencrypted storage"
 			continue
 		fi
 
 		# Probe for matching GPT partition names or filesystem labels
-		live_debug_log "    checking device ${dev} for GPT partition names or filesystem labels"
-		live_debug_log "    PERSISTENCE_STORAGE: ${PERSISTENCE_STORAGE}"
+		live_debug_log "checking device ${dev} for GPT partition names or filesystem labels"
+		live_debug_log "PERSISTENCE_STORAGE: ${PERSISTENCE_STORAGE}"
 		if is_in_comma_sep_list filesystem ${PERSISTENCE_STORAGE}
 		then
-			live_debug_log "    checking for GPT partition names"
+			live_debug_log "checking for GPT partition names"
 			result=$(probe_for_gpt_name "${overlays}" ${dev})
 			if [ -n "${result}" ]
 			then
 				ret="${ret} ${result}"
-				live_debug_log "    it's a GPT device ${ret}"
+				live_debug_log "it's a GPT device ${ret}"
 				continue
 			fi
-			live_debug_log "    checking device for filesystem labels"
+			live_debug_log "checking device for filesystem labels"
 			result=$(probe_for_fs_label "${overlays}" ${dev})
 			if [ -n "${result}" ]
 			then
 				ret="${ret} ${result}"
-				live_debug_log "    its got filesystem lable: ${ret}"
+				live_debug_log "its got filesystem lable: ${ret}"
 				continue
 			fi
 		fi
@@ -1253,7 +1253,7 @@ find_persistence_media ()
 		# Probe for files with matching name on mounted partition
 		if is_in_comma_sep_list file ${PERSISTENCE_STORAGE}
 		then
-			live_debug_log "    checking device for files with matching name on mounted partition"
+			live_debug_log "checking device for files with matching name on mounted partition"
 			result=$(probe_for_file_name "${overlays}" ${dev})
 			if [ -n "${result}" ]
 			then
@@ -1273,7 +1273,7 @@ find_persistence_media ()
 					fi
 				fi
 				ret="${ret} ${result}"
-				live_debug_log "    its got files with matching name on mounted partition ${ret}"
+				live_debug_log "its got files with matching name on mounted partition ${ret}"
 				continue
 			fi
 		fi
@@ -1281,12 +1281,12 @@ find_persistence_media ()
 		# Probe for directory with matching name on mounted partition
 		if is_in_comma_sep_list directory ${PERSISTENCE_STORAGE}
 		then
-			live_debug_log "    checking device for directory with matching name on mounted partition"
+			live_debug_log "checking device for directory with matching name on mounted partition"
 			result=$(probe_for_directory_name "${overlays}" ${dev})
 			if [ -n "${result}" ]
 			then
 				ret="${ret} ${result}"
-				live_debug_log "    its got directory with matching name on mounted partition ${ret}"
+				live_debug_log "its got directory with matching name on mounted partition ${ret}"
 				continue
 			fi
 		fi
@@ -1440,7 +1440,7 @@ link_files ()
 	if [ ! -d "${dest_dir}" ]
 	then
 		log_warning_msg "Must link_files into a directory"
-		live_debug_log "    must link_files into a directory"
+		live_debug_log "must link_files into a directory"
 		live_debug_log "9990-misc-helpers.sh: link_files END"
 		return
 	fi
@@ -1450,7 +1450,7 @@ link_files ()
 	do
 		local dest final_src
 		dest="${dest_dir}$(basename "${src}")"
-		live_debug_log "    dest: ${dest}"
+		live_debug_log "dest: ${dest}"
 		if [ -d "${src}" ]
 		then
 			if [ -z "$(ls -A "${src}")" ]
@@ -1496,9 +1496,9 @@ do_union ()
 	shift
 	unionro="${*}"		# space separated list of read-only branches (optional)
 	live_debug_log "9990-misc-helpers.sh: do_union BEGIN"
-	live_debug_log "    unionmountpoint: ${unionmountpoint}"
-	live_debug_log "    unionrw: ${unionrw}"
-	live_debug_log "    unionro: ${unionro}"
+	live_debug_log "unionmountpoint: ${unionmountpoint}"
+	live_debug_log "unionrw: ${unionrw}"
+	live_debug_log "unionro: ${unionro}"
 
 	case "${UNIONTYPE}" in
 		aufs)
@@ -1536,7 +1536,7 @@ do_union ()
 	esac
 
 	mount -t ${UNIONTYPE} ${unionmountopts} ${UNIONTYPE} "${unionmountpoint}"
-	live_debug_log "    mount -t ${UNIONTYPE} ${unionmountopts} ${UNIONTYPE} ${unionmountpoint}"
+	live_debug_log "mount -t ${UNIONTYPE} ${unionmountopts} ${UNIONTYPE} ${unionmountpoint}"
 	live_debug_log "9990-misc-helpers.sh: do_union END"
 }
 
@@ -1564,8 +1564,8 @@ get_custom_mounts ()
 	custom_mounts=${1}
 	shift
 	devices=${@}
-	live_debug_log "    devices: ${@}"
-	live_debug_log "    custom_mounts: ${custom_mounts}"
+	live_debug_log "devices: ${@}"
+	live_debug_log "custom_mounts: ${custom_mounts}"
 	bindings="/tmp/bindings.list"
 	links="/tmp/links.list"
 	rm -rf ${bindings} ${links} 2> /dev/null
@@ -1575,7 +1575,7 @@ get_custom_mounts ()
 		local device_name backing include_list
 		device_name="$(basename ${device})"
 		backing=$(mount_persistence_media ${device})
-		live_debug_log "    backing: ${backing}"
+		live_debug_log "backing: ${backing}"
 
 		if [ -z "${backing}" ]
 		then
@@ -1589,7 +1589,7 @@ get_custom_mounts ()
 			continue
 		fi
 		# include_list points to a file containing user mount points
-		live_debug_log "    include_list: ${include_list}"
+		live_debug_log "include_list: ${include_list}"
 
 		if [ -n "${LIVE_BOOT_DEBUG}" ] && [ -e "${include_list}" ]
 		then
@@ -1607,7 +1607,7 @@ get_custom_mounts ()
 			if trim_path ${dir} | grep -q -e "^[^/]" -e "^/lib" -e "^/run/live\(/.*\)\?$" -e "^/\(.*/\)\?\.\.\?\(/.*\)\?$"
 			then
 				log_warning_msg "Skipping unsafe custom mount ${dir}: must be an absolute path containing neither the \".\" nor \"..\" special dirs, and cannot be \"/lib\", or \"/run/live\" or any of its sub-directories."
-				live_debug_log "    Skipping unsafe custom mount ${dir}"
+				live_debug_log "Skipping unsafe custom mount ${dir}"
 				continue
 			fi
 
@@ -1627,20 +1627,20 @@ get_custom_mounts ()
 						;;
 					*)
 						log_warning_msg "Skipping custom mount with unknown option: ${opt}"
-						live_debug_log "    Skipping custom mount with unknown option: ${opt}"
+						live_debug_log "Skipping custom mount with unknown option: ${opt}"
 						continue 2
 						;;
 				esac
 			done
 
 			source="${dir}"
-			live_debug_log "    source: ${source}"
+			live_debug_log "source: ${source}"
 			if [ -n "${opt_source}" ]
 			then
 				if echo ${opt_source} | grep -q -e "^/" -e "^\(.*/\)\?\.\.\?\(/.*\)\?$" && [ "${opt_source}" != "." ]
 				then
 					log_warning_msg "Skipping unsafe custom mount with option source=${opt_source}: must be either \".\" (the media root) or a relative path w.r.t. the media root that contains neither comas, nor the special \".\" and \"..\" path components"
-					live_debug_log "    Skipping unsafe custom mount with option source=${opt_source}"
+					live_debug_log "Skipping unsafe custom mount with option source=${opt_source}"
 					continue
 				else
 					source="${opt_source}"
@@ -1679,7 +1679,7 @@ get_custom_mounts ()
 	do
 		if echo ${source} | grep -qe "^${prev_source}\(/.*\)\?$"
 		then
-			live_debug_log "    Two persistence mounts have the same or nested sources: ${source} on ${dest}, and ${prev_source} on ${prev_dest}"
+			live_debug_log "Two persistence mounts have the same or nested sources: ${source} on ${dest}, and ${prev_source} on ${prev_dest}"
 			panic "Two persistence mounts have the same or nested sources: ${source} on ${dest}, and ${prev_source} on ${prev_dest}"
 		fi
 		prev_source=${source}
@@ -1694,7 +1694,7 @@ activate_custom_mounts ()
 	custom_mounts="${1}" # the ouput from get_custom_mounts()
 	used_devices=""
 	live_debug_log "9990-misc-helpers.sh: activate_custom_mounts BEGIN"
-	live_debug_log "    custom_mounts: ${custom_mounts}"
+	live_debug_log "custom_mounts: ${custom_mounts}"
 	while read device source dest options # < ${custom_mounts}
 	do
 		local opt_bind opt_link opt_union
@@ -1723,11 +1723,11 @@ activate_custom_mounts ()
 		then
 			if [ "${dest}" = "${rootmnt}" ]
 			then
-				live_debug_log "    unmounting ${dest}, already mounted on ${rootmnt}"
+				live_debug_log "unmounting ${dest}, already mounted on ${rootmnt}"
 				umount "${dest}"
 			else
 				log_warning_msg "Skipping custom mount ${dest}: $(what_is_mounted_on "${dest}") is already mounted there"
-				live_debug_log "    Skipping custom mount ${dest}: $(what_is_mounted_on "${dest}") is already mounted there"
+				live_debug_log "Skipping custom mount ${dest}: $(what_is_mounted_on "${dest}") is already mounted there"
 				continue
 			fi
 		fi
@@ -1828,7 +1828,7 @@ activate_custom_mounts ()
 			do_union ${dest} ${source} ${rootfs_dest_backing}
 		elif [ -n "${opt_bind}" ] && [ -z "${PERSISTENCE_READONLY}" ]
 		then
-			live_debug_log "    mount -o bind ${source} ${dest}"
+			live_debug_log "mount -o bind ${source} ${dest}"
 			mount -o bind "${source}" "${dest}"
 		elif [ -n "${opt_bind}" -o -n "${opt_union}" ] && [ -n "${PERSISTENCE_READONLY}" ]
 		then
@@ -1866,7 +1866,7 @@ activate_custom_mounts ()
 	done < ${custom_mounts}
 
 	echo ${used_devices}
-	live_debug_log "    used_devices: ${used_devices}"
+	live_debug_log "used_devices: ${used_devices}"
 	live_debug_log "9990-misc-helpers.sh: activate_custom_mounts END"
 
 }

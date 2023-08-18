@@ -29,7 +29,7 @@ Remove_persistence ()
 	esac
 
 	# Remove persistence
-	live_debug_log "    Removing everything from /run/live/persistence except persistence.conf"
+	live_debug_log "Removing everything from /run/live/persistence except persistence.conf"
 	cd /run/live/overlay && find . -not -name 'persistence.conf' | xargs rm -rf
 
 	live_debug_log "2010-remove-persistence: Remove_persistence END"

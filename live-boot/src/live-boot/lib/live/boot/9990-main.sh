@@ -41,7 +41,7 @@ Live ()
 		then
 			livefs_root="${mountpoint?}"
 		else
-			live_debug_log "    Unable to find a live file system on the network"
+			live_debug_log "Unable to find a live file system on the network"
 			panic "Unable to find a live file system on the network"
 		fi
 	else
@@ -51,15 +51,15 @@ Live ()
 		elif [ -n "${PLAIN_ROOT}" ] && [ -n "${ROOT}" ]
 		then
 			# Do a local boot from hd
-			live_debug_log "    Do a local boot from hd"
+			live_debug_log "Do a local boot from hd"
 			livefs_root=${ROOT}
 		else
 			if [ -x /usr/bin/memdiskfind ]
 			then
-				live_debug_log "    looking for a memdisk"
+				live_debug_log "looking for a memdisk"
 				if MEMDISK=$(/usr/bin/memdiskfind)
 				then
-					live_debug_log "    We found a memdisk"
+					live_debug_log "We found a memdisk"
 					# We found a memdisk, set up phram
 					# Sometimes "modprobe phram" can not successfully create /dev/mtd0.
 				        # Have to try several times.
@@ -85,7 +85,7 @@ Live ()
 			while [ "$i" -lt 60 ]
 			do
 				livefs_root=$(find_livefs ${i})
-				live_debug_log "    Scan local devices for the image:$livefs_root"
+				live_debug_log "Scan local devices for the image:$livefs_root"
 				if [ -n "${livefs_root}" ]
 				then
 					break
@@ -99,7 +99,7 @@ Live ()
 
 	if [ -z "${livefs_root}" ]
 	then
-		live_debug_log "    Unable to find a medium containing a live file system"
+		live_debug_log "Unable to find a medium containing a live file system"
 		panic "Unable to find a medium containing a live file system"
 	fi
 
@@ -116,7 +116,7 @@ Live ()
 	if [ "${live_dest}" ]
 	then
 		log_begin_msg "Copying live media to ${live_dest}"
-		live_debug_log "    Copying live media to ${live_dest}"
+		live_debug_log "Copying live media to ${live_dest}"
 		copy_live_to "${livefs_root}" "${live_dest}"
 		log_end_msg
 	fi
@@ -126,13 +126,13 @@ Live ()
 	# rid of it when running from RAM
 	if [ -n "$FROMISO" ] && [ "${TORAM}" ]
 	then
-		live_debug_log "    1 FINDISO:$FINDISO TORAM:$TORAM"
+		live_debug_log "1 FINDISO:$FINDISO TORAM:$TORAM"
 		losetup -d /dev/loop0
 
 		if is_mountpoint /run/live/fromiso
 		then
 			umount /run/live/fromiso
-			live_debug_log "    umount /run/live/findiso"
+			live_debug_log "umount /run/live/findiso"
 			rmdir --ignore-fail-on-non-empty /run/live/fromiso \
 				>/dev/null 2>&1 || true
 		fi
@@ -154,7 +154,7 @@ Live ()
 
 	if [ -n "${ROOT_PID}" ]
 	then
-		live_debug_log "    ROOT_PID:$ROOT_PID"
+		live_debug_log "ROOT_PID:$ROOT_PID"
 		echo "${ROOT_PID}" > "${rootmnt}"/lib/live/root.pid
 	fi
 
@@ -171,13 +171,13 @@ Live ()
 	# rid of it when running from RAM
 	if [ -n "$FINDISO" ] && [ "${TORAM}" ]
 	then
-		live_debug_log "    2 FINDISO:$FINDISO TORAM:$TORAM"
+		live_debug_log "2 FINDISO:$FINDISO TORAM:$TORAM"
 		losetup -d /dev/loop0
 
 		if is_mountpoint /run/live/findiso
 		then
 			umount /run/live/findiso
-			live_debug_log "    umount /run/live/findiso"
+			live_debug_log "umount /run/live/findiso"
 			rmdir --ignore-fail-on-non-empty /run/live/findiso \
 				>/dev/null 2>&1 || true
 		fi
@@ -185,7 +185,7 @@ Live ()
 
 	if [ -f /etc/hostname ] && ! grep -E -q -v '^[[:space:]]*(#|$)' "${rootmnt}/etc/hostname"
 	then
-		live_debug_log "    Copying /etc/hostname to ${rootmnt}/etc/hostname"
+		live_debug_log "Copying /etc/hostname to ${rootmnt}/etc/hostname"
 		log_begin_msg "Copying /etc/hostname to ${rootmnt}/etc/hostname"
 		cp -v /etc/hostname "${rootmnt}/etc/hostname"
 		log_end_msg
@@ -193,7 +193,7 @@ Live ()
 
 	if [ -f /etc/hosts ] && ! grep -E -q -v '^[[:space:]]*(#|$|(127.0.0.1|::1|ff02::[12])[[:space:]])' "${rootmnt}/etc/hosts"
 	then
-		live_debug_log "    Copying /etc/hosts to ${rootmnt}/etc/hosts"
+		live_debug_log "Copying /etc/hosts to ${rootmnt}/etc/hosts"
 		log_begin_msg "Copying /etc/hosts to ${rootmnt}/etc/hosts"
 		cp -v /etc/hosts "${rootmnt}/etc/hosts"
 		log_end_msg
@@ -207,7 +207,7 @@ Live ()
 	fi
 	if [ -f /etc/resolv.conf ] && ! grep -E -q -v '^[[:space:]]*(#|$)' "${DNSFILE}"
 	then
-		live_debug_log "    Copying /etc/resolv.conf to ${DNSFILE}"
+		live_debug_log "Copying /etc/resolv.conf to ${DNSFILE}"
 		log_begin_msg "Copying /etc/resolv.conf to ${DNSFILE}"
 		cp -v /etc/resolv.conf "${DNSFILE}"
 		log_end_msg
@@ -215,7 +215,7 @@ Live ()
 
 	if ! [ -d "/lib/live/boot" ]
 	then
-		live_debug_log "    A wrong rootfs was mounted."
+		live_debug_log "A wrong rootfs was mounted."
 		panic "A wrong rootfs was mounted."
 	fi
 
@@ -238,7 +238,7 @@ Live ()
 				cp boot.log "${rootmnt}/var/log/live" 2>/dev/null; \
 				cp fsck.log "${rootmnt}/var/log/live" 2>/dev/null )
 
-	live_debug_log "    copying mounts to /run/live for your debuging pleasure"
+	live_debug_log "copying mounts to /run/live for your debuging pleasure"
 	cp /proc/mounts /run/live
 	
 	live_debug_log "9990-main.sh: Live END"

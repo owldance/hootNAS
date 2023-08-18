@@ -13,7 +13,7 @@ There are two alternative options for debugging `live-boot` or any other
 scripts:
 
 1. Writing to the kernel log using
-```
+```bash
     echo "<7>whatever: A message from early userspace" > /dev/kmsg
 ```
 Where the number in the angle brackets is the kernel log level. This produces 
@@ -21,15 +21,34 @@ perfectly formatted kernel log messages with a timestamp, that are available
 in `journald` and `dmesg`.
 
 2. Writing to a file in the `/run` directory, e.g. `/run/live` 
-```
+```bash
     echo "A message from early userspace" >> /run/live/boot-live.log
 ```
 This allows for large amounts of data to be logged.
 
 Based on the above, a new function `live_debug_log ()` has been implemented in 
-`0010-debug`, it creates a file `/run/live/boot-live.log` which can be examined 
-in userspace. Since the file resides in `/run/live` it is not persistent, and 
-will be discarded on every reboot.
+`0010-debug`, it logs debug messages to `/run/live/boot-live.log` and optionally 
+to the kernel log if the message starts with `live-boot:`. The logfile can 
+be examined in userspace, and since it is not persistent, it will be discarded 
+on every reboot.
+
+A variable `indent_tracker=0` has been added to `0001-init-vars.sh` which is 
+set to keep track of the indentation level in the logfile. Therefore when 
+logging inside a function, it is important that both function entry and all 
+exits are marked with BEGIN and END respectively.
+
+### Example logging
+
+```bash
+ live_debug_log "source-filename.sh: myfunction BEGIN"
+    ...
+    live_debug_log "This is a log message"
+    live_debug_log "live-boot:This is a kernel log message"
+    ...
+ live_debug_log "source-filename.sh: myfunction END"
+```
+
+
 
 References:
 
