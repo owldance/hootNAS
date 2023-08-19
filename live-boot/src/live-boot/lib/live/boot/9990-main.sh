@@ -234,9 +234,6 @@ Live ()
 	[ -w "${rootmnt}/var/log/" ] && mkdir -p "${rootmnt}/var/log/live" && ( \
 				cp boot.log "${rootmnt}/var/log/live" 2>/dev/null; \
 				cp fsck.log "${rootmnt}/var/log/live" 2>/dev/null )
-
-	live_debug_log "copying mounts to /run/live for your debuging pleasure"
-	cp /proc/mounts /run/live
 	
 	live_debug_log "9990-main.sh: Live END"
 }

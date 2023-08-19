@@ -44,8 +44,28 @@ SECONDS=0
 set -e -o pipefail
 # error handler, called on non-zero exit codes
 function trapper {
-  if [ $? -ne 0 ]; then
-    echo "some error occured"
+  original_exit_code=$?
+  if [ $user_err -eq 1 ]; then
+    echo
+    echo "usage:"
+    echo
+    echo "    sudo ./build-hootiso.sh <build-dir> <newiso> <nosquash>"
+    echo
+    echo "where <build-dir> is an existing build directory, and <newiso> is the" 
+    echo "name of the new iso file to be built, if no path is given, the"
+    echo "iso will be created in the <build-dir> directory, if a path is given," 
+    echo "the path must exist. Any existing file will be overwritten." 
+    echo
+    echo "<nosquash> is an optional command, if specified, no compression of"
+    echo "hootos will be done to save time. this is useful if you only have made"
+    echo "changes to build-hootiso.sh and want to test them quickly. you must run"
+    echo "build-hootiso.sh the first time without nosquash, so that the squashfs"
+    echo "file is created."
+    echo
+  elif [ $original_exit_code -ne 0 ]; then
+    echo
+    echo "error: build-hootiso.sh failed"
+    echo
   else
     echo "done.. iso file can be found here:"
     # check if $new_iso has a path, if so, display path
@@ -56,18 +76,14 @@ function trapper {
         fi
     echo
   fi
-  # remove $HOOT_REPO/hoot-os/assets/images directory if it exists
-  if [ -d "$HOOT_REPO/hoot-os/assets/images" ]; then
-    rm -r $HOOT_REPO/hoot-os/assets/images
-  fi
-  # check if /tmp/hootos/boot is not empty, if so, move it back to hootos
-  if [ "$(ls -A /tmp/hootos/boot)" ]; then
+  # cleanup
+  #
+  # check if /tmp/hootos/boot exist, if exsist check is not empty, 
+  # if so, move it back to hootos
+  [ -d "/tmp/hootos/boot" ] && [ "$(ls -A /tmp/hootos/boot)" ] && \
     mv /tmp/hootos/boot hootos
-  fi
   # delete /tmp/hootos directory if exists
-  if [ -d "/tmp/hootos" ]; then
-    rm -r /tmp/hootos
-  fi
+  [ -d "/tmp/hootos" ] && rm -r /tmp/hootos
   # unmount overlay filesystem
   if [ "$(mountpoint -q $PWD/hootos ; echo $?)" = 0 ]; then
     echo "unmounting overlay filesystem"
@@ -104,28 +120,10 @@ elif [ ! -d "$(dirname $new_iso)" ] || [ ! "${new_iso##*.}" = "iso" ]; then
   user_err=1
 fi
 
-if [ $user_err = 1 ]; then
-  echo
-  echo "usage:"
-  echo
-  echo "    sudo ./build-hootiso.sh <build-dir> <newiso> <nosquash>"
-  echo
-  echo "where <build-dir> is an existing build directory, and <newiso> is the" 
-  echo "path and/or name of the new iso file to be built, if no path is given, the"
-  echo "iso will be created in the <build-dir>/<newiso> directory, any existing"
-  echo "file will be overwritten. if a path is given, it must exist."
-  echo
-  echo "<nosquash> is an optional command, if specified, no compression of"
-  echo "hootos will be done to save time. this is useful if you only have made"
-  echo "changes to build-hootiso.sh and want to test them quickly. you must run"
-  echo "build-hootiso.sh the first time without nosquash, so that the squashfs"
-  echo "file is created."
-  echo
-  exit 1
-fi
+[ $user_err = 1 ] && exit 0
 
 # extract 'images' directory from tarball, this is required for xorriso
-echo "extracting 'images' directory from tar file"
+echo "extracting 'images' directory from tarball to /tmp/hootos/assets"
 mkdir -p /tmp/hootos/assets
 tar -xzf $HOOT_REPO/hoot-os/assets/iso-assets.tar.gz \
       -C /tmp/hootos/assets images
@@ -154,8 +152,8 @@ cp hootos/boot/initrd.img isoimage/live/initrd
 # if $3 is not "nosquash", compress system folder
 if [ ! "$3" = "nosquash" ]; then
   # move hootos/boot to /tmp/hootos
-  # so it will not be included in filesystem.squashfs, this will save 
-  # +100MB of ram when booting the iso with 'toram' commandline option.
+  # so that the directory it will not be included in filesystem.squashfs, this 
+  # will save +100MB of ram when booting the iso with 'toram' commandline option.
   mkdir -p /tmp/hootos
   mv hootos/boot /tmp/hootos
   # create manifest
@@ -200,7 +198,9 @@ set menu_color_normal=white/black
 set menu_color_highlight=black/light-gray
 
 menuentry 'Boot hootNAS' {
-        linux   /live/vmlinuz boot=live persistence persistence-zfs=dpool/sysstate noeject skipconfig quiet splash
+        linux   /live/vmlinuz boot=live persistence toram \
+                persistence-zfs=dpool/sysstate skipconfig \
+                quiet splash
         initrd  /live/initrd 
 }
 grub_platform
@@ -222,22 +222,22 @@ EOF
 # filesystem rather than an actual physical CD. 
 cat <<EOF > isoimage/boot/grub/loopback.cfg
 menuentry 'Boot hootNAS' {
-        linux   /live/vmlinuz boot=live noeject persistence persistence-zfs=dpool/sysstate iso-scan/filename=\${iso_path} quiet splash 
+        linux   /live/vmlinuz boot=live persistence toram \
+                persistence-zfs=dpool/sysstate iso-scan/filename=\${iso_path} \
+                quiet splash 
         initrd  /live/initrd
 }
 EOF
 
 # md5sum of everything in the image folder, except md5sum.txt itself
-cd isoimage
-find . -type f -print0 | \
+find isoimage -type f -print0 | \
 xargs -0 md5sum | \
-grep -v "md5sum.txt" > md5sum.txt
-cd ..
+sed -z 's| isoimage/| .|g' | \
+grep -v "md5sum.txt" > isoimage/md5sum.txt
 
 # if $new_iso already exists, delete it
-if [ -f "$new_iso" ]; then 
-    rm $new_iso
-fi
+[ -f "$new_iso" ] && rm $new_iso
+
 
 # a original iso recipie can be obtained with the following command:
 # xorriso -indev $ORIGINAL_ISO -report_el_torito cmd
@@ -273,17 +273,3 @@ xorriso -outdev $new_iso \
 -boot_image any platform_id=0xef \
 -boot_image any emul_type=no_emulation 
 
-
-
-
-# ls -l hootos/boot/
-# total 110028
-# -rw-r--r-- 1 root root   275465 Aug 18 18:45 config-6.2.0-26-generic
-# drwxr-xr-x 2 root root     4096 Aug 18 18:45 grub
-# lrwxrwxrwx 1 root root       27 Aug 18 18:45 initrd.img -> initrd.img-6.2.0-26-generic
-# -rw-r--r-- 1 root root 90647382 Aug 18 18:45 initrd.img-6.2.0-26-generic
-# lrwxrwxrwx 1 root root       27 Aug 18 18:45 initrd.img.old -> initrd.img-6.2.0-26-generic
-# -rw------- 1 root root  7963097 Aug 18 18:45 System.map-6.2.0-26-generic
-# lrwxrwxrwx 1 root root       24 Aug 18 18:45 vmlinuz -> vmlinuz-6.2.0-26-generic
-# -rw------- 1 root root 13770312 Aug 18 18:45 vmlinuz-6.2.0-26-generic
-# lrwxrwxrwx 1 root root       24 Aug 18 18:45 vmlinuz.old -> vmlinuz-6.2.0-26-generic

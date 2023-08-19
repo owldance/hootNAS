@@ -74,8 +74,9 @@ persistence-zfs=*)
 $ cat /run/live/boot-live.log 
 9990-main.sh: Live BEGIN
     9990-cmdline-old.sh: Cmdline_old BEGIN
-        live_boot_cmdline: BOOT_IMAGE=/live/vmlinuz boot=live persistence persistence-zfs=dpool/sysstate noeject skipconfig quiet splash
+        live_boot_cmdline: BOOT_IMAGE=/live/vmlinuz boot=live persistence toram persistence-zfs=dpool/sysstate skipconfig quiet splash
         PERSISTENCE: true
+        TORAM: true
         PERSISTZFS: dpool/sysstate
         NOFSTAB: true
         NONETWORKING: true
@@ -98,6 +99,18 @@ $ cat /run/live/boot-live.log
     livefs_root:/run/live/medium
     0030-verify-checksums: Verify_checksums BEGIN
     0030-verify-checksums: Verify_checksums END
+    Copying live media to ram
+    9990-toram-todisk.sh: copy_live_to BEGIN
+        copyfrom: /run/live/medium
+        copytodev: ram
+        copyto: /run/live/medium_swap
+        used/free fs kbytes + 5% more: 598697
+        copying to ram: freespace: 3883024
+        begin copying (or uncompressing)
+        mount -t tmpfs -o size=598697k /dev/shm /run/live/medium_swap
+        rsync -a --progress /run/live/medium/* /run/live/medium_swap
+        mount -r -o move /run/live/medium_swap /run/live/medium
+    9990-toram-todisk.sh: copy_live_to END
     9990-misc-helpers.sh: mount_images_in_directory BEGIN
         directory: /run/live/medium
         rootmnt: /root
@@ -156,7 +169,6 @@ $ cat /run/live/boot-live.log
                 source: /srv
                 source: /opt
             9990-misc-helpers.sh: get_custom_mounts END
-            copying custom_mounts.list to /run/live for your debuging pleasure
             9990-misc-helpers.sh: activate_custom_mounts BEGIN
                 custom_mounts: /tmp/custom_mounts.list
                 9990-misc-helpers.sh: do_union BEGIN
@@ -212,6 +224,6 @@ $ cat /run/live/boot-live.log
     9990-netbase.sh: Netbase END
     3020-swap.sh: Swap BEGIN
     3020-swap.sh: Swap END
-    copying mounts to /run/live for your debuging pleasure
 9990-main.sh: Live END
+
 ```

@@ -349,8 +349,6 @@ setup_unionfs ()
 
 		# Gather information about custom mounts from devies detected as overlays
 		get_custom_mounts ${custom_mounts} ${overlay_devices}
-		live_debug_log "copying custom_mounts.list to /run/live for your debuging pleasure"
-		cp ${custom_mounts} "/run/live"
 
 		[ -n "${LIVE_BOOT_DEBUG}" ] && cp ${custom_mounts} "/run/live/persistence"
 

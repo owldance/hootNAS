@@ -165,14 +165,17 @@ if [ ! -f "node-$nodejs_version-linux-x64.tar.xz" ]; then
   https://nodejs.org/dist/${nodejs_version}/node-${nodejs_version}-linux-x64.tar.xz
 fi
 
-################################################################################
-#                    CONFIGURE BASE SYSTEM                                     #
-################################################################################
-
 echo "mounting overlay filesystem"
 mount -t overlay overlay \
     -o lowerdir=../baseos,upperdir=staging,workdir=tmpo \
     $PWD/hootos
+
+echo "binding filesystems from host to hootos"
+mount --make-private --rbind /dev hootos/dev
+mount --make-private --rbind /proc hootos/proc
+mount --make-private --rbind /sys hootos/sys
+
+# CONFIGURE PACKAGE SOURCES
 
 echo "configuring the package sources"
 cat <<EOF >hootos/etc/apt/sources.list
@@ -186,14 +189,13 @@ deb http://security.ubuntu.com/ubuntu \
 jammy-security main restricted universe multiverse
 EOF
 
-echo "binding filesystems from host to hootos"
-mount --make-private --rbind /dev hootos/dev
-mount --make-private --rbind /proc hootos/proc
-mount --make-private --rbind /sys hootos/sys
+# CONFIGURE HOSTNAME
 
 echo "configuring hostname"
 echo hootnas > hootos/etc/hostname
 sed -i "2i 127.0.1.1       hootnas" hootos/etc/hosts
+
+# INSTALL AND CONFIGURE LOCALES
 
 echo "generating locales"
 cat <<EOF | chroot hootos
@@ -230,16 +232,6 @@ echo "configuring local system timezone"
 rm /etc/localtime
 ln -s /usr/share/zoneinfo/$HOOT_ZONE/$HOOT_CITY /etc/localtime
 
-# configure time synchronization servers
-# /etc/systemd/timesyncd.conf
-#  #[Time]
-#  #NTP=
-#  #FallbackNTP=ntp.ubuntu.com
-#  #RootDistanceMaxSec=5
-#  #PollIntervalMinSec=32
-#  #PollIntervalMaxSec=2048
-
-
 echo "configuring keyboard"
 # debconf-set-selections doesn't work here when it's a first install
 cat <<EOF | chroot hootos
@@ -271,6 +263,8 @@ VIDEOMODE=
 dpkg-reconfigure --frontend noninteractive console-setup
 EOF
 
+# INSTALL KERNEL, FIRMWARE AND SOFTWARE
+
 echo "installing kernels headers and modules"
 # check if host kernel version is the same as $kernel_version
 if [ ! "$(uname -r)" = "$kernel_version" ]; then
@@ -279,7 +273,6 @@ if [ ! "$(uname -r)" = "$kernel_version" ]; then
   echo "installed. Beware of any problems that may arise from this."
 fi
 chroot hootos apt install --yes linux-image-$kernel_version
-# chroot hootos apt install --yes linux-headers-$kernel_version
 # zfs module is in linux-modules-extra
 chroot hootos apt install --yes linux-modules-extra-$kernel_version
 
@@ -295,7 +288,7 @@ else
       -C hootos/lib/firmware
 fi
 
-echo "installing packages"
+echo "installing software"
 cat <<'EOF' | chroot hootos
 apt install --yes man-db
 apt install --yes wget
@@ -305,7 +298,6 @@ apt install --yes gdisk
 apt install --yes dialog
 apt install --yes zfsutils-linux
 apt install --yes zfs-initramfs
-# apt install --yes btrfs-progs
 apt install --yes live-boot 
 apt install --yes nfs-kernel-server
 apt install --yes tgt
@@ -332,9 +324,21 @@ chroot hootos apt --yes clean
 echo "update the initrd files"
 chroot hootos update-initramfs -c -k all
 
-################################################################################
-#                                USERSPACE                                     #
-################################################################################
+# CONTINUE SYSTEM CONFIGURATION
+
+# TODO: configure journald to clear archived logs, suggest using 'volatile'. 
+# This can be done by editing 
+# the journald configuration file (/etc/systemd/journald.conf)
+# see: man journald.conf
+
+# TODO: configure time synchronization servers
+# /etc/systemd/timesyncd.conf
+#  #[Time]
+#  #NTP=
+#  #FallbackNTP=ntp.ubuntu.com
+#  #RootDistanceMaxSec=5
+#  #PollIntervalMinSec=32
+#  #PollIntervalMaxSec=2048
 
 echo "configuring network for Systemd-networkd"
 # all ethernet links: en*
