@@ -1,15 +1,7 @@
 #!/bin/bash
 #
-# usage:
-#
-#     sudo build-hootos.sh <buildname>
-#
-# where <buildname> is a new build directory
-#
-# this script will create following subfolders in the current working directory:
-# buildname/staging 
-# buildname/tmpo 
-# buildname/hootos
+# this script will build a hootos system in a subdirectory of the current
+# working directory. see the README.md in this directory for the full story.
 # 
 # requirements:
 # - the baseos must be built first with build-baseos.sh, and the baseos 
@@ -19,37 +11,44 @@
 # - internet connection
 # - must be run as root on a jammy distro
 #
-# optional environment variables:
-# - HOOT_LOCALE, if not set, defaults to 'en_DE.UTF-8'
-#   set your locale in the format 'en_XX.UTF-8'
-#   see supported UTF-8 locales here: /usr/share/i18n/SUPPORTED
-# - HOOT_XKB_LAYOUT, if not set, defaults to 'de'
+# usage:
+#
+#     sudo build-hootos.sh <buildname> <optional parameter>=<value>
+#
+# where <buildname> is a new build directory that will be created in the current
+# working directory. The buildname must not exist yet.
+#
+# If an <optional parameter> is not specified in the commandline, it will use 
+# its default value as per below table:
+#
+#     <optional parameter>  default <value>
+#     -------------------------------------
+#     set-locale            en_DE.UTF-8
+#     set-xkb-layout        de
+#     set-xkb-model         pc105
+#     set-zone              Europe
+#     set-city              Berlin
+#     kernel-version        6.2.0-26-generic
+#     build-type            virtual
+#     nodejs-version        v18.12.0
+#
+#   comments:
+#   1. set-locale) see supported locales: /usr/share/i18n/SUPPORTED
+#   2. set-xkb-layout) see supported layouts: /usr/share/X11/xkb/rules/evdev.lst
+#   3. set-zone and set-city) setting up local timezone and city is especially 
+#   important for LDAP/AD authentication. 
+#   see supported cities and timezones: /usr/share/zoneinfo
+#   4. kernel_version) set the kernel version to be installed, we want to be in
+#   control of which kernel version is installed, so we can detect any problems 
+#   that may arise from a kernel upgrade.
+#   5. build_type) if 'virtual' this script will build a system which doesn't 
+#   include firmware and microcode. if 'metal', the system will include both 
+#   firmware and microcode.
+#   6. set-xkb-model) convenient if you are going to be working physically in
+#   front of the machine, so you can use the correct keyboard layout.
+#   model 'pc105' is a good general choice for most keyboards
 #   see supported keyboard settings: /usr/share/X11/xkb/rules/evdev.lst
-# - HOOT_ZONE, if not set, defaults to 'Europe'
-#   setting up your local timezone and city is especially important for LDAP/AD 
-#   authentication. supported timezones: /usr/share/zoneinfo
-# - HOOT_CITY, if not set, defaults to 'Berlin'
-#
-################################################################################
-#                            USER VARIABLES
-################################################################################
-#
-# you can set all the following variables to your liking
-#
-# set the kernel version to be installed, we want to be in control of which 
-# kernel version is installed, so we can detect any problems that may arise
-# from a kernel upgrade.
-kernel_version="6.2.0-26-generic"
-# set the build variable to either 'metal' or 'virtual'
-# build 'metal' system which includes firmware and microcode, 
-# or 'virtual' system which doesn't include firmware and microcode
-build=virtual
-# keyboard settings, convenient if you are going to be working in the terminal. 
-# model 'pc105' is a good general choice for most keyboards
-# see supported keyboard settings: /usr/share/X11/xkb/rules/evdev.lst
-xkb_model=pc105
-# download and install node.js
-nodejs_version=v18.12.0
+#   7. nodejs-version) set the node.js version to be installed.
 #
 ################################################################################
 
@@ -62,7 +61,33 @@ SECONDS=0
 set -e -o pipefail
 # error handler, called on non-zero exit codes
 function trapper {
-  if [ $? -ne 0 ]; then
+  original_exit_code=$?
+  # if user input is incorrect, display usage and exit
+  if [ $user_err = 1 ]; then
+    echo "usage:"
+    echo
+    echo "    sudo build-hootos.sh <buildname> <optional parameter>=<value>"
+    echo
+    echo "where <buildname> is a new build directory that will be created in the current"
+    echo "working directory. The buildname must not exist yet."
+    echo
+    echo "If an <optional parameter> is not specified in the commandline, it will use "
+    echo "its default value as per below table:"
+    echo
+    echo "    <optional parameter>  default <value>"
+    echo "    -------------------------------------"
+    echo "    set-locale            en_DE.UTF-8"
+    echo "    set-xkb-layout        de"
+    echo "    set-xkb-model         pc105"
+    echo "    set-zone              Europe"
+    echo "    set-city              Berlin"
+    echo "    kernel-version        6.2.0-26-generic"
+    echo "    build-type            virtual"
+    echo "    nodejs-version        v18.12.0"
+    echo
+    echo "For more information, see comments at the begining of this script, or"
+    echo "$HOOT_REPO/hoot-os/README.md for more information."
+  elif [ $original_exit_code -ne 0 ]; then
     echo "fatal error!"
   else
     echo
@@ -75,18 +100,19 @@ function trapper {
     echo "  sudo build-hootiso.sh $build_dir my-filename.iso"
     echo
   fi
+  # cleanup
+  #
   # lazy umount because it's mounted recusively with --rbind
   [ "$(mountpoint -q hootos/dev ; echo $?)" = 0 ] && umount -lf hootos/dev
   [ "$(mountpoint -q hootos/proc ; echo $?)" = 0 ] && umount -lf hootos/proc
   [ "$(mountpoint -q hootos/sys ; echo $?)" = 0 ] && umount -lf hootos/sys
   # if node tarball exists, delete it
-  [ -f "node-${nodejs_version}-linux-x64.tar.xz" ] && \
-    rm node-${nodejs_version}-linux-x64.tar.xz
+  [ -f "/tmp/node-${nodejs_version}-linux-x64.tar.xz" ] && \
+    rm /tmp/node-${nodejs_version}-linux-x64.tar.xz
   # unmount overlay filesystem
-  [ "$(mountpoint -q $PWD/hootos ; echo $?)" = 0 ] && \
-    umount $PWD/hootos
-  # delete tmpo directory
-  [ -d "tmpo" ] && rm -r tmpo
+  [ "$(mountpoint -q $PWD/hootos ; echo $?)" = 0 ] && umount $PWD/hootos
+  # delete overwork directory
+  [ -d "overwork" ] && rm -r overwork
   # return to original working directory
   cd $owd
   # calculate duration
@@ -99,8 +125,50 @@ trap trapper EXIT
 
 # get current working directory
 owd=$PWD
-# get commandline parameter
+
+# get build_dir commandline parameter
 build_dir=$1
+shift
+# get all commandline parameters
+for comarg in "$@"
+do
+  case "${comarg}" in
+    set-locale=*)
+      set_locale="${comarg#set-locale=}"
+    ;;
+    set-xkb-layout=*)
+      xkb_layout="${comarg#set-xkb-layout=}"
+    ;;
+    set-xkb-model=*)
+      xkb_model="${comarg#set-xkb-model=}"
+    ;;
+    set-zone=*)
+      set_zone="${comarg#set-zone=}"
+    ;;
+    set-city=*)
+      set_city="${comarg#set-city=}"
+    ;;
+    kernel-version=*)
+      kernel_version="${comarg#kernel-version=}"
+    ;;
+    build-type=*)
+      build_type="${comarg#build-type=}"
+    ;;
+    nodejs-version=*)
+      nodejs_version="${comarg#nodejs-version=}"
+    ;;
+  esac
+done
+
+# set default values for optional variables if not set in commandline parameters
+[ -z "$set_locale" ] && set_locale='en_DE.UTF-8'
+[ -z "$xkb_layout" ] && xkb_layout='de'
+[ -z "$xkb_model" ] && xkb_model='pc105'
+[ -z "$set_zone" ] && set_zone='Europe'
+[ -z "$set_city" ] && set_city='Berlin'
+[ -z "$kernel_version" ] && kernel_version='6.2.0-26-generic'
+[ -z "$build_type" ] && build_type='virtual'
+[ -z "$nodejs_version" ] && nodejs_version='v18.12.0'
 
 # check user input
 user_err=0
@@ -132,26 +200,10 @@ elif [ ! -x "$(command -v debootstrap)" ]; then
   user_err=1
 fi
 
-# if user input is incorrect, display usage and exit
-if [ $user_err = 1 ]; then
-  echo
-  echo "usage:"
-  echo
-  echo "    sudo ./build-hootos.sh <buildname>"
-  echo
-  echo "where <buildname> is a new build directory"
-  echo
-  exit 1
-fi
-
-# check optional environment variables, if not set, set to default
-[ -z "$HOOT_LOCALE" ] && HOOT_LOCALE='en_DE.UTF-8'
-[ -z "$HOOT_XKB_LAYOUT" ] && $HOOT_XKB_LAYOUT='de'
-[ -z "$HOOT_ZONE" ] && HOOT_ZONE='Europe'
-[ -z "$HOOT_CITY" ] && HOOT_CITY='Berlin'
+[ $user_err = 1 ] && exit 0
 
 # create build directories
-mkdir -p $build_dir/{staging,tmpo,hootos,source}
+mkdir -p $build_dir/{staging,hootos,source}
 # cd into build directory
 cd $build_dir 
 
@@ -161,19 +213,22 @@ cp $HOOT_REPO/hoot-os/build-hootos.sh source
 # download node.js tarball if it does not exist
 if [ ! -f "node-$nodejs_version-linux-x64.tar.xz" ]; then
   echo "downloading node.js tarball"
-  wget -q --show-progress \
+  wget -P /tmp -q --show-progress \
   https://nodejs.org/dist/${nodejs_version}/node-${nodejs_version}-linux-x64.tar.xz
 fi
 
 echo "mounting overlay filesystem"
+mkdir -p overwork
 mount -t overlay overlay \
-    -o lowerdir=../baseos,upperdir=staging,workdir=tmpo \
+    -o lowerdir=../baseos,upperdir=staging,workdir=overwork \
     $PWD/hootos
 
 echo "binding filesystems from host to hootos"
 mount --make-private --rbind /dev hootos/dev
 mount --make-private --rbind /proc hootos/proc
 mount --make-private --rbind /sys hootos/sys
+
+# READY FOR SYSTEM INSTALL AND CONFIGURATION
 
 # CONFIGURE PACKAGE SOURCES
 
@@ -202,16 +257,16 @@ cat <<EOF | chroot hootos
 apt update
 apt install --yes locales
 locale-gen en_US.UTF-8
-locale-gen $HOOT_LOCALE
+locale-gen $set_locale
 apt install --yes debconf-utils
 EOF
 
 echo "configuring locales"
 cat <<EOF | chroot hootos
 echo "locales locales/locales_to_be_generated multiselect \
-$HOOT_LOCALE UTF-8, en_US.UTF-8 UTF-8" | debconf-set-selections
+$set_locale UTF-8, en_US.UTF-8 UTF-8" | debconf-set-selections
 echo "locales locales/default_environment_locale select \
-$HOOT_LOCALE" | debconf-set-selections
+$set_locale" | debconf-set-selections
 dpkg-reconfigure --frontend noninteractive locales
 EOF
 
@@ -221,8 +276,8 @@ echo "configuring timezone database"
 # https://github.com/eggert/tz
 cat <<EOF | chroot hootos
 echo "tzdata tzdata/Zones/Etc select UTC" | debconf-set-selections
-echo "tzdata tzdata/Areas select $HOOT_ZONE" | debconf-set-selections
-echo "tzdata tzdata/Zones/$HOOT_ZONE select $HOOT_CITY" | debconf-set-selections
+echo "tzdata tzdata/Areas select $set_zone" | debconf-set-selections
+echo "tzdata tzdata/Zones/$set_zone select $set_city" | debconf-set-selections
 dpkg-reconfigure --frontend noninteractive tzdata
 EOF
 
@@ -230,14 +285,14 @@ echo "configuring local system timezone"
 # at this point system has not been booted with systemd as init system (PID 1) 
 # so we can't use timedatectl to set the timezone
 rm /etc/localtime
-ln -s /usr/share/zoneinfo/$HOOT_ZONE/$HOOT_CITY /etc/localtime
+ln -s /usr/share/zoneinfo/$set_zone/$set_city /etc/localtime
 
 echo "configuring keyboard"
 # debconf-set-selections doesn't work here when it's a first install
 cat <<EOF | chroot hootos
 echo "
 XKBMODEL=\"$xkb_model\"
-XKBLAYOUT=\"$HOOT_XKB_LAYOUT\"
+XKBLAYOUT=\"$xkb_layout\"
 XKBVARIANT=\"\"
 XKBOPTIONS=\"\"
 
@@ -277,7 +332,7 @@ chroot hootos apt install --yes linux-image-$kernel_version
 chroot hootos apt install --yes linux-modules-extra-$kernel_version
 
 # if metal, install firmware
-if [ "$build" = "metal" ]; then
+if [ "$build_type" = "metal" ]; then
   chroot hootos apt install --yes linux-firmware
   chroot hootos apt install --yes intel-microcode
   chroot hootos apt install --yes amd64-microcode
@@ -288,6 +343,7 @@ else
       -C hootos/lib/firmware
 fi
 
+# TODO: add check for live-boot version
 echo "installing software"
 cat <<'EOF' | chroot hootos
 apt install --yes man-db
@@ -355,7 +411,7 @@ EOF
 # setting up node.js
 echo "setting up node.js"
 mkdir -p hootos/usr/bin/nodejs
-tar -xJvf node-${nodejs_version}-linux-x64.tar.xz \
+tar -xJvf /tmp/node-${nodejs_version}-linux-x64.tar.xz \
 -C hootos/usr/bin/nodejs >/dev/null
 # adding node.js binary to PATH
 echo "adding node.js binary to PATH"

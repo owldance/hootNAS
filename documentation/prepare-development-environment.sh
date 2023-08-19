@@ -48,21 +48,6 @@ fi
 
 # adding HOOT_REPO environment variable to /etc/environment
 echo HOOT_REPO=$hootnas_repo >>/etc/environment
-
-# set optional environment variables used by build-hootos.sh:
-# - HOOT_LOCALE, if not set, defaults to 'en_DE.UTF-8'
-#   set your locale in the format 'en_XX.UTF-8'
-#   see supported UTF-8 locales here: /usr/share/i18n/SUPPORTED
-# - HOOT_XKB_LAYOUT, if not set, defaults to 'de'
-#   see supported keyboard settings: /usr/share/X11/xkb/rules/evdev.lst
-# - HOOT_ZONE, if not set, defaults to 'Europe'
-#   setting up your local timezone and city is especially important for LDAP/AD
-#   authentication. supported timezones: /usr/share/zoneinfo
-# - HOOT_CITY, if not set, defaults to 'Berlin'
-[ -z "$HOOT_LOCALE" ] && echo HOOT_LOCALE=en_DE.UTF-8 >>/etc/environment
-[ -z "$HOOT_XKB_LAYOUT" ] && echo HOOT_XKB_LAYOUT=de >>/etc/environment
-[ -z "$HOOT_ZONE" ] && echo HOOT_ZONE=Europe >>/etc/environment
-[ -z "$HOOT_CITY" ] && echo HOOT_CITY=Berlin >>/etc/environment
     
 # check if required packages are installed, if not - install them
 deb_paks='debootstrap squashfs-tools xorriso wget'

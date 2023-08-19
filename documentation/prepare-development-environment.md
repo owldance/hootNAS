@@ -1,6 +1,6 @@
 # hootNAS - Prepare your development environment
 
-Before starting development it is recommended to read about the hootOS 
+Before starting development, it is recommended to read about the hootOS 
 architecture and boot process [here](/hoot-os/architecture-and-boot.md).
 
 ## Prepare your development environment
@@ -13,7 +13,7 @@ architecture and boot process [here](/hoot-os/architecture-and-boot.md).
 
 2.  Check the script 
     [prepare-development-environment.sh](/documentation/prepare-development-environment.sh) 
-    first, perhaps you want to change some of the optional variables. Then run 
+    first, perhaps you would want to make some changes. Then run 
     it to prepare your local development environment, it will install the 
     required dependencies e.g. node.js, npm packages, debian packages, etc. it 
     will also set environment variables.
