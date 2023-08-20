@@ -23,6 +23,15 @@ If no DHCP server is available, or the script is unable to ping *ubuntu.com*,
 the user will be given the option to enter the ip address manually on the 
 terminal screen.
 
+# create a systemd service unit file that executes the bash script 
+# ifpersistence.sh before terminal is ready.
+# multi-user.target target unit is reached before the TTY terminal is ready. 
+# multi-user.target target unit is reached after the basic system 
+# initialization is complete, and before the system is fully operational, such 
+# as network services or system monitoring services.
+
+cat <<EOF >hootos/etc/systemd/system/ifpersistence.service
+
 The script is based on the
 [dialog](https://manpages.ubuntu.com/manpages/jammy/man1/dialog.1.html) 
 package, which provides as GUI-like interface on the terminal screen.

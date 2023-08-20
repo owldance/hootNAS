@@ -35,19 +35,19 @@
 #   comments:
 #   1. set-locale) see supported locales: /usr/share/i18n/SUPPORTED
 #   2. set-xkb-layout) see supported layouts: /usr/share/X11/xkb/rules/evdev.lst
-#   3. set-zone and set-city) setting up local timezone and city is especially 
-#   important for LDAP/AD authentication. 
-#   see supported cities and timezones: /usr/share/zoneinfo
-#   4. kernel_version) set the kernel version to be installed, we want to be in
-#   control of which kernel version is installed, so we can detect any problems 
-#   that may arise from a kernel upgrade.
-#   5. build_type) if 'virtual' this script will build a system which doesn't 
-#   include firmware and microcode. if 'metal', the system will include both 
-#   firmware and microcode.
-#   6. set-xkb-model) convenient if you are going to be working physically in
+#   3. set-xkb-model) convenient if you are going to be working physically in
 #   front of the machine, so you can use the correct keyboard layout.
 #   model 'pc105' is a good general choice for most keyboards
 #   see supported keyboard settings: /usr/share/X11/xkb/rules/evdev.lst
+#   4. set-zone and set-city) setting up local timezone and city is especially 
+#   important for LDAP/AD authentication. 
+#   see supported cities and timezones: /usr/share/zoneinfo
+#   5. kernel-version) set the kernel version to be installed, we want to be in
+#   control of which kernel version is installed, so we can detect any problems 
+#   that may arise from a kernel upgrade.
+#   6. build-type) if 'virtual' this script will build a system which doesn't 
+#   include firmware and microcode. if 'metal', the system will include both 
+#   firmware and microcode.
 #   7. nodejs-version) set the node.js version to be installed.
 #
 ################################################################################
@@ -55,10 +55,6 @@
 # start measuring time
 SECONDS=0
 
-# set bash options
-# -e            exit immediately if any command returns non-zero exit status
-# -o pipefail   use exit status of the last command as exit status
-set -e -o pipefail
 # error handler, called on non-zero exit codes
 function trapper {
   original_exit_code=$?
@@ -382,19 +378,27 @@ chroot hootos update-initramfs -c -k all
 
 # CONTINUE SYSTEM CONFIGURATION
 
-# TODO: configure journald to clear archived logs, suggest using 'volatile'. 
-# This can be done by editing 
-# the journald configuration file (/etc/systemd/journald.conf)
+# configure journald logging storage mode and size
 # see: man journald.conf
+# The storage mode is default "auto" whicf behaves like "persistent" if the 
+# /var/log/journal directory exists, and "volatile" otherwise with logging 
+# in /run/log/journal. Let's set it to "volatile" just to make sure, and
+# set the maximum size of the journal files to 8M in both modes.
+sed -i 's/^#\{0,1\}Storage.*$/Storage=volatile/' \
+  hootos/etc/systemd/journald.conf
+sed -i 's/^#\{0,1\}SystemMaxUse.*$/SystemMaxUse=8M/' \
+  hootos/etc/systemd/journald.conf
+sed -i 's/^#\{0,1\}RuntimeMaxUse.*$/RuntimeMaxUse=8M/' \
+  hootos/etc/systemd/journald.conf
+rm -r hootos/var/log/journal
 
-# TODO: configure time synchronization servers
-# /etc/systemd/timesyncd.conf
-#  #[Time]
-#  #NTP=
-#  #FallbackNTP=ntp.ubuntu.com
-#  #RootDistanceMaxSec=5
-#  #PollIntervalMinSec=32
-#  #PollIntervalMaxSec=2048
+# configure time synchronization servers
+# /etc/systemd/timesyncd.conf contains commented out entries showing the
+# defaults. time being there is no requirement for setting up time servers.
+# see: man timesyncd.conf
+
+# enable nfs server
+chroot hootos systemctl enable nfs-kernel-server.service
 
 echo "configuring network for Systemd-networkd"
 # all ethernet links: en*
@@ -418,11 +422,12 @@ echo "adding node.js binary to PATH"
 sed -i "s|\"$|:/usr/bin/nodejs/node-${nodejs_version}-linux-x64/bin\"|" \
   hootos/etc/environment
 
+# create directories for hootnas
+mkdir -p hootos/usr/local/hootnas/{db,webserver,webapp/dist,webapi,scripts}
+
 # copy in db directory if exists
 db=$HOOT_REPO/db
 if [ -d "$db" ]; then
-  echo "creating directory /usr/local/hootnas/db"
-  mkdir -p hootos/usr/local/hootnas/db
   echo "copy in hootnas db"
   cp -r $db/* hootos/usr/local/hootnas/db
 fi
@@ -435,86 +440,68 @@ rm hoot.db
 sqlite3 hoot.db < hoot.sql
 EOF
 
-# copy in bash scripts if source directory exists
-# configure onlogin.sh to run on login
-bash_scripts=$HOOT_REPO/scripts
-if [ -d "$bash_scripts" ]; then
-  echo "creating directory /root/scripts"
-  mkdir -p hootos/root/scripts
-  echo "copy in bash scripts"
-  cp -r $bash_scripts/* hootos/root/scripts
-  chmod 0644 hootos/root/scripts/onlogin.sh
-  # insert command to run onlogin.sh at line no. 6 in .profile
-  sed -i "6i\    . ~/scripts/onlogin.sh" hootos/root/.profile
+# copy in network-login.sh if it exists
+if [ -f "$HOOT_REPO/scripts/tui-network-config.sh" ]; then
+  cp -r $HOOT_REPO/scripts/tui-network-config.sh hootos/root
+  # # insert command to run tui-network-config.sh at line no. 6 in .profile
+  sed -i "6i\    . ~/tui-network-config.sh" hootos/root/.profile
+  chmod 0644 hootos/root/tui-network-config.sh
 fi
 
 # copy in hootnas webserver if source directory exists
-# and create systemd service for target webserver/webserver.mjs. 
-webserver=$HOOT_REPO/webserver
-if [ -d "$webserver" ]; then
-  echo "creating directory /usr/local/hootnas/webserver"
-  mkdir -p hootos/usr/local/hootnas/webserver
+if [ -f "$HOOT_REPO/webserver/webserver.mjs" ] && \
+  [ -f "$HOOT_REPO/scripts/hootsrv.service" ]; then
   echo "copy in hootnas webserver source"
-  cp -r $webserver/* hootos/usr/local/hootnas/webserver
-
-  # hootnas webserver service unit file
-  echo "creating hootnas webserver service unit file"
-  cat <<EOF >hootos/etc/systemd/system/hootsrv.service
-[Unit]
-Description=Start hootNAS webserver when network is up
-After=network-online.target
-Wants=network-online.target
-[Service]
-Type=simple
-Restart=on-failure
-RestartSec=10
-StandardOutput=journal
-StandardError=journal
-ExecStart=/usr/local/hootnas/webserver/webserver.mjs
-[Install]
-WantedBy=multi-user.target
-EOF
-
-  echo "set permissions on unit file and executable"
-  echo "for hootnas webserver service"
-  chmod 0664 hootos/etc/systemd/system/hootsrv.service
+  cp -r $HOOT_REPO/webserver/* hootos/usr/local/hootnas/webserver
   chmod 0744 hootos/usr/local/hootnas/webserver/webserver.mjs
-
-  # enable hootnas webserver service
-  echo "enabling hootsrv.service service"
+  echo "copy in hootsrv.service"
+  cp $HOOT_REPO/scripts/hootsrv.service hootos/etc/systemd/system
+  chmod 0664 hootos/etc/systemd/system/hootsrv.service
   chroot hootos systemctl enable systemd-networkd-wait-online.service
   chroot hootos systemctl enable hootsrv.service
 fi
 
-# enable nfs server
-chroot hootos systemctl enable nfs-kernel-server.service
+# copy in ifpersistence.service if it exist
+# if [ -f "$HOOT_REPO/scripts/ifpersistence.service" ] && \
+#   [ -f "$HOOT_REPO/scripts/ifpersistence.sh" ]; then
+#   echo "copy in ifpersistence.service"
+#   cp $HOOT_REPO/scripts/ifpersistence.service hootos/etc/systemd/system
+#   chmod 0664 hootos/etc/systemd/system/ifpersistence.service
+#   cp $HOOT_REPO/scripts/ifpersistence.sh hootos/usr/local/hootnas/scripts
+#   chmod 0744 hootos/usr/local/hootnas/scripts/ifpersistence.sh
+#   chroot hootos systemctl enable ifpersistence.service
+# fi
+
+if [ -f "$HOOT_REPO/scripts/getty.sh" ]; then
+  cp $HOOT_REPO/scripts/getty.sh hootos/usr/local/hootnas/scripts
+  chmod 0744 hootos/usr/local/hootnas/scripts/getty.sh
+  # edit /lib/systemd/system/getty@.service to run getty.sh
+  sed -i '/\[Service\]/a StandardOutput=journal\nStandardError=journal' \
+    hootos/lib/systemd/system/getty@.service
+  sed -i "s|ExecStart.*|ExecStart=-/usr/local/hootnas/scripts/getty.sh|" \
+    hootos/lib/systemd/system/getty@.service
+fi
 
 # copy in webapp if source directory exists
 # make sure you have built the webapp 'npm run build' in the webapp directory
 # before running this script
-webapp=$HOOT_REPO/webapp/dist
-if [ -d "$webapp" ]; then
-  echo "creating directory /usr/local/hootnas"
-  mkdir -p hootos/usr/local/hootnas/webapp/dist
+if [ -d "$HOOT_REPO/webapp/dist" ]; then
   echo "copy in hootnas webapp"
-  cp -r $webapp/* hootos/usr/local/hootnas/webapp/dist
+  cp -r $HOOT_REPO/webapp/dist/* hootos/usr/local/hootnas/webapp/dist
 fi
 
 # copy in webapi if source directory exists
-webapi=$HOOT_REPO/webapi
-if [ -d "$webapi" ]; then
-  echo "creating directory /usr/local/hootnas"
-  mkdir -p hootos/usr/local/hootnas/webapi
+if [ -d "$HOOT_REPO/webapi" ]; then
   echo "copy in hootnas webapi"
-  cp -r $webapi/* hootos/usr/local/hootnas/webapi
+  cp -r $HOOT_REPO/webapi/* hootos/usr/local/hootnas/webapi
 fi
 
-echo "customizing login"
-# make root tty autologin
-# -a auto login, -i don't print issue
-echo "make root tty autologin"
-sed -i 's|ExecStart.*|ExecStart=-/sbin/agetty -i -a root --noclear %I $TERM|' \
-  hootos/lib/systemd/system/getty@.service
+# echo "customizing login"
+# # make root tty autologin
+# # -a auto login, -i don't print issue
+# echo "make root tty autologin"
+# sed -i 's|ExecStart.*|ExecStart=-/sbin/agetty -i -a root --noclear %I $TERM|' \
+#   hootos/lib/systemd/system/getty@.service
 
 # configuring root ssh access
 echo "configuring root ssh access"
@@ -525,6 +512,9 @@ echo "root:$(printf 'pass1234' | openssl passwd -6 -salt Zf4aH -stdin)" | \
 chpasswd -e
 EOF
 
+# clear some logs
+echo "clearing logs"
+find hootos/var/log -name "*.log" -type f -exec sh -c 'echo "" > "$1"' _ {} \;
 # clear history
 echo "clearing history"
 cat <<EOF | chroot hootos

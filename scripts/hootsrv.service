@@ -1,0 +1,13 @@
+[Unit]
+Description=Start hootNAS webserver when network is up
+After=network-online.target
+Wants=network-online.target
+[Service]
+Type=simple
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+ExecStart=/usr/local/hootnas/webserver/webserver.mjs
+[Install]
+WantedBy=multi-user.target
