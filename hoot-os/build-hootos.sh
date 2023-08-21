@@ -23,8 +23,8 @@
 #
 #     <optional parameter>  default <value>
 #     -------------------------------------
-#     set-locale            en_DE.UTF-8
-#     set-xkb-layout        de
+#     set-locale            en_US.UTF-8
+#     set-xkb-layout        us
 #     set-xkb-model         pc105
 #     set-zone              Europe
 #     set-city              Berlin
@@ -119,6 +119,10 @@ function trapper {
 }
 trap trapper EXIT
 
+#
+# SETUP ENVIRONMENT
+#
+
 # get current working directory
 owd=$PWD
 
@@ -157,8 +161,8 @@ do
 done
 
 # set default values for optional variables if not set in commandline parameters
-[ -z "$set_locale" ] && set_locale='en_DE.UTF-8'
-[ -z "$xkb_layout" ] && xkb_layout='de'
+[ -z "$set_locale" ] && set_locale='en_US.UTF-8'
+[ -z "$xkb_layout" ] && xkb_layout='us'
 [ -z "$xkb_model" ] && xkb_model='pc105'
 [ -z "$set_zone" ] && set_zone='Europe'
 [ -z "$set_city" ] && set_city='Berlin'
@@ -224,9 +228,9 @@ mount --make-private --rbind /dev hootos/dev
 mount --make-private --rbind /proc hootos/proc
 mount --make-private --rbind /sys hootos/sys
 
-# READY FOR SYSTEM INSTALL AND CONFIGURATION
-
-# CONFIGURE PACKAGE SOURCES
+#
+# SYSTEM INSTALL PREREQUISITES
+#
 
 echo "configuring the package sources"
 cat <<EOF >hootos/etc/apt/sources.list
@@ -240,31 +244,33 @@ deb http://security.ubuntu.com/ubuntu \
 jammy-security main restricted universe multiverse
 EOF
 
-# CONFIGURE HOSTNAME
-
 echo "configuring hostname"
 echo hootnas > hootos/etc/hostname
 sed -i "2i 127.0.1.1       hootnas" hootos/etc/hosts
-
-# INSTALL AND CONFIGURE LOCALES
 
 echo "generating locales"
 cat <<EOF | chroot hootos
 apt update
 apt install --yes locales
 locale-gen en_US.UTF-8
-locale-gen $set_locale
-apt install --yes debconf-utils
 EOF
 
+# if $set_locale is not en_US.UTF-8, generate it
+[ ! "$set_locale" = "en_US.UTF-8" ] && chroot hootos locale-gen $set_locale
+
+chroot hootos apt install --yes debconf-utils
+
 echo "configuring locales"
-cat <<EOF | chroot hootos
-echo "locales locales/locales_to_be_generated multiselect \
-$set_locale UTF-8, en_US.UTF-8 UTF-8" | debconf-set-selections
-echo "locales locales/default_environment_locale select \
-$set_locale" | debconf-set-selections
-dpkg-reconfigure --frontend noninteractive locales
-EOF
+# if $set_locale is not en_US.UTF-8, set multiselect
+[ ! "$set_locale" = "en_US.UTF-8" ] && chroot hootos \
+  echo "locales locales/locales_to_be_generated multiselect \
+  $set_locale UTF-8, en_US.UTF-8 UTF-8" | debconf-set-selections
+# set default_environment_locale
+chroot hootos \
+  echo "locales locales/default_environment_locale select \
+  $set_locale" | debconf-set-selections
+
+chroot hootos dpkg-reconfigure --frontend noninteractive locales
 
 echo "configuring timezone database"
 # Etc zone is mainly for backward compatibility of the tz database
@@ -314,7 +320,9 @@ VIDEOMODE=
 dpkg-reconfigure --frontend noninteractive console-setup
 EOF
 
+#
 # INSTALL KERNEL, FIRMWARE AND SOFTWARE
+#
 
 echo "installing kernels headers and modules"
 # check if host kernel version is the same as $kernel_version
@@ -344,6 +352,7 @@ echo "installing software"
 cat <<'EOF' | chroot hootos
 apt install --yes man-db
 apt install --yes wget
+apt install --yes ufw
 apt install --yes openssh-client
 apt install --yes openssh-server 
 apt install --yes gdisk 
@@ -376,11 +385,12 @@ chroot hootos apt --yes clean
 echo "update the initrd files"
 chroot hootos update-initramfs -c -k all
 
-# CONTINUE SYSTEM CONFIGURATION
+#
+# SYSTEM CONFIGURATION
+#
 
-# configure journald logging storage mode and size
-# see: man journald.conf
-# The storage mode is default "auto" whicf behaves like "persistent" if the 
+# configure journald logging storage mode and size, see: man journald.conf
+# The storage mode is default "auto" which behaves like "persistent" if the 
 # /var/log/journal directory exists, and "volatile" otherwise with logging 
 # in /run/log/journal. Let's set it to "volatile" just to make sure, and
 # set the maximum size of the journal files to 8M in both modes.
@@ -392,10 +402,10 @@ sed -i 's/^#\{0,1\}RuntimeMaxUse.*$/RuntimeMaxUse=8M/' \
   hootos/etc/systemd/journald.conf
 rm -r hootos/var/log/journal
 
-# configure time synchronization servers
+# configure time synchronization servers, see: man timesyncd.conf
 # /etc/systemd/timesyncd.conf contains commented out entries showing the
-# defaults. time being there is no requirement for setting up time servers.
-# see: man timesyncd.conf
+# defaults: FallbackNTP=ntp.ubuntu.com
+# time being there is no requirement for setting up time servers.
 
 # enable nfs server
 chroot hootos systemctl enable nfs-kernel-server.service
@@ -440,7 +450,7 @@ rm hoot.db
 sqlite3 hoot.db < hoot.sql
 EOF
 
-# copy in network-login.sh if it exists
+# copy in tui-network-config if it exists
 if [ -f "$HOOT_REPO/scripts/tui-network-config.sh" ]; then
   cp -r $HOOT_REPO/scripts/tui-network-config.sh hootos/root
   # # insert command to run tui-network-config.sh at line no. 6 in .profile
@@ -461,24 +471,18 @@ if [ -f "$HOOT_REPO/webserver/webserver.mjs" ] && \
   chroot hootos systemctl enable hootsrv.service
 fi
 
-# copy in ifpersistence.service if it exist
-# if [ -f "$HOOT_REPO/scripts/ifpersistence.service" ] && \
-#   [ -f "$HOOT_REPO/scripts/ifpersistence.sh" ]; then
-#   echo "copy in ifpersistence.service"
-#   cp $HOOT_REPO/scripts/ifpersistence.service hootos/etc/systemd/system
-#   chmod 0664 hootos/etc/systemd/system/ifpersistence.service
-#   cp $HOOT_REPO/scripts/ifpersistence.sh hootos/usr/local/hootnas/scripts
-#   chmod 0744 hootos/usr/local/hootnas/scripts/ifpersistence.sh
-#   chroot hootos systemctl enable ifpersistence.service
-# fi
-
+# this feature checks if persistence is active and enables or disables the 
+# TUI network configuration script, and starts a tty with or without root 
+# autologin accordingly.
+# if getty.sh exists, copy it in and modify getty@.service to run it
 if [ -f "$HOOT_REPO/scripts/getty.sh" ]; then
   cp $HOOT_REPO/scripts/getty.sh hootos/usr/local/hootnas/scripts
   chmod 0744 hootos/usr/local/hootnas/scripts/getty.sh
-  # edit /lib/systemd/system/getty@.service to run getty.sh
+  # add output to journal in /lib/systemd/system/getty@.service
   sed -i '/\[Service\]/a StandardOutput=journal\nStandardError=journal' \
     hootos/lib/systemd/system/getty@.service
-  sed -i "s|ExecStart.*|ExecStart=-/usr/local/hootnas/scripts/getty.sh|" \
+  # modify /lib/systemd/system/getty@.service to run getty.sh
+  sed -i 's|ExecStart.*|ExecStart=-/usr/local/hootnas/scripts/getty.sh %I $TERM|' \
     hootos/lib/systemd/system/getty@.service
 fi
 
@@ -496,13 +500,6 @@ if [ -d "$HOOT_REPO/webapi" ]; then
   cp -r $HOOT_REPO/webapi/* hootos/usr/local/hootnas/webapi
 fi
 
-# echo "customizing login"
-# # make root tty autologin
-# # -a auto login, -i don't print issue
-# echo "make root tty autologin"
-# sed -i 's|ExecStart.*|ExecStart=-/sbin/agetty -i -a root --noclear %I $TERM|' \
-#   hootos/lib/systemd/system/getty@.service
-
 # configuring root ssh access
 echo "configuring root ssh access"
 sed -i 's/#PermitRootLogin.*/PermitRootLogin yes/' hootos/etc/ssh/sshd_config
@@ -511,6 +508,43 @@ cat <<'EOF' | chroot hootos
 echo "root:$(printf 'pass1234' | openssl passwd -6 -salt Zf4aH -stdin)" | \
 chpasswd -e
 EOF
+
+
+# setting up firewall rules
+echo 'setting up firewall'
+echo y | ufw enable
+# ports definitions see: /etc/services
+ufw allow ssh               comment 'SSH Remote Login Protocol'
+ufw allow out ssh           comment 'SSH Remote Login Protocol'
+ufw allow domain            comment 'Domain Name Server'
+ufw allow out domain        comment 'Domain Name Server'
+ufw allow http              comment 'WorldWideWeb HTTP'
+ufw allow out http          comment 'WorldWideWeb HTTP'
+ufw allow https             comment 'http protocol over TLS/SSL'
+ufw allow out https         comment 'http protocol over TLS/SSL'
+ufw allow nfs               comment 'Network File System'
+ufw allow out nfs           comment 'Network File System'
+ufw allow microsoft-ds      comment 'Microsoft Naked CIFS'
+ufw allow out microsoft-ds  comment 'Microsoft Naked CIFS'
+ufw allow netbios-ns        comment 'NETBIOS Name Service'
+ufw allow out netbios-ns    comment 'NETBIOS Name Service'
+ufw allow netbios-dgm       comment 'NETBIOS Datagram Service'
+ufw allow out netbios-dgm   comment 'NETBIOS Datagram Service'
+ufw allow netbios-ssn       comment 'NETBIOS session service'
+ufw allow out netbios-ssn   comment 'NETBIOS session service'
+ufw allow out loc-srv       comment 'DCE endpoint resolution'
+ufw allow iscsi-target      comment 'iSCSI Internet Small Computer Systems Interface'
+ufw allow out iscsi-target  comment 'iSCSI Internet Small Computer Systems Interface'
+ufw allow 5985/tcp          comment 'WinRM HTTP'
+ufw allow out 5985/tcp      comment 'WinRM HTTP'
+ufw allow 5986/tcp          comment 'WinRM HTTPS'
+ufw allow out 5986/tcp      comment 'WinRM HTTPS'
+ufw allow out ldap          comment 'Lightweight Directory Access Protocol'
+ufw allow out ldaps         comment 'LDAP over SSL'
+ufw allow out ntp           comment 'Network Time Protocol'
+ufw allow kerberos          comment 'Kerberos v5'
+ufw allow out kerberos      comment 'Kerberos v5'
+ufw default deny outgoing
 
 # clear some logs
 echo "clearing logs"

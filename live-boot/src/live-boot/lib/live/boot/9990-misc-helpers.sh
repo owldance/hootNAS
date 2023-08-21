@@ -1708,6 +1708,16 @@ activate_custom_mounts ()
 	used_devices=""
 	live_debug_log "9990-misc-helpers.sh: activate_custom_mounts BEGIN"
 	live_debug_log "custom_mounts: ${custom_mounts}"
+
+	# check that we have a custom_mounts file, if not, we're done
+	if [ ! -e "${custom_mounts}" ]
+	then
+		echo ${used_devices}
+		live_debug_log "used_devices: ${used_devices}"
+		live_debug_log "9990-misc-helpers.sh: activate_custom_mounts END"
+		return
+	fi
+	
 	while read device source dest options # < ${custom_mounts}
 	do
 		local opt_bind opt_link opt_union

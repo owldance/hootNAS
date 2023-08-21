@@ -37,7 +37,9 @@ A three step buildflow is used to create a hootOS ISO file.
     $ sudo build-hootos.sh test-build 
     ```
 
-    This will build hootOS in the following directory structure:
+    This will build hootOS with the 
+    [default parameters](/hoot-os/build-hootos.sh), in the following 
+    directory structure:
     
     ```
     ..

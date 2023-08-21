@@ -12,8 +12,8 @@ bare metal, and one for running in a virtual machine.
 
 The ambition of hootNAS is to be a robust, utilitarian, user, and developer 
 friendly NAS that can be used out-of-the-box, or customized to make it 
-your very own, it should be much more than just "open source" littered with
-"self-explaining" code, and "readme" files that are anything but.
+your very own, it should be much more than just OS "open source", let's call it
+"applicable open source" or AOS.
 
 Although the intended use cases are individuals, academic 
 organizations and small to medium businesses, with high data volumes, home 

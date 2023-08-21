@@ -1,38 +1,36 @@
-# hootOS - Bash scripts
+# hootOS - Miscellaneous scripts and other files
 
-## [*onlogin.sh*](./onlogin.sh)
+## [hootsrv.service](/scripts/hootsrv.service)
 
-This script is executed during the first boot when root is automatically 
-logged in and the user is expected to setup the storagepool via the webapp. 
+Is the `systemd` service unit file responsible for starting the 
+[webserver](/webserver/webserver.mjs) on boot.
 
-First time the script runs it tries to import the storagepool, which fails 
-because it doesn't exist yet, then executes `netowrk-config.sh`.
 
-Second time the script runs it tries to import the storagepool again, this
-time it succeeds and the cache file `/etc/zfs/zpool.cache` is created, and the 
-`zfs-import-cache.service` can import the storagepool on all subsequent boots, 
-because now `live-boot` persistancy is active. The script also removes root 
-auto login and prevent itself from running again.
+## [tui-network-config.sh](./network-config.sh)
 
-## [*network-config.sh*](./network-config.sh)
+Is an text user interface (TUI) terminal (tty) script, when executed, on the 
+terminal screen, the script welcomes the user with the IP address of the system. 
 
-Is a interactive terminal (tty) script, when executed, on the terminal screen, 
-the script welcomes the user with the IP address of the system. 
-
-If no DHCP server is available, or the script is unable to ping *ubuntu.com*, 
+If no DHCP server is available, or the script is unable to ping `ubuntu.com`, 
 the user will be given the option to enter the ip address manually on the 
 terminal screen.
-
-# create a systemd service unit file that executes the bash script 
-# ifpersistence.sh before terminal is ready.
-# multi-user.target target unit is reached before the TTY terminal is ready. 
-# multi-user.target target unit is reached after the basic system 
-# initialization is complete, and before the system is fully operational, such 
-# as network services or system monitoring services.
-
-cat <<EOF >hootos/etc/systemd/system/ifpersistence.service
 
 The script is based on the
 [dialog](https://manpages.ubuntu.com/manpages/jammy/man1/dialog.1.html) 
 package, which provides as GUI-like interface on the terminal screen.
 
+## [getty.sh](/scripts/getty.sh)
+
+This script is called by `getty@.service`, it checks if persistence is active
+and enables or disables the TUI network configuration script, and starts a 
+tty with or without root autologin accordingly.
+
+ISSUE: this workaround, as opposed to starting tty directly in `getty@.service` 
+unit file, generates some warning messages in the journal, but 
+it works, it's probably a owner/permission issue, remains to be checked.
+```
+agetty[1944]: /dev/tty1: cannot get controlling tty: Operation not permitted
+agetty[1944]: /dev/tty1: cannot get controlling tty: Operation not permitted
+agetty[1944]: /dev/tty1: cannot set process group: Inappropriate ioctl for device
+```
+see: [https://bbs.archlinux.org/viewtopic.php?id=259179](https://bbs.archlinux.org/viewtopic.php?id=259179)

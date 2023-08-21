@@ -117,20 +117,16 @@ to read and understand.
 
 ## Known issues
 
-During boot and shutdown some cosmetic errors relating to mounting and 
-unmounting are printed to the terminal. When `/bin/eject` is executed by 
-systemd it waits for the user to eject the media and then press enter, this 
-behavior is not desirable when PXE booting.
-
-With the `noeject` kernel parameter specified, hootos will shutdown without 
-ejecting the media.
+ISSUE: On shutdown some cosmetic error messages relating to mounting and 
+unmounting are printed to the terminal e.g. 
+`failed unmounting /run/live/medium` 
 
 This is a known issue with systemd and should have been upstream fixed jun 2023 
 with version 254-rc2, see:
 [https://github.com/systemd/systemd/issues/17988](https://github.com/systemd/systemd/issues/17988)
 [https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=986721](https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=986721)
 
-In the meantime, ubuntu is still (aug 2023) using 
+In the meantime, ubuntu is (aug 2023) using 
 ```
 $ systemctl --version
 systemd 249 (249.11-0ubuntu3.9)
