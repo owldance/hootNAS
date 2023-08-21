@@ -157,8 +157,7 @@ export async function createZpool(storagepool) {
         -O dnodesize=auto \
         -O normalization=formD \
         -O relatime=on \
-        -O canmount=on \
-        -O mountpoint=/dpool`
+        -O canmount=off`
         let createZpoolString = ''
         // add debug -n option if true
         if (storagepool.debug)
@@ -175,11 +174,7 @@ export async function createZpool(storagepool) {
                 createZpoolString += `${vdev.redundancy} `
             // get blockdevices in vdev as one string  
             createZpoolString += vdev.blockdevices.map(blockdevice => {
-                // if debug is true, use the whole blockdevice
-                if (storagepool.debug)
                     return `/dev/disk/by-id/${blockdevice.wwid}`
-                else
-                    return `/dev/disk/by-id/${blockdevice.wwid}-part2`
             }).join(' ')
             createZpoolString += ' '
         }

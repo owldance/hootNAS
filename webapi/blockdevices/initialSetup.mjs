@@ -5,8 +5,7 @@
 'use strict'
 import { shell } from "../utilities/shell.mjs"
 import { zwipeBlockDevice } from "./zwipeBlockDevice.mjs"
-import { createPartitions } from "./createPartitions.mjs"
-import { createZpool } from "../zfs/createZpool.mjs"
+import { createZpool} from "../zfs/createZpool.mjs"
 /**
  * A blockdevice is a physical disk/partition on the machine
  * @typedef blockDevice
@@ -85,51 +84,44 @@ function sortVdevs(storagepool) {
   storagepool.vdevs = sortedVdevs
   return storagepool
 }
-/**
- * Formats all blockdevices in storagepool.vdevs, labels the first 
- * partition on one blockdevice 'persistence'. then creates a btrfs raid1 
- * filesystem with all partitions labeled 'persistence'.
- * @function createBtrfsPersistance
- * @param {storagepool} storagepool
- * @returns {Promise<Error>} On reject
- * @returns {Promise<Message>} On resolve
- */
-async function createBtrfsPersistance(storagepool) {
-  // create partitions for btrfs persistance. All partitions must be created 
-  // before the persistance btrfs raid is created, otherwise, for any 
-  // subsequent created partitions on the same blockdevice, the partition 
-  // table on the device will be written, but the udev device manager will 
-  // not update /dev directory even after a reboot.
-  //
-  // label only one partition 'persistence' otherwise live-boot fail 
-  // to mount array. live-boot script must be modified to mount only one disk
-  let persistenceNamed = false
-  for (const vdev of storagepool.vdevs) {
-    for (const blockdevice of vdev.blockdevices) {
-      if (!persistenceNamed) {
-        await createPartitions(`/dev/disk/by-id/${blockdevice.wwid}`,
-          'persistence', 'dpool')
-        persistenceNamed = true
-      } 
-      else {
-        await createPartitions(`/dev/disk/by-id/${blockdevice.wwid}`,
-          '', 'dpool')
-      }
-    }
+
+async function createZvol(name, size) {
+  try {
+    resolve(await shell(`zfs create -V ${size} ${name}`))
+  } catch (e) {
+    throw e
   }
-  // // create btrfs raid
-  // // get all blockdevices in vdevs as one string 
-  let persistancePartitions = ''
-  for (const vdev of storagepool.vdevs) {
-    for (const blockdevice of vdev.blockdevices) {
-      persistancePartitions += `/dev/disk/by-id/${blockdevice.wwid}-part1 `
-    }
-  }
-  // this also works 
-  // mkfs.btrfs -L persistence -d raid1 -m raid1 -f /dev/disk/by-id/*-part1
-  await shell(`mkfs.btrfs -L hootstore -d raid1 -m raid1 \
-     -f ${persistancePartitions}`)
 }
+
+async function configurePersistence() {
+  try {
+    await shell(`zfs create -V 1G dpool/sysstate`)
+    await shell(`mkfs.ext4 -L persistence /dev/zd0`)
+    await shell(`mount /dev/zd0 /mnt`)
+    // mounts must be an absolute path containing neither the "." nor ".." 
+    // special dirs, and cannot be "/lib", or "/run/live" or any of its 
+    // sub-directories. mounts can not have the same or nested sources 
+    // e.g. "/a" and "/a/b" are not allowed.
+    await shell(`echo '/etc union' > /mnt/persistence.conf`)
+    await shell(`echo '/usr union' >> /mnt/persistence.conf`)
+    await shell(`echo '/var union' >> /mnt/persistence.conf`)
+    await shell(`echo '/home union' >> /mnt/persistence.conf`)
+    await shell(`echo '/root union' >> /mnt/persistence.conf`)
+    await shell(`echo '/srv union' >> /mnt/persistence.conf`)
+    await shell(`echo '/opt union' >> /mnt/persistence.conf`)
+    await shell(`mkdir -p /mnt/root/rw`)
+    // create a identification file /root/setup.id file, which can be used by
+    // the webapp to check if the initial setup is working.
+    //await shell(`echo '${storagepool.setupid}' > /mnt/root/rw/setup.id`)
+    await shell(`echo BFA7824 > /mnt/root/rw/setup.id`)
+    
+    await shell(`chmod 700 /mnt/root`)
+    await shell(`umount /mnt`)
+  } catch (e) {
+    throw e
+  }
+}
+
 /**
  * Formats all blockdevices in storagepool.vdevs, then configures persistance. 
  * Existing filesystems and partitions will be destroyed, all data will be 
@@ -167,29 +159,8 @@ export async function initialSetup(storagepool) {
         await zwipeBlockDevice(`/dev/disk/by-id/${blockdevice.wwid}`)
       }
     }
-    // create partitions for btrfs persistance
-    await createBtrfsPersistance(storagepool)
-    // in case of btrfs mount any one of the partitions labeled 'persitence' 
-    // in the btrfs raid, and the raid will be automatically mounted.
-    await shell(`mount \
-    /dev/disk/by-id/${storagepool.vdevs[0].blockdevices[0].wwid}-part1 /mnt`)
-    // configure persistance
-    await shell(`echo '/etc union' > /mnt/persistence.conf`)
-    await shell(`echo '/lib union' >> /mnt/persistence.conf`)
-    await shell(`echo '/usr union' >> /mnt/persistence.conf`)
-    await shell(`echo '/var union' >> /mnt/persistence.conf`)
-    await shell(`echo '/home union' >> /mnt/persistence.conf`)
-    await shell(`echo '/root union' >> /mnt/persistence.conf`)
-    await shell(`echo '/srv union' >> /mnt/persistence.conf`)
-    await shell(`echo '/opt union' >> /mnt/persistence.conf`)
-    await shell(`mkdir -p /mnt/root/rw`)
-    // create a identification file /root/setup.id file, which can be used to
-    // check if the initial setup has been done.
-    await shell(`echo '${storagepool.setupid}' > /mnt/root/rw/setup.id`)
-    await shell(`chmod 700 /mnt/root`)
-    await shell(`umount /mnt`)
-    // create zpool
     creationMessage = await createZpool(storagepool)
+    await configurePersistence()
   }
   catch (e) {
     throw e
