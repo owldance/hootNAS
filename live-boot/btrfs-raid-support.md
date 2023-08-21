@@ -1,5 +1,8 @@
 # Adding btrfs RAID1 for live-boot persistence 
 
+Note: This feature is deprecated, as hootOS now uses 
+[ZFS for live-boot persistence](/live-boot/zfs-support.md).
+
 Using btrfs RAID1 for live-boot persistence is very convenient, because btrfs 
 supports RAID1 creation and management out-of-the-box, and mounting a btrfs 
 raid is as simple as mounting a single btrfs device in the raid, which means 

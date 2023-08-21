@@ -12,6 +12,15 @@ The advantage of such a system is that:
 * boot from any media, even a slow USB-stick, or network
 * True data and system OS separation 
 
+## Compatability with Debian
+
+hootOS is based on the latest ubuntu LTS, but could be ported to Debian without 
+much effort, the main thing to consider is the version of the `live-boot` 
+package, as ubuntu lags considerably behind Debian in this regard and the 
+package has been 
+[customized to support ZFS persistent storage](/live-boot/README.md) in `initrd` 
+and some other improvements.
+
 ## What is hootNAS?
 hootNAS is basically everything in this repository, it is packaged as a
 bootable ISO image that contains hootOS with its constituent parts, represented 
@@ -144,7 +153,8 @@ will be persisted to that partition using `overlayfs`.
 The default network configuration for hootOS is DHCP, see 
 [build-hootos.sh](/hoot-os/build-hootos.sh) for details.
 
-The script [network-config.sh](/tty/README.md) is executed on **first boot**, 
+The script [tui-network-config.sh](/scripts/tui-network-config.sh) is executed 
+on first boot, 
 and on the terminal screen, the user is welcomed with the IP address of the 
 system. With this information, the user can connect to the system using SSH, 
 or make webAPI calls, or open a browser and connect to the hootNAS management 
