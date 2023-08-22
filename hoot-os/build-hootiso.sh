@@ -15,7 +15,7 @@
 # hootos will be done to save time. this is useful if you only have made
 # changes to build-hootiso.sh and want to test them quickly. you must run
 # build-hootiso.sh the first time without nosquash, so that the squashfs
-# file is created."
+# file is created.
 #
 # requirements:
 # - squashfs-tools and xorriso packages installed
@@ -89,8 +89,8 @@ function trapper {
     echo "unmounting overlay filesystem"
     umount $PWD/hootos
   fi
-  # delete tmpo directory
-  [ -d "tmpo" ] && rm -r tmpo
+  # delete overwork directory
+  [ -d "overwork" ] && rm -r overwork
   # restore original working directory
   cd $owd
   # calculate duration
@@ -136,10 +136,10 @@ cp $HOOT_REPO/hoot-os/build-hootiso.sh source/build-hootiso-$new_iso.sh
 
 # mounting overlay filesystem
 echo "mounting overlay filesystem"
-# if directory tmpo does not exist, create it
-[ ! -d "tmpo" ] && mkdir tmpo
+# if directory overwork does not exist, create it
+[ ! -d "overwork" ] && mkdir overwork
 mount -t overlay overlay \
-    -o lowerdir=../baseos,upperdir=staging,workdir=tmpo \
+    -o lowerdir=../baseos,upperdir=staging,workdir=overwork \
     $PWD/hootos
 
 # create and populate the isoimage directory 
