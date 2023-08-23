@@ -474,16 +474,17 @@ fi
 # this feature checks if persistence is active and enables or disables the 
 # TUI network configuration script, and starts a tty with or without root 
 # autologin accordingly.
-# if getty.sh exists, copy it in and modify getty@.service to run it
-if [ -f "$HOOT_REPO/scripts/getty.sh" ]; then
-  cp $HOOT_REPO/scripts/getty.sh hootos/usr/local/hootnas/scripts
-  chmod 0744 hootos/usr/local/hootnas/scripts/getty.sh
-  # add output to journal in /lib/systemd/system/getty@.service
-  sed -i '/\[Service\]/a StandardOutput=journal\nStandardError=journal' \
-    hootos/lib/systemd/system/getty@.service
-  # modify /lib/systemd/system/getty@.service to run getty.sh
-  sed -i 's|ExecStart.*|ExecStart=-/usr/local/hootnas/scripts/getty.sh %I $TERM|' \
-    hootos/lib/systemd/system/getty@.service
+# see: man systemd.unit and man systemd.service, and conditionlogin.sh
+echo "configuring root tty autologin and TUI network configuration script"
+if [ -f "$HOOT_REPO/scripts/conditionlogin.sh" ]; then
+  cp $HOOT_REPO/scripts/conditionlogin.sh hootos/usr/local/hootnas/scripts
+  chmod 0744 hootos/usr/local/hootnas/scripts/conditionlogin.sh
+  mkdir hootos/etc/systemd/system/getty@.service.d
+  cat <<'EOF' > hootos/etc/systemd/system/getty@.service.d/override.conf
+[Service]
+ExecStart=
+ExecStart=/usr/local/hootnas/scripts/conditionlogin.sh %I $TERM
+EOF
 fi
 
 # copy in webapp if source directory exists
@@ -509,11 +510,11 @@ echo "root:$(printf 'pass1234' | openssl passwd -6 -salt Zf4aH -stdin)" | \
 chpasswd -e
 EOF
 
-
 # setting up firewall rules
-echo 'setting up firewall'
-echo y | ufw enable
 # ports definitions see: /etc/services
+echo 'setting up firewall'
+cat <<EOF | chroot hootos
+echo y | ufw enable
 ufw allow ssh               comment 'SSH Remote Login Protocol'
 ufw allow out ssh           comment 'SSH Remote Login Protocol'
 ufw allow domain            comment 'Domain Name Server'
@@ -545,6 +546,7 @@ ufw allow out ntp           comment 'Network Time Protocol'
 ufw allow kerberos          comment 'Kerberos v5'
 ufw allow out kerberos      comment 'Kerberos v5'
 ufw default deny outgoing
+EOF
 
 # clear some logs
 echo "clearing logs"
