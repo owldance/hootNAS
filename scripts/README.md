@@ -19,18 +19,8 @@ The script is based on the
 [dialog](https://manpages.ubuntu.com/manpages/jammy/man1/dialog.1.html) 
 package, which provides as GUI-like interface on the terminal screen.
 
-## [getty.sh](/scripts/getty.sh)
+## [conditionlogin.sh](/scripts/conditionlogin.sh)
 
 This script is called by `getty@.service`, it checks if persistence is active
 and enables or disables the TUI network configuration script, and starts a 
 tty with or without root autologin accordingly.
-
-ISSUE: this workaround, as opposed to starting tty directly in `getty@.service` 
-unit file, generates some warning messages in the journal, but 
-it works, it's probably a owner/permission issue, remains to be checked.
-```
-agetty[1944]: /dev/tty1: cannot get controlling tty: Operation not permitted
-agetty[1944]: /dev/tty1: cannot get controlling tty: Operation not permitted
-agetty[1944]: /dev/tty1: cannot set process group: Inappropriate ioctl for device
-```
-see: [https://bbs.archlinux.org/viewtopic.php?id=259179](https://bbs.archlinux.org/viewtopic.php?id=259179)
