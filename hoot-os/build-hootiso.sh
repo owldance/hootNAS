@@ -135,13 +135,21 @@ cd $build_dir
 cp $HOOT_REPO/hoot-os/build-hootiso.sh source/build-hootiso-$new_iso.sh
 
 # mounting overlay filesystem
-echo "mounting overlay filesystem"
-# if directory overwork does not exist, create it
-[ ! -d "overwork" ] && mkdir overwork
-mount -t overlay overlay \
-    -o lowerdir=../baseos,upperdir=staging,workdir=overwork \
-    $PWD/hootos
-
+if [ "$(mountpoint -q $build_dir/hootos ; echo $?)" = 0 ]; then
+  echo "mounting overlay filesystem"
+  # if directory overwork does not exist, create it
+  [ ! -d "overwork" ] && mkdir overwork
+  mount -t overlay overlay \
+      -o lowerdir=../baseos,upperdir=staging,workdir=overwork \
+      $PWD/hootos
+else
+  echo "overlay filesystem is already mounted"
+  echo "unmounting host filesystem"
+  # lazy umount because it's mounted recusively with --rbind
+  [ "$(mountpoint -q $PWD/hootos/dev ; echo $?)" = 0 ] && umount -lf $PWD/hootos/dev
+  [ "$(mountpoint -q $PWD/hootos/proc ; echo $?)" = 0 ] && umount -lf $PWD/hootos/proc
+  [ "$(mountpoint -q $PWD/hootos/sys ; echo $?)" = 0 ] && umount -lf $PWD/hootos/sys
+fi
 # create and populate the isoimage directory 
 mkdir -p isoimage/{live,install,assets}
 tar -xzf $HOOT_REPO/hoot-os/assets/iso-assets.tar.gz -C isoimage boot

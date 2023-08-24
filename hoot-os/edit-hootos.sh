@@ -48,7 +48,7 @@ elif [ ! -d "$build_dir" ]; then
   echo "then run 'sudo edit-hootos.sh $user_command $build_dir'"
   echo
   user_err=1
-elif [ ! -d "$build_dir/../baseos" ]; then
+elif [ ! -d "$PWD/baseos" ]; then
   echo "'baseos' directory not found in current working directory"
   echo "run 'sudo build-baseos.sh' first, then"
   echo "run 'sudo build-hootos.sh $build_dir' second, and finally"
