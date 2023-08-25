@@ -19,7 +19,7 @@ The script is based on the
 [dialog](https://manpages.ubuntu.com/manpages/jammy/man1/dialog.1.html) 
 package, which provides as GUI-like interface on the terminal screen.
 
-## [conditionlogin.sh](/scripts/conditionlogin.sh)
+## [ttyautologin.sh](/scripts/ttyautologin.sh)
 
 This script is called by `getty@.service`, it checks if persistence is active
 and enables or disables the TUI network configuration script, and starts a 

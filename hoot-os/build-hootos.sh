@@ -392,15 +392,12 @@ chroot hootos update-initramfs -c -k all
 # configure journald logging storage mode and size, see: man journald.conf
 # The storage mode is default "auto" which behaves like "persistent" if the 
 # /var/log/journal directory exists, and "volatile" otherwise with logging 
-# in /run/log/journal. Let's set it to "volatile" just to make sure, and
-# set the maximum size of the journal files to 8M in both modes.
-sed -i 's/^#\{0,1\}Storage.*$/Storage=volatile/' \
+# in /run/log/journal. Let's set the maximum size of the journal files to 32M 
+# in both modes.
+sed -i 's/^#\{0,1\}SystemMaxUse.*$/SystemMaxUse=32M/' \
   hootos/etc/systemd/journald.conf
-sed -i 's/^#\{0,1\}SystemMaxUse.*$/SystemMaxUse=8M/' \
+sed -i 's/^#\{0,1\}RuntimeMaxUse.*$/RuntimeMaxUse=32M/' \
   hootos/etc/systemd/journald.conf
-sed -i 's/^#\{0,1\}RuntimeMaxUse.*$/RuntimeMaxUse=8M/' \
-  hootos/etc/systemd/journald.conf
-rm -r hootos/var/log/journal
 
 # configure time synchronization servers, see: man timesyncd.conf
 # /etc/systemd/timesyncd.conf contains commented out entries showing the
@@ -474,18 +471,27 @@ fi
 # this feature checks if persistence is active and enables or disables the 
 # TUI network configuration script, and starts a tty with or without root 
 # autologin accordingly.
-# see: man systemd.unit and man systemd.service, and conditionlogin.sh
+# see: man systemd.unit and man systemd.service, and ttyautologin.sh
 echo "configuring root tty autologin and TUI network configuration script"
-if [ -f "$HOOT_REPO/scripts/conditionlogin.sh" ]; then
-  cp $HOOT_REPO/scripts/conditionlogin.sh hootos/usr/local/hootnas/scripts
-  chmod 0744 hootos/usr/local/hootnas/scripts/conditionlogin.sh
+if [ -f "$HOOT_REPO/scripts/ttyautologin.sh" ]; then
+  cp $HOOT_REPO/scripts/ttyautologin.sh hootos/usr/local/hootnas/scripts
+  chmod 0744 hootos/usr/local/hootnas/scripts/ttyautologin.sh
   mkdir hootos/etc/systemd/system/getty@.service.d
   cat <<'EOF' > hootos/etc/systemd/system/getty@.service.d/override.conf
 [Service]
 ExecStart=
-ExecStart=/usr/local/hootnas/scripts/conditionlogin.sh %I $TERM
+ExecStart=/usr/local/hootnas/scripts/ttyautologin.sh %I $TERM
 EOF
 fi
+
+# https://bugs.launchpad.net/ubuntu/+source/nfs-utils/+bug/1907141
+# removes cosmetic error messages from journalctl
+# blkmapd: open pipe file /run/rpc_pipefs/nfs/blocklayout failed: No such file or directory 
+mkdir hootos/etc/systemd/system/nfs-blkmap.service.d
+cat <<EOF > hootos/etc/systemd/system/nfs-blkmap.service.d/plumbing.conf
+[Service]
+ExecStartPre=/sbin/modprobe blocklayoutdriver
+EOF
 
 # copy in webapp if source directory exists
 # make sure you have built the webapp 'npm run build' in the webapp directory
@@ -515,6 +521,8 @@ EOF
 echo 'setting up firewall'
 cat <<EOF | chroot hootos
 echo y | ufw enable
+ufw allow 68/udp            comment 'DHCP client'
+ufw allow out 68/udp        comment 'DHCP client'
 ufw allow ssh               comment 'SSH Remote Login Protocol'
 ufw allow out ssh           comment 'SSH Remote Login Protocol'
 ufw allow domain            comment 'Domain Name Server'
@@ -545,7 +553,6 @@ ufw allow out ldaps         comment 'LDAP over SSL'
 ufw allow out ntp           comment 'Network Time Protocol'
 ufw allow kerberos          comment 'Kerberos v5'
 ufw allow out kerberos      comment 'Kerberos v5'
-ufw default deny outgoing
 EOF
 
 # clear some logs

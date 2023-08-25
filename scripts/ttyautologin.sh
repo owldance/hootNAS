@@ -15,7 +15,7 @@
 # agetty[1944]: /dev/tty1: cannot set process group: Inappropriate ioctl for device
 # is returned by agetty when the TIOCSCTTY ioctl() tries to make the given 
 # terminal the controlling terminal of the calling process, which must be a 
-# session leader. but this (conditionlogin.sh) script shell is a child process, 
+# session leader. but this (ttyautologin.sh) script shell is a child process, 
 # then the shell will be a session leader, and agetty will not.
 #
 # solving this by using 'exec agetty' will run agetty (replace the shell) in 

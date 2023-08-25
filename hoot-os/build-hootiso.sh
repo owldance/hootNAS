@@ -135,7 +135,7 @@ cd $build_dir
 cp $HOOT_REPO/hoot-os/build-hootiso.sh source/build-hootiso-$new_iso.sh
 
 # mounting overlay filesystem
-if [ "$(mountpoint -q $build_dir/hootos ; echo $?)" = 0 ]; then
+if [ "$(mountpoint -q $PWD/hootos ; echo $?)" != 0 ]; then
   echo "mounting overlay filesystem"
   # if directory overwork does not exist, create it
   [ ! -d "overwork" ] && mkdir overwork
