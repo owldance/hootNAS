@@ -1,0 +1,4 @@
+{
+    "storagepoolname": "dpool",
+    "persistencezvolname": "sysstate"
+}

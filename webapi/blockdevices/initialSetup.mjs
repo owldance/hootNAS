@@ -6,6 +6,8 @@
 import { shell } from "../utilities/shell.mjs"
 import { zwipeBlockDevice } from "./zwipeBlockDevice.mjs"
 import { createZpool} from "../zfs/createZpool.mjs"
+import { createZvol } from "../zfs/createZvol.mjs"
+import { getSettings } from "../utilities/getSettings.mjs"
 /**
  * A blockdevice is a physical disk/partition on the machine
  * @typedef blockDevice
@@ -51,11 +53,11 @@ import { createZpool} from "../zfs/createZpool.mjs"
  * @property {Number} capacity
  */
 /**
- * Sorts storagepool.vdevs by type and redundancy, and so that the order is:
+ * Sorts storagepool.vdevs by type and redundancy, so that the order becomes:
  * 1. vdevs of type 'data' with redundancy 'stripe'
  * 2. vdevs of type 'data' with any other redundancy
  * 3. vdevs of any type with any redundancy 
- * @function XsortVdevs
+ * @function sortVdevs
  * @param {storagepool} storagepool
  * @returns {storagepool}
  */
@@ -85,17 +87,14 @@ function sortVdevs(storagepool) {
   return storagepool
 }
 
-async function createZvol(name, size) {
-  try {
-    resolve(await shell(`zfs create -V ${size} ${name}`))
-  } catch (e) {
-    throw e
-  }
-}
 
 async function configurePersistence() {
   try {
-    await shell(`zfs create -V 1G dpool/sysstate`)
+    const settings = await getSettings()
+    console.log(`creating zvol ${settings.storagepoolname}/${settings.persistencezvolname}`)
+    await createZvol(`1G`, `${settings.storagepoolname}/${settings.persistencezvolname}`)
+    console.log(`created zvol ${settings.storagepoolname}/${settings.persistencezvolname}`)
+    // the volume is exported as a block device in /dev/zvol/path
     await shell(`mkfs.ext4 -L persistence /dev/zd0`)
     await shell(`mount /dev/zd0 /mnt`)
     // mounts must be an absolute path containing neither the "." nor ".." 
@@ -114,7 +113,6 @@ async function configurePersistence() {
     // the webapp to check if the initial setup is working.
     //await shell(`echo '${storagepool.setupid}' > /mnt/root/rw/setup.id`)
     await shell(`echo BFA7824 > /mnt/root/rw/setup.id`)
-    
     await shell(`chmod 700 /mnt/root`)
     await shell(`umount /mnt`)
   } catch (e) {
@@ -123,11 +121,10 @@ async function configurePersistence() {
 }
 
 /**
- * Formats all blockdevices in storagepool.vdevs, then configures persistance. 
- * Existing filesystems and partitions will be destroyed, all data will be 
- * lost. Finally, a zpool will be created on the zfs partitions.
+ * Creates a storagepoolname and configures persistance. Existing filesystems and 
+ * partitions will be destroyed, all data will be lost.
  * 
- * If storagepool.debug is true, the function execute the zpool create command 
+ * If storagepool.debug is true, the function execute the storagepoolname create command 
  * with the 'n' option, it displays the configuration that would be used 
  * without actually creating the pool. The actual pool creation can still fail
  * due to insufficient privileges or device sharing.
@@ -152,8 +149,7 @@ export async function initialSetup(storagepool) {
   let creationMessage = ''
   try {
     storagepool = sortVdevs(storagepool)
-    // wipe and zap blockdevices, required if the disks 
-    // have been used before, especially with btrfs
+    // wipe and zap blockdevices, required if the disks have been used before
     for (const vdev of storagepool.vdevs) {
       for (const blockdevice of vdev.blockdevices) {
         await zwipeBlockDevice(`/dev/disk/by-id/${blockdevice.wwid}`)

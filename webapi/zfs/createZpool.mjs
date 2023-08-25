@@ -179,8 +179,8 @@ export async function createZpool(storagepool) {
             createZpoolString += ' '
         }
         ret = await shell(createZpoolString)
+        return ret
     } catch (e) {
-        return Promise.reject(e)
+        return e
     }
-    return Promise.resolve(ret)
 }

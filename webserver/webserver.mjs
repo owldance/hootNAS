@@ -23,10 +23,10 @@ export const accessTokenSecret = 'youraccesstokensecret'
 const server = express()
 let port = 80
 if (process.env.HOOT_REPO) {
-    console.log(`hootNAS server running in development mode`)
     // if you change this port number, remember also to change it in
     // webapp/src/components/storage-setup-carousel-items/shared.mjs
     port = 8000
+    console.log(`hootNAS server running in development mode on port: ${port}`)
 }
 // json parse post body
 server.use(express.json())
