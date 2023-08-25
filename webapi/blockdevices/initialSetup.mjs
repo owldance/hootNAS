@@ -88,6 +88,13 @@ function sortVdevs(storagepool) {
 }
 
 
+/**
+ * Configures persistence by creating a zvol, formatting it with ext4, 
+ * mounting it to /mnt, and creating a persistence.conf file.
+ * @function configurePersistence
+ * @async
+ * @throws {Error} If any of the shell commands fail.
+ */
 async function configurePersistence() {
   try {
     const settings = await getSettings()
@@ -121,18 +128,18 @@ async function configurePersistence() {
 }
 
 /**
- * Creates a storagepoolname and configures persistance. Existing filesystems and 
- * partitions will be destroyed, all data will be lost.
+ * Creates a storagepoolname and configures persistance. Existing filesystems 
+ * and partitions will be destroyed, all data will be lost.
  * 
- * If storagepool.debug is true, the function execute the storagepoolname create command 
- * with the 'n' option, it displays the configuration that would be used 
- * without actually creating the pool. The actual pool creation can still fail
- * due to insufficient privileges or device sharing.
+ * If storagepool.debug is true, the function execute the storagepoolname 
+ * create command with the 'n' option, it displays the configuration that would 
+ * be used without actually creating the pool. The actual pool creation can 
+ * still fail due to insufficient privileges or device sharing.
  * @function initialSetup 
  * @async
  * @param {Object} storagepool
- * @returns {Promise<Error>} On reject
  * @returns {Promise<Message>} On resolve
+ * @thows {Promise<Error>} On reject
  */
 export async function initialSetup(storagepool) {
   if (storagepool.debug) {
