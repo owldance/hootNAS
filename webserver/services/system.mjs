@@ -6,6 +6,7 @@
 'use strict'
 import { rebootSystem } from '../../webapi/system/rebootSystem.mjs'
 import { getSetupId } from '../../webapi/system/getSetupId.mjs'
+import { isPersistenceActive } from '../../webapi/system/isPersistenceActive.mjs'
 
 export async function reboot() {
   try {
@@ -18,6 +19,14 @@ export async function reboot() {
 export async function getSetup() {
   try {
     return await getSetupId()
+  } catch (e) {
+    throw e
+  }
+}
+
+export async function checkPersistence() {
+  try {
+    return await isPersistenceActive()
   } catch (e) {
     throw e
   }

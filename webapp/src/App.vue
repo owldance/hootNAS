@@ -40,10 +40,10 @@ provide('appstate', appstate)
  * @param {postCallback} callback - The callback that handles the response of
  * the post request.
  */
-// Check if setupid is availiable on hootnas
-post('api/getSetupId')
+// Check if persistence is active
+post('api/isPersistenceActive')
   .then((data) => {
-    // setupid is availiable because storagepool is already setup
+    // persistence is active
     appstate.vue = 'signIn'
   })
   .catch((e) => {
@@ -51,14 +51,13 @@ post('api/getSetupId')
       console.log(`${e.message}\ncheck your connectivity and refresh the page`)
       return
     }
-    // setupid is not availiable because storagepool requires setup.
+    // persistence is not active, this requires setup.
     // need to get accesstoken first, the name/password is hardcoded and is 
     // used only for setup, upon setup completion, this user is deactivated.
     post('api/getAccessToken', { name: 'Monkey', password: 'monk7y' })
       .then((data) => {
         appstate.accesstoken = data.accesstoken
         appstate.vue = 'setupStoragePool'
-        // appstate.vue = 'signIn'
       }).catch((e) => {
         console.log(e.message)
       })

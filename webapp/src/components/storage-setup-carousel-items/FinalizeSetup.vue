@@ -2,9 +2,9 @@
 /**
  * The FinalizeSetup component is the last component in the storage setup
  * carousel. It sends the initialSetup request to the server and reboots the
- * system. While waiting for the system to reboot, it polls the getSetupId
- * request to check if the system has rebooted. When the system has rebooted,
- * the vue management component is shown.
+ * system. While waiting for the system to reboot, it polls the 
+ * isPersistenceActive request to check if the system has rebooted. When the 
+ * system has rebooted, the vue management component is shown.
  * @module FinalizeSetup
  */
 import { inject } from 'vue'
@@ -98,27 +98,27 @@ async function configStoragePool(event) {
             return
         }
     }
-    // while waiting for system to reboot, keep polling getSetupId.
+    // while waiting for system to reboot, keep polling isPersistenceActive.
     // counters used to control the flow: 'ticks' is incremented each time 
     // setInterval callback is called, if countTicks if true. and 'tries' is 
-    // incremented each time getSetupId is called. this means that with a 
-    // setting of ticksBetweenTries=10 and ticksBeforeFirstTry=5, getSetupId 
+    // incremented each time isPersistenceActive is called. this means that with a 
+    // setting of ticksBetweenTries=10 and ticksBeforeFirstTry=5, isPersistenceActive 
     // will be called with a 5 second delay, and thereafter every 10 
-    // seconds plus the time it takes to execute getSetupId.
+    // seconds plus the time it takes to execute isPersistenceActive.
     let ticks = 0
     let tries = 2 // already adcanced progress bar by 20% in above code
     let countTicks = true
     const ticksBetweenTries = 10
     const ticksBeforeFirstTry = 5
-    // polling getSetupId
+    // polling isPersistenceActive
     const interval = setInterval(async () => {
         if (ticks == ticksBeforeFirstTry && countTicks) {
             // pause counting ticks
             countTicks = false
             tries++
             try {
-                console.log('executing getSetupId')
-                const data = await post('api/getSetupId')
+                console.log('executing isPersistenceActive')
+                const data = await post('api/isPersistenceActive')
                 console.log(`finished! setup id: ${data.message}`)
                 msg.innerHTML = `finished! setup id: ${data.message}`
                 progress.style.width = `100%`
@@ -128,7 +128,7 @@ async function configStoragePool(event) {
                 appstate.vue = 'signIn'
             }
             catch (e) {
-                console.log(`getSetupId error: ${e.message}`)
+                console.log(`isPersistenceActive error: ${e.message}`)
                 msg.innerHTML = e.message
             }
             if (tries == 10) {
@@ -143,7 +143,7 @@ async function configStoragePool(event) {
             progress.innerHTML = `${tries * 10}%`
             countTicks = true
         }
-        // number of ticks to wait before executing getSetupId
+        // number of ticks to wait before executing isPersistenceActive
         if (ticks == ticksBetweenTries) ticks = 0
         if (countTicks) ticks++
     }, 1000)

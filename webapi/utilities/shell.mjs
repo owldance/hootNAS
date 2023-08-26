@@ -4,7 +4,6 @@
  */
 'use strict'
 import { spawn } from 'child_process'
-//import { basePath } from '../../webserver/webserver.mjs'
 /**
  * Execute a shell command locally. if the environment variable HOOT_REPO is 
  * set, then execute the command on the remote hootNAS system as root. this 
@@ -13,8 +12,8 @@ import { spawn } from 'child_process'
  * @async 
  * @function
  * @param {String} cmd a valid shell command
- * @returns {Promise<String>} On resolve, command raw output
- * @returns {Promise<Error>} On reject, Error object with error message and 
+ * @returns {String} raw output of the shell command
+ * @throws {Error} On reject, Error object with error message and 
  * exit code of the last command that was executed in the shell
  */
 export async function shell(cmd) {
@@ -36,7 +35,7 @@ export async function shell(cmd) {
         await new Promise((resolve, reject) => {
             shell.on('exit', (exitCode) => {
                 if (exitCode === 0) resolve()
-                // a friendly reminder in case vebserver is in dev mode i.e. 
+                // a friendly reminder in case webserver is in dev mode i.e. 
                 // HOOT_REPO is set, but the user has not setup 
                 // ssh access to the remote system
                 if (ret.match(/ssh_askpass/i)) {
@@ -56,9 +55,9 @@ export async function shell(cmd) {
 
 
 /**
- * test the function shell(cmd) with the parameter 'ls -l /'
+ * test the function shell(cmd)
  */
-// shell('ls -lwø /')
+// shell('ls /run/live/persistence')
 //     .then((data) => {
 //         console.log(`THEN: ${data}`)
 //     }

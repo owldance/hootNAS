@@ -16,5 +16,6 @@ apiRouter.post('/createAccount', user.createAccount)
 apiRouter.post('/getBlockDevices',checkAuthorization, devices.getBlockDevices)
 apiRouter.post('/rebootSystem', checkAuthorization, system.rebootSystem)
 apiRouter.post('/getSetupId', checkAuthorization, system.getSetupId)
+apiRouter.post('/isPersistenceActive', checkAuthorization, system.isPersistenceActive)
 apiRouter.post('/initialSetup', checkAuthorization, devices.initialSetup)
 

@@ -4,7 +4,7 @@
  * returned from the services, and then send the response back to the client.
  * @module controllers/system
  */
-import { reboot, getSetup } from '../services/system.mjs'
+import { reboot, getSetup, checkPersistence } from '../services/system.mjs'
 import { getErrorObject } from '../../webapi/utilities/getErrorObject.mjs'
 'use strict'
 
@@ -23,6 +23,16 @@ export async function rebootSystem(req, res, next) {
 export async function getSetupId(req, res, next) {
   try {
     const result = await getSetup()
+    res.status(200).send(result)
+    next()
+  } catch (e) {
+    res.status(500).send(getErrorObject(e)) //&& next(error)
+  }
+}
+
+export async function isPersistenceActive(req, res, next) {
+  try {
+    const result = await checkPersistence()
     res.status(200).send(result)
     next()
   } catch (e) {

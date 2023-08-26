@@ -138,8 +138,8 @@ async function configurePersistence() {
  * @function initialSetup 
  * @async
  * @param {Object} storagepool
- * @returns {Promise<Message>} On resolve
- * @thows {Promise<Error>} On reject
+ * @returns {Message} On resolve
+ * @throws {Error} On reject
  */
 export async function initialSetup(storagepool) {
   if (storagepool.debug) {
