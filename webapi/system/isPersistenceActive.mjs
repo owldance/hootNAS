@@ -14,7 +14,7 @@ import { shell } from "../utilities/shell.mjs"
 export async function isPersistenceActive() {
     try {
         await shell('ls /run/live/persistence')
-        return { message: 'Persistence is active' }
+        return { message: 'Persistence is active'}
     }
     catch (e) { 
         throw e

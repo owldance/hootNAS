@@ -23,6 +23,15 @@ function goPrev(event) {
         document.getElementById('carousel-init'))
     carousel.prev()
 }
+
+/**
+ * Displays a modal with the given title and body content, and an optional 
+ * disabled button.
+ * @param {string} title - The title of the modal.
+ * @param {string} body - The body content of the modal.
+ * @param {boolean} [buttonDisabled=false] - Whether or not the button in the 
+ * modal should be disabled.
+ */
 function showFinalizeModal(title, body, buttonDisabled = false) {
     document.getElementById('finalize-modal-title').innerHTML = title
     document.getElementById('finalize-modal-body').innerHTML = body
@@ -35,6 +44,23 @@ function showFinalizeModal(title, body, buttonDisabled = false) {
     var modal = bootstrap.Modal.getOrCreateInstance(modalElement)
     modal.show()
 }
+
+function progressProgressBar(progressBarProgressed, progressBarSlices) {
+    progressBarProgressed++
+    const progressBarSlice = 100/progressBarSlices
+    const progressBarProgress = Math.ceil(progressBarProgressed * progressBarSlice)
+    const progress = document.getElementById('install-progress')
+    progress.style.width = `${progressBarProgress}%`
+    progress.innerHTML = `${progressBarProgress}%`
+    return progressBarProgressed
+}
+
+function isProductionMode() {
+  if (location.port === '80' || location.port === '') 
+    return true
+  else 
+    return false
+}
 /**
  * Sends initialSetup request to server and disables the 
  * install-options-button
@@ -44,44 +70,50 @@ function showFinalizeModal(title, body, buttonDisabled = false) {
  * @param {Object} event native DOM event object
  */
 async function configStoragePool(event) {
-    // disable buttons
     const buttonBack = document.getElementById('install-options-button')
     const buttonConfig = document.getElementById('config-button')
+    const showMessage = document.getElementById('install-msg')
+    const showMaxRetriesMessage = document.getElementById('install-max-msg')
     buttonBack.disabled = true
     buttonConfig.disabled = true
-    // test setup
+    // number of slices/steps in the progress bar to reach 100%
+    const progressBarSlices = 12
+    let progressBarProgressed = 0
+    // test the submitted setup first
     try {
         storagepool.debug = true
+        showMessage.innerHTML = 'checking configuration...'
         await post('api/initialSetup', {
             accesstoken: appstate.accesstoken,
             storagepool: storagepool
         })
+        progressBarProgressed=
+            progressProgressBar(progressBarProgressed, progressBarSlices)
     }
     catch (e) {
         // test failed, allow user to go back and try again
-        const msg = e.message.replace(/^use.*override.*$/m, '<br>')
+        const showMessage = e.message.replace(/^use.*override.*$/m, '<br>')
         showFinalizeModal('Configuration Error',
             `<p>hootNAS was unable to configure the storage pool. </p>
         <p>Go back using the 'Prev' button and please check the following:</p>
-        <p>${msg}</p><p>And then try again.</p>`, false)
+        <p>${showMessage}</p><p>And then try again.</p>`, false)
         buttonBack.disabled = false
         buttonConfig.disabled = false
         return
     }
-    // setup storage pool for real
+    // now setup storage pool for real
     storagepool.debug = false
-    const msg = document.getElementById('install-msg')
-    const progress = document.getElementById('install-progress')
-    msg.innerHTML = 'Setting up storage pool and persistance'
-    progress.style.width = `10%`
-    progress.innerHTML = `10%`
-    const xdat = await post('api/initialSetup', {
+    showMessage.innerHTML = 'Committing your configuration to disk...'
+    await post('api/initialSetup', {
         accesstoken: appstate.accesstoken,
         storagepool: storagepool
     })
-    msg.innerHTML = 'Rebooting system'
-    progress.style.width = `20%`
-    progress.innerHTML = `20%`
+    progressBarProgressed=
+        progressProgressBar(progressBarProgressed, progressBarSlices)
+    // reboot the system
+    showMessage.innerHTML = 'Rebooting system...'
+    progressBarProgressed=
+        progressProgressBar(progressBarProgressed, progressBarSlices)
     try {
         await post('api/rebootSystem',
             { accesstoken: appstate.accesstoken })
@@ -100,47 +132,74 @@ async function configStoragePool(event) {
     }
     // while waiting for system to reboot, keep polling isPersistenceActive.
     // counters used to control the flow: 'ticks' is incremented each time 
-    // setInterval callback is called, if countTicks if true. and 'tries' is 
-    // incremented each time isPersistenceActive is called. this means that with a 
-    // setting of ticksBetweenTries=10 and ticksBeforeFirstTry=5, isPersistenceActive 
+    // setInterval callback is called, if countTicks if true. and 
+    // 'progressBarProgressed' is incremented each time before 
+    // isPersistenceActive is called. 
+    // this means that, with a setting of 
+    // ticksBetweenTries=10 and ticksBeforeFirstTry=5, isPersistenceActive 
     // will be called with a 5 second delay, and thereafter every 10 
     // seconds plus the time it takes to execute isPersistenceActive.
     let ticks = 0
-    let tries = 2 // already adcanced progress bar by 20% in above code
     let countTicks = true
     const ticksBetweenTries = 10
     const ticksBeforeFirstTry = 5
-    // polling isPersistenceActive
+    const progressBarProgressedSoFar = progressBarProgressed 
+    showMessage.innerHTML = `Connection attempt \
+        ${progressBarProgressed-progressBarProgressedSoFar + 1} \
+        of ${progressBarSlices-progressBarProgressedSoFar} to hootNAS...`
+    // start polling isPersistenceActive
     const interval = setInterval(async () => {
         if (ticks == ticksBeforeFirstTry && countTicks) {
             // pause counting ticks
             countTicks = false
-            tries++
             try {
                 console.log('executing isPersistenceActive')
                 const data = await post('api/isPersistenceActive')
-                console.log(`finished! setup id: ${data.message}`)
-                msg.innerHTML = `finished! setup id: ${data.message}`
-                progress.style.width = `100%`
-                progress.innerHTML = `100%`
+                console.log(`Finished setup successfully`)
+                showMessage.innerHTML = `Finished setup successfully`
+                progressBarProgressed=
+                    progressProgressBar(progressBarProgressed, 
+                        progressBarSlices)
                 clearInterval(interval)
                 // show vue signIn component
                 appstate.vue = 'signIn'
             }
             catch (e) {
                 console.log(`isPersistenceActive error: ${e.message}`)
-                msg.innerHTML = e.message
+                progressBarProgressed=
+                    progressProgressBar(progressBarProgressed, 
+                    progressBarSlices)    
             }
-            if (tries == 10) {
+            if (progressBarProgressed == progressBarSlices) {
                 // max retries reached
                 console.log('max retries reached')
-                msg.innerHTML = 'max retries reached'
-                progress.style.width = `100%`
-                progress.innerHTML = `100%`
+                showMessage.innerHTML = `Cannot connect to hootNAS`
+                if (isProductionMode()){
+                showMaxRetriesMessage.innerHTML = 
+                    `<p>This is most likely because hootNAS has been assigned \
+                    a new IP address from your DHCP server. </p>\
+                    <p>Please login to hootNAS via the \
+                    terminal (tty) with username 'root' and password \
+                    'pass1234' and run the command './tui-network-config.sh' \
+                    to obtain the new IP address, or better yet, set a fixed \
+                    IP address.</p> \ 
+                    <p>Or hit F12 to open the browser debug window</p>`
+                } else {
+                    showMaxRetriesMessage.innerHTML = 
+                    `<p>This is most likely because you haven't copied the  \
+                    the ssh key before attempts were exhausted.</p>\
+                    <p>after first reboot you have to run \
+                    'ssh-copy-id root@&lt;IP address>' again in your terminal with \
+                    password 'pass1234'. Then hit refresh in your browser.</p> \
+                    <p>Or hit F12 to open the browser debug window</p>`
+                }
                 clearInterval(interval)
             }
-            progress.style.width = `${tries * 10}%`
-            progress.innerHTML = `${tries * 10}%`
+            else {
+                showMessage.innerHTML = `Connection attempt \
+                    ${progressBarProgressed-progressBarProgressedSoFar +1} \
+                    of ${progressBarSlices-progressBarProgressedSoFar} to hootNAS...`
+            }
             countTicks = true
         }
         // number of ticks to wait before executing isPersistenceActive
@@ -156,10 +215,12 @@ async function configStoragePool(event) {
             <div class="card-body">
                 <h4 class="card-title">Finalize setup</h4>
                 <h6 class="text-muted card-subtitle mb-2">Subtitle</h6>
-                <p class="card-text">Depending on your chosen system setup, this may
-                    take quite a while, please be patient.
+                <p class="card-text">You must now finalize the setup, depending on your system setup, this may
+                    take a while, so please be patient.
                 </p>
-                <h6 id="install-msg"></h6>
+                <h5 id="install-msg"></h5>
+                <h6 id="install-max-msg"></h6>
+                
                 <div class="progress" style="height: 24px;margin-top: 20px;margin-bottom: 20px;">
                     <div class="progress-bar" id="install-progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
                         style="width: 0%;">0%</div>
@@ -169,7 +230,7 @@ async function configStoragePool(event) {
                             v-on:click="goPrev">Prev</button>
                     </div>
                     <div class="col text-end"><button class="btn btn-primary" id="config-button" type="button"
-                            v-on:click="configStoragePool">Configure pool</button>
+                            v-on:click="configStoragePool">Finalize setup</button>
                     </div>
                 </div>
             </div>

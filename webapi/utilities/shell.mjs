@@ -40,7 +40,7 @@ export async function shell(cmd) {
                 // ssh access to the remote system
                 if (ret.match(/ssh_askpass/i)) {
                     ret = "host key verification failed. please see \n" +
-                    '/documentation/getstarted.md for more information.'
+                    '/documentation/create-hootnas-instance.md for more information.'
                 }
                 const err = new Error(ret)
                 err.exit = exitCode 
