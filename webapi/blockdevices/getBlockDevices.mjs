@@ -28,17 +28,16 @@ import { lsBlockDeviceWWIDs } from './lsBlockDeviceWWIDs.mjs'
  */
 
 /**
- * Performs a lsblk blockdevice search. Adds wwid's and converts postfixed 
+ * Performs a lsblk blockdevice search. Also adds wwid's and converts postfixed 
  * string numerical values (e.g. 10G) to numbers. 
  * @async 
  * @function 
- * @returns {Promise<Array<blockDevice>>} On resolve
- * @returns {Promise<Error>} On reject
+ * @returns {Array<blockDevice>} On resolve
+ * @throws {Error} On reject
  */
 export async function getBlockDevices() {
-  let blocks = null
   try {
-    blocks = await lsBlockDevices()
+    let blocks = await lsBlockDevices()
     // add wwid
     const wwid = await lsBlockDeviceWWIDs()
     // adds the first available wwid starting with "wwn" 
@@ -47,25 +46,17 @@ export async function getBlockDevices() {
       const mapwwid = wwid.map.find(({ wwid, kname }) =>
         kname === block.kname && wwid.match(/^virt|wwn|scsi|sata|pci/m)
       )
-      block.wwid = mapwwid.wwid
+      // if no wwid is found, do not add it
+      if (mapwwid) {
+        console.log(`found wwid ${mapwwid.wwid}`)
+        block.wwid = mapwwid.wwid
+      }
       // convert postfixed values to ints e.g. "0.1M" to 100000 (bytes)
       block.fssize = humanReadableToNumber(block.fssize)
       block.size = humanReadableToNumber(block.size)
     }
+    return blocks
   } catch (e) {
     throw e
   }
-  return blocks
 }
-
-/**
- * test code using promise chaining
-
-getBlockDevices()
-  .then((blocks) => {
-    console.log(blocks)
-  })
-  .catch((e) => {
-    console.log(e)
-  })
- */

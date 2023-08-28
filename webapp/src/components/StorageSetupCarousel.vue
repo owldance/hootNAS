@@ -61,8 +61,19 @@ import { provide, reactive, watch, inject } from 'vue'
  * @type {Array<blockdevice>}
  */
 const appstate = inject('appstate')
-const allDisks = reactive(await post('api/getBlockDevices',
-  { accesstoken: appstate.accesstoken }))
+
+async function getBlockDevices() {
+  try {
+    const result = await post('api/getBlockDevices',
+      { accesstoken: appstate.accesstoken })
+    return result
+  } catch (e) {
+    return { blockdevices: []}
+  }
+}
+const allDisks = await getBlockDevices()
+// const allDisks = reactive(await post('api/getBlockDevices',
+//   { accesstoken: appstate.accesstoken }))
 provide('allDisks', allDisks)
 /**
  * storagepool is the primary object of this component. 

@@ -13,7 +13,6 @@
 import { inject, nextTick } from 'vue';
 const storagepool = inject('storagepool')
 const allDisks = inject('allDisks')
-
 // give user some time to read
 setTimeout(() => {
     const button = document.getElementById('disk-check-button')
@@ -47,7 +46,7 @@ setTimeout(() => {
     button.disabled = false
     button.innerHTML = 'Shutdown'
     button.addEventListener('click', () => {
-        get('initiateShutdown')
+        post('api/initiateShutdown')
         button.disabled = true
     })
     title.innerHTML = 'Sorry'

@@ -23,27 +23,33 @@ import { shell } from '../utilities/shell.mjs'
  * @property {String} vendor  device vendor
  * @property {String} rev  device revision
  * @property {String} wwid device wwid
+ * @property {String} tran device transport type
  */
 
 /**
- * Performs an lsblk device search. 
+ * Performs a lsblk device search excluding:
+ *  1. usb devices
+ *  2. holder devices or slaves e.g. partitions.
  * @async 
  * @function
  * @returns {Promise<Array<blockDevice>>} On resolve
- * @returns {Promise<Error>} On reject  
+ * @throws {Error} On reject
  */
 export async function lsBlockDevices() {
-  let lsblk = null
   try {
-    lsblk = await shell(
-      'lsblk -J -e7,11 -o KNAME,TYPE,PATH,FSTYPE,FSSIZE,SIZE,MOUNTPOINT,' +
-      'PARTTYPE,PARTUUID,PARTLABEL,WWN,VENDOR,REV'
+    let lsblk = await shell(
+      'lsblk -J -d -e7,11 -o KNAME,TYPE,PATH,FSTYPE,FSSIZE,SIZE,MOUNTPOINT,' +
+      'PARTTYPE,PARTUUID,PARTLABEL,WWN,VENDOR,REV,TRAN'
     )
+    
     lsblk = JSON.parse(lsblk)
+    // delete devices where TRAN is "usb"
+    lsblk.blockdevices = lsblk.blockdevices.filter(({ tran }) => tran !== 'usb')
+    return lsblk
   }
   catch (e) {
-    return Promise.reject(e)
+    throw e
   }
-  return Promise.resolve(lsblk)
 }
 
+//lsblk -J -d -e7,11 -o KNAME,TYPE,PATH,FSTYPE,FSSIZE,SIZE,MOUNTPOINT,PARTTYPE,PARTUUID,PARTLABEL,WWN,VENDOR,REV,TRAN

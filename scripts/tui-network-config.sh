@@ -49,18 +49,50 @@ establish a connection to http://ubuntu.com ...." 5 50
   return $?
 }
 
+# Check if any ethernet links up
+# function checklinks
+# returns {Number}              0, on success, otherwise 1
+function checklinks() {
+  # all ethernet links: en*
+  for link in $(ls /sys/class/net | grep en); do
+    if [ "$(cat /sys/class/net/$link/carrier)" == "1" ]; then
+      if [ "$(cat /sys/class/net/$link/operstate)" == "up" ]; then
+        if [ "$(cat /sys/class/net/$link/addr_assign_type)" == "0" ]; then
+          if [ "$(hostname -I)" != "" ]; then
+            return 0
+          fi
+        fi
+      fi
+    fi
+  done
+  return 1
+}
+
+# Displays infobox before checking if any ethernet links is up
+#
+# function networkup
+# returns {Number}              0, on success, otherwise 1
+function networkup() {
+  dialog --title "Checking network connection" \
+    --backtitle "hootNAS Configuration" \
+    --infobox "\\nPlease wait while checking if any ethernet links \
+are up ...." 5 50
+  sleep 2
+  checklinks 
+  return $?
+}
+
 # Displays an error message in a yesno box
 #
 # function showerror
 # returns {Number}              0, on OK button, 1 on Retry button
 function showerror() {
-  dialog --title "Error!" \
+  dialog --timeout 5 --title "Network error" \
     --backtitle "hootNAS Configuration" \
-    --no-label "Retry" \
-    --yes-label "OK" \
-    --yesno "\\nCould not establish a connection to ubuntu.com, press OK to \
-configure your network manually. Make sure your network cable is plugged \
-into your computer." 10 50
+    --no-label "Exit to shell" \
+    --yes-label "Configure network" \
+    --yesno "\\nNetwork is down, will automatically retry in 5 seconds. \
+Make sure your network cable is plugged into your computer." 10 50
   return $?
 }
 
@@ -90,7 +122,7 @@ adresses into your browser \\n\\n$browser_adrs" $((9 + ${#adrs[@]})) 50
 # returns {Number}              0, on OK button, 1 on Reset button
 function doconfig() {
   while :; do
-    res=$(dialog --title "Manual Network Configuration" \
+    res=$(dialog --title "Manual network configuration" \
       --backtitle "hootNAS Configuration" \
       --output-separator "#" \
       --cancel-label "Reset" \
@@ -138,7 +170,7 @@ DHCP configuration" 14 50 3 \
 # returns {Number}              0, on success, otherwise 1
 function applyconfig() {
   # all ethernet links: en*
-  dialog --title "New Network Configuration" \
+  dialog --title "New network configuration" \
     --backtitle "hootNAS Configuration" \
     --infobox "\\nApplying your new network, \
 this may take some time.\\n\\n" 10 50
@@ -165,7 +197,7 @@ EOF
 # function applydhcp
 # returns {Number}              0, on success, otherwise 1
 function applydhcp() {
-  dialog --title "Reset Network" \
+  dialog --title "Reset network" \
     --backtitle "hootNAS Configuration" \
     --infobox "\\nReverting network back to DHCP configuration, \
 this may take some time.\\n\\n" 10 50
@@ -185,17 +217,29 @@ EOF
 }
 
 # main loop
-while :; do
-  if internet; then
+toshell=1
+while [ $toshell = 1 ]; do
+  if networkup; then
     hostaddress
-  else # ubuntu.com not reachable
-    if showerror; then
+  else # no network
+    showerror
+    case $? in
+    0) # OK
       if doconfig; then
         applyconfig
       else # user pressed Cancel in doconfig
         applydhcp
       fi
-    fi
+      ;;
+    1) # Retry
+      toshell=0
+      ;;
+    *) # timeout
+      ;;
+    esac
   fi
 done
+
+clear
+echo "welcome to the hootnas shell"
 
