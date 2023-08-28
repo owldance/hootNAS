@@ -206,7 +206,7 @@ set menu_color_normal=white/black
 set menu_color_highlight=black/light-gray
 
 menuentry 'Boot hootNAS' {
-        linux   /live/vmlinuz boot=live persistence toram \
+        linux   /live/vmlinuz boot=live persistence toram loglevel=3\
                 persistence-zfs=dpool/sysstate skipconfig \
                 quiet splash
         initrd  /live/initrd 
@@ -230,7 +230,7 @@ EOF
 # filesystem rather than an actual physical CD. 
 cat <<EOF > isoimage/boot/grub/loopback.cfg
 menuentry 'Boot hootNAS' {
-        linux   /live/vmlinuz boot=live persistence toram \
+        linux   /live/vmlinuz boot=live persistence toram loglevel=3\
                 persistence-zfs=dpool/sysstate iso-scan/filename=\${iso_path} \
                 quiet splash 
         initrd  /live/initrd
