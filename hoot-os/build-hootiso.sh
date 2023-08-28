@@ -197,6 +197,13 @@ echo "$disk_info" > isoimage/.disk/info
 echo "$disk_release_notes_url" > isoimage/.disk/release_notes_url
 echo "$disk_uuid_generic" > isoimage/.disk/live-uuid-generic
 
+# loglevel=3 will not show non-critical kernel messages. including the ACPI 
+# warning messages that are shown on some systems:
+# https://bugzilla.kernel.org/show_bug.cgi?id=213023
+# https://askubuntu.com/questions/1416198/ubuntu-22-04-acpi-bios-error-bug-could-not-resolve-symbol-errors-on-asus-x7
+# the parameter acpi=off may also work, but it will disable all acpi functions, 
+# see https://uefi.org/specs/ACPI/6.5/01_Introduction.html
+
 # live-boot options, see:
 # https://manpages.ubuntu.com/manpages/jammy/man7/live-boot.7.html
 cat <<EOF > isoimage/boot/grub/grub.cfg
