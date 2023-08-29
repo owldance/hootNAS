@@ -8,12 +8,12 @@ Is the `systemd` service unit file responsible for starting the
 
 ## [tui-network-config.sh](./network-config.sh)
 
-Is an text user interface (TUI) terminal (tty) script, when executed, on the 
+Is a text user interface (TUI) terminal (tty) script, when executed, on the 
 terminal screen, the script welcomes the user with the IP address of the system. 
 
-If no DHCP server is available, or the script is unable to ping `ubuntu.com`, 
-the user will be given the option to enter the ip address manually on the 
-terminal screen.
+If no addresses are found, it will automatically retry every 10 seconds, or 
+the user can manually configure all ethernet network interfaces, or revert 
+to DHCP.
 
 The script is based on the
 [dialog](https://manpages.ubuntu.com/manpages/jammy/man1/dialog.1.html) 

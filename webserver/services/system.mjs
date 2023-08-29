@@ -5,12 +5,21 @@
  */
 'use strict'
 import { rebootSystem } from '../../webapi/system/rebootSystem.mjs'
+import { shutdownSystem } from '../../webapi/system/shutdownSystem.mjs'
 import { getSetupId } from '../../webapi/system/getSetupId.mjs'
 import { isPersistenceActive } from '../../webapi/system/isPersistenceActive.mjs'
 
 export async function reboot() {
   try {
     return await rebootSystem()
+  } catch (e) {
+    throw e
+  }
+}
+
+export async function shutdown() {
+  try {
+    return await shutdownSystem()
   } catch (e) {
     throw e
   }

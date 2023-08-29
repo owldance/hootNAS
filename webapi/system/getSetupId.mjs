@@ -9,8 +9,8 @@ import { shell } from "../utilities/shell.mjs"
  * initialSetup.mjs script
  * @function getSetupId
  * @async
- * @returns {Promise<Message>} On resolve, message object with setup.id contents
- * @returns {Promise<Error>} On reject, error object
+ * @returns {Message} Message object with setup.id contents
+ * @throws {Error} Error object
  */
 export async function getSetupId() {
     let ret = ''
@@ -18,23 +18,12 @@ export async function getSetupId() {
         ret = await shell('cat /root/setup.id')
         // remove the trailing newline
         ret = ret.replace(/\n$/, '')
+        return { message: ret }
     }
     catch (e) { 
         throw e
     }
-    return { message: ret }
 }
-
-// getSetupId()
-// .then((data) => {
-//     console.log('then')
-//     console.log(data)
-// })
-// .catch((e) => {
-//     console.log('catch')
-//     console.log(e)
-// })
-// .finally(() => {
 
 
 

@@ -1,6 +1,8 @@
 #!/bin/bash
 #
-# Manually configure all ethernet links
+# This script displays all configured network addresses to the user, if no 
+# addresses found, it will automatically retry every 10 seconds, or the user 
+# can manually configure all ethernet network interfaces, or revert to DHCP.
 #
 # requires                      apt install --yes dialog
 #
@@ -34,55 +36,25 @@ function checkip4() {
   return 0
 }
 
-# Displays infobox before checking if ubuntu.com is reachable 
+# Display infobox before checking all network interfaces for 
+# configured network addresses
 #
-# function internet
+# function checknetwork
 # returns {Number}              0, on success, otherwise 1
-function internet() {
-  dialog --title "Checking Internet Connection" \
-    --backtitle "hootNAS Configuration" \
-    --infobox "\\nPlease wait while trying to \
-establish a connection to http://ubuntu.com ...." 5 50
-  sleep 2
-  echo -e "GET http://ubuntu.com HTTP/1.0\n\n" |
-    nc -w 10 ubuntu.com 80 >/dev/null 2>&1
-  return $?
-}
-
-# Check if any ethernet links up
-# function checklinks
-# returns {Number}              0, on success, otherwise 1
-function checklinks() {
-  # all ethernet links: en*
-  for link in $(ls /sys/class/net | grep en); do
-    if [ "$(cat /sys/class/net/$link/carrier)" == "1" ]; then
-      if [ "$(cat /sys/class/net/$link/operstate)" == "up" ]; then
-        if [ "$(cat /sys/class/net/$link/addr_assign_type)" == "0" ]; then
-          if [ "$(hostname -I)" != "" ]; then
-            return 0
-          fi
-        fi
-      fi
-    fi
-  done
-  return 1
-}
-
-# Displays infobox before checking if any ethernet links is up
-#
-# function networkup
-# returns {Number}              0, on success, otherwise 1
-function networkup() {
+function checknetwork() {
   dialog --title "Checking network connection" \
     --backtitle "hootNAS Configuration" \
-    --infobox "\\nPlease wait while checking if any ethernet links \
-are up ...." 5 50
-  sleep 2
-  checklinks 
-  return $?
+    --infobox "\\nPlease wait while checking all network interfaces for \
+configured network addresses ...." 5 50
+  sleep 5
+  if [ "$(hostname -I)" != "" ]; then
+    return 0
+  else
+    return 1
+  fi
 }
 
-# Displays an error message in a yesno box
+# Display an error message in a yesno box
 #
 # function showerror
 # returns {Number}              0, on OK button, 1 on Retry button
@@ -91,31 +63,31 @@ function showerror() {
     --backtitle "hootNAS Configuration" \
     --no-label "Exit to shell" \
     --yes-label "Configure network" \
-    --yesno "\\nNetwork is down, will automatically retry in 5 seconds. \
+    --yesno "\\nNo network addresses found, automatic retry in 5 seconds. \
 Make sure your network cable is plugged into your computer." 10 50
   return $?
 }
 
-# Displays msgbox with the host's ip address(es). Assumes that network is 
-# correctly configured and ubuntu.com is reachable.
+# Displays msgbox with the host's ip address(es).
 #
 # function hostaddress
 # returns {Number}              0, on OK button, 1 on Retry button
 function hostaddress() {
+  browser_adrs=""
   adrs=$(hostname -I)
   for adr in ${adrs[@]}; do
     browser_adrs+="http://$adr \\n"
   done
   dialog --title "Success!" \
     --backtitle "hootNAS Configuration" \
-    --ok-label "Retry" \
-    --msgbox "\\nTo proceede with install, please enter one of the following \
+    --no-label "Configure network" \
+    --yes-label "Exit to shell" \
+    --yesno "\\nTo proceede with install, please enter one of the following \
 adresses into your browser \\n\\n$browser_adrs" $((9 + ${#adrs[@]})) 50
-  browser_adrs=""
-  return 0
+  return $?
 }
 
-# Displays form that enables the user to enter address, gateway and 
+# Display form that enables the user to enter address, gateway and 
 # nameserver ip's.
 #
 # function doconfig
@@ -192,7 +164,7 @@ EOF
   return $?
 }
 
-# Displays infobox before applying dhcp network configuration
+# Display infobox before applying dhcp network configuration
 #
 # function applydhcp
 # returns {Number}              0, on success, otherwise 1
@@ -216,30 +188,44 @@ EOF
   return $?
 }
 
-# main loop
+#
+# Main loop
+#
 toshell=1
 while [ $toshell = 1 ]; do
-  if networkup; then
+  if checknetwork; then
     hostaddress
-  else # no network
-    showerror
     case $? in
-    0) # OK
+    0) # --yes-label, exit to shell
+      toshell=0
+      ;;
+    1) # --no-label, configure network
       if doconfig; then
         applyconfig
       else # user pressed Cancel in doconfig
         applydhcp
       fi
       ;;
-    1) # Retry
+    esac
+  else # no network
+    showerror
+    case $? in
+    0) # --yes-label, configure network
+      if doconfig; then
+        applyconfig
+      else # user pressed Cancel in doconfig
+        applydhcp
+      fi
+      ;;
+    1) # --no-label, exit to shell
       toshell=0
       ;;
-    *) # timeout
+    *) # --timeout, automatic retry
       ;;
     esac
   fi
 done
 
 clear
-echo "welcome to the hootnas shell"
+echo "execute './tui-network-config.sh' to configure network again"
 

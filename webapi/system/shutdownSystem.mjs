@@ -1,19 +1,19 @@
 /**
  * Reboots the system
- * @module rebootSystem
+ * @module shutdownSystem
  */
 'use strict'
 import { shell } from "../utilities/shell.mjs"
 /**
- * Reboots the system
- * @function rebootSystem
+ * Shuts down the system
+ * @function shutdownSystem
  * @async
  * @returns {String} Command raw output
  * @throws {Error} Error object with error message
  */
-export async function rebootSystem() {
+export async function shutdownSystem() {
     try {
-        const ret = await shell('reboot')
+        const ret = await shell('shutdown now')
         return { message: ret }
     }
     catch (e) {

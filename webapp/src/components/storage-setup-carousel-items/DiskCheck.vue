@@ -10,9 +10,11 @@
  * are existing partitions, and user accepts to delete them, zwipe disks. 
  * otherwise exit.
   */
-import { inject, nextTick } from 'vue';
+import { inject, nextTick } from 'vue'
+import { post } from '../shared.mjs'
 const storagepool = inject('storagepool')
 const allDisks = inject('allDisks')
+const appstate = inject('appstate')
 // give user some time to read
 setTimeout(() => {
     const button = document.getElementById('disk-check-button')
@@ -46,8 +48,14 @@ setTimeout(() => {
     button.disabled = false
     button.innerHTML = 'Shutdown'
     button.addEventListener('click', () => {
-        post('api/initiateShutdown')
-        button.disabled = true
+        post('api/shutdownSystem',
+            { accesstoken: appstate.accesstoken }).then(() => {
+                title.innerHTML = 'System has been shut down'
+                button.disabled = true
+            })
+            .catch(e => {
+                console.log(e)
+            })
     })
     title.innerHTML = 'Sorry'
     subtitle.innerHTML = 'No disks found'

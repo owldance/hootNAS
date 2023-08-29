@@ -4,7 +4,7 @@
  * returned from the services, and then send the response back to the client.
  * @module controllers/system
  */
-import { reboot, getSetup, checkPersistence } from '../services/system.mjs'
+import { reboot, shutdown, getSetup, checkPersistence } from '../services/system.mjs'
 import { getErrorObject } from '../../webapi/utilities/getErrorObject.mjs'
 'use strict'
 
@@ -12,6 +12,17 @@ export async function rebootSystem(req, res, next) {
   const { username, content } = req.body
   try {
     const result = await reboot()
+    res.status(200).send(result)
+    next()
+  } catch (e) {
+    res.status(500).send(getErrorObject(e)) //&& next(error)
+  }
+}
+
+export async function shutdownSystem(req, res, next) {
+  const { username, content } = req.body
+  try {
+    const result = await shutdown()
     res.status(200).send(result)
     next()
   } catch (e) {
