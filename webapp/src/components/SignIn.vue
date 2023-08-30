@@ -47,12 +47,12 @@ function checkName(event) {
   const nameHelp = document.getElementById('name-help')
   const actionButton = document.getElementById('action-button')
   const name = nameInput.value
-  if (name.match(/^[a-zA-Z0-9_]{6,}$/)) {
+  if (name.match(/^[a-zA-Z0-9_]{8,}$/)) {
     nameHelp.innerText = 'ok'
     nameHelp.style.color = 'green'
     actionButton.disabled = false
   } else {
-    nameHelp.innerText = 'Minimum 6 characters including uppercase and lowercase letters, numbers and underscores'
+    nameHelp.innerText = 'Minimum 8 characters including uppercase and lowercase letters, numbers and underscores'
     nameHelp.style.color = 'red'
     actionButton.disabled = true
   }
@@ -128,6 +128,7 @@ async function signIn() {
         password: passwordInput.value
       })
     appstate.accesstoken = user.accesstoken
+    appstate.username = nameInput.value
     appstate.vue = 'dashBoard'
   }
   catch (e) {

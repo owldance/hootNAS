@@ -44,7 +44,9 @@ INSERT INTO "user_status" ("status") VALUES ('active');
 INSERT INTO "user_status" ("status") VALUES ('inactive');
 INSERT INTO "user_status" ("status") VALUES ('locked');
 
-/* create 3 random users */
+/* create 4 random users */
+INSERT INTO "users" ("name", "mail", "password") 
+VALUES ('Superman', 'super@man.me', 'kryp2Nite');
 INSERT INTO "users" ("name", "mail", "password") 
 VALUES ('Monkey', 'monkey@mail.me', 'monk7y');
 INSERT INTO "users" ("name", "mail", "password") 
@@ -53,6 +55,9 @@ INSERT INTO "users" ("name", "mail", "password")
 VALUES ('Funky', 'funky@brothers.io', 'funke4');
 
 /* assign users a new status */
+UPDATE users 
+SET status_id = (SELECT id FROM user_status WHERE status = 'active')
+WHERE name = 'Superman';
 UPDATE users 
 SET status_id = (SELECT id FROM user_status WHERE status = 'active') 
 WHERE name = 'Donkey';
@@ -65,6 +70,24 @@ WHERE name = 'Funky';
 
 /* a user, MUST at least be member of the group user */
 /* insert into user_groups using "name" and "group" */
+/* superman */
+INSERT INTO "user_groups" ("user_id", "group_id") 
+VALUES (
+    (SELECT id FROM users WHERE "name" = 'Superman'), 
+    (SELECT id FROM groups WHERE "group" = 'admins'));
+INSERT INTO "user_groups" ("user_id", "group_id") 
+VALUES (
+    (SELECT id FROM users WHERE "name" = 'Superman'), 
+    (SELECT id FROM groups WHERE "group" = 'users'));
+
+INSERT INTO "user_groups" ("user_id", "group_id") 
+VALUES (
+    (SELECT id FROM users WHERE "name" = 'Superman'), 
+    (SELECT id FROM groups WHERE "group" = 'admins'));
+INSERT INTO "user_groups" ("user_id", "group_id") 
+VALUES (
+    (SELECT id FROM users WHERE "name" = 'Superman'), 
+    (SELECT id FROM groups WHERE "group" = 'data-admins'));
 /* mokey */
 INSERT INTO "user_groups" ("user_id", "group_id") 
 VALUES (
@@ -75,7 +98,6 @@ INSERT INTO "user_groups" ("user_id", "group_id")
 VALUES (
     (SELECT id FROM users WHERE "name" = 'Monkey'), 
     (SELECT id FROM groups WHERE "group" = 'admins'));
-
 INSERT INTO "user_groups" ("user_id", "group_id") 
 VALUES (
     (SELECT id FROM users WHERE "name" = 'Monkey'), 

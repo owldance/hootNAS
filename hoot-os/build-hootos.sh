@@ -433,15 +433,14 @@ sed -i "s|\"$|:/usr/bin/nodejs/node-${nodejs_version}-linux-x64/bin\"|" \
 mkdir -p hootos/usr/local/hootnas/{db,webserver,webapp/dist,webapi,scripts}
 
 # copy in db directory if exists
-db=$HOOT_REPO/db
-if [ -d "$db" ]; then
+if [ -d "$HOOT_REPO/db" ]; then
   echo "copy in hootnas db"
-  cp -r $db/* hootos/usr/local/hootnas/db
+  cp -r $HOOT_REPO/db/* hootos/usr/local/hootnas/db
 fi
 
 # run hoot.sql to create empty database
 echo "creating empty database"
-cat <<'EOF' | chroot hootos
+cat <<EOF | chroot hootos
 cd /usr/local/hootnas/db
 rm hoot.db
 sqlite3 hoot.db < hoot.sql
