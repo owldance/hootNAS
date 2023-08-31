@@ -120,15 +120,15 @@ async function signIn() {
     if (createChecked.value){
       user = await post('api/createAccount', {
         name: nameInput.value,
-        password: passwordInput.value, mail: mailInput.value
+        password: passwordInput.value, 
+        mail: mailInput.value
       })}
     else
       user = await post('api/getAccessToken', {
         name: nameInput.value,
         password: passwordInput.value
       })
-    appstate.accesstoken = user.accesstoken
-    appstate.username = nameInput.value
+    appstate.user = user
     appstate.vue = 'dashBoard'
   }
   catch (e) {

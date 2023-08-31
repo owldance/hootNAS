@@ -20,11 +20,11 @@ const dbPath = `${basePath}/db/hoot.db`
  * @param {String} name 
  * @param {String} password 
  * @returns {User} on resolve
- * @returns {Error} on reject
+ * @throws {Error} on reject
  */
 export async function selectUser(name, password) {
-  let result = null
   try {
+    let result = null
     const db = await open({
       filename: dbPath,
       driver: sqlite3.Database
@@ -49,12 +49,14 @@ export async function selectUser(name, password) {
     // except for the group. delete the group property and add the groups array
     result = result[0]
     delete result.group
+    // don't return the password
+    delete result.password
     result.groups = groups
     await db.close()
+    return result
   } catch (e) {
     throw e
   }
-  return result
 }
 
 // selectUser('Monkey', 'monk7y')
