@@ -5,8 +5,9 @@
 'use strict'
 import { shell } from "../utilities/shell.mjs"
 import { zwipeBlockDevice } from "./zwipeBlockDevice.mjs"
-import { createZpool} from "../zfs/createZpool.mjs"
+import { createZpool } from "../zfs/createZpool.mjs"
 import { createZvol } from "../zfs/createZvol.mjs"
+import { createZfs } from "../zfs/createZfs.mjs"
 import { getSettings } from "../utilities/getSettings.mjs"
 /**
  * A blockdevice is a physical disk/partition on the machine
@@ -87,7 +88,6 @@ function sortVdevs(storagepool) {
   return storagepool
 }
 
-
 /**
  * Configures persistence by creating a zvol, formatting it with ext4, 
  * mounting it to /mnt, and creating a persistence.conf file.
@@ -148,9 +148,9 @@ export async function initialSetup(storagepool) {
       storagepool = sortVdevs(storagepool)
       debugMessage = await createZpool(storagepool)
     } catch (e) {
-      return Promise.reject(e)
+      return e
     }
-    return Promise.resolve({ message: debugMessage })
+    return { message: debugMessage }
   }
   // normal setup
   let creationMessage = ''
@@ -164,154 +164,11 @@ export async function initialSetup(storagepool) {
     }
     creationMessage = await createZpool(storagepool)
     await configurePersistence()
+    // create the root zfs filesystem
+    await createZfs('dpool/data', undefined, { mountpoint: '/data' })
+    return { message: creationMessage }
   }
   catch (e) {
     throw e
   }
-  return { message: creationMessage }
 }
-
-// example storagepool object
-let example =
-{
-  "vdevs": [
-    {
-      "blockdevices": [
-        {
-          "kname": "sdh",
-          "type": "disk",
-          "path": "/dev/sdh",
-          "fstype": "zfs_member",
-          "fssize": null,
-          "size": 4000000000,
-          "mountpoint": null,
-          "parttype": null,
-          "partuuid": null,
-          "partlabel": null,
-          "wwn": null,
-          "vendor": "QEMU    ",
-          "rev": "2.5+",
-          "wwid": "scsi-0QEMU_QEMU_HARDDISK_drive-scsi1-0-1"
-        },
-        {
-          "kname": "sdg",
-          "type": "disk",
-          "path": "/dev/sdg",
-          "fstype": "zfs_member",
-          "fssize": null,
-          "size": 4000000000,
-          "mountpoint": null,
-          "parttype": null,
-          "partuuid": null,
-          "partlabel": null,
-          "wwn": null,
-          "vendor": "QEMU    ",
-          "rev": "2.5+",
-          "wwid": "scsi-0QEMU_QEMU_HARDDISK_drive-scsi1-0-0"
-        }
-      ],
-      "redundancy": "mirror",
-      "type": "data-1",
-      "delete": false,
-      "dspares": 0
-    },
-    {
-      "blockdevices": [
-        {
-          "kname": "sdf",
-          "type": "disk",
-          "path": "/dev/sdf",
-          "fstype": null,
-          "fssize": null,
-          "size": 4000000000,
-          "mountpoint": null,
-          "parttype": null,
-          "partuuid": null,
-          "partlabel": null,
-          "wwn": null,
-          "vendor": "QEMU    ",
-          "rev": "2.5+",
-          "wwid": "scsi-0QEMU_QEMU_HARDDISK_drive-scsi0-0-0-1"
-        },
-        {
-          "kname": "sde",
-          "type": "disk",
-          "path": "/dev/sde",
-          "fstype": null,
-          "fssize": null,
-          "size": 4000000000,
-          "mountpoint": null,
-          "parttype": null,
-          "partuuid": null,
-          "partlabel": null,
-          "wwn": null,
-          "vendor": "QEMU    ",
-          "rev": "2.5+",
-          "wwid": "scsi-0QEMU_QEMU_HARDDISK_drive-scsi0-0-0-2"
-        }
-      ],
-      "redundancy": "mirror",
-      "type": "dedup",
-      "delete": false,
-      "dspares": 0
-    },
-    {
-      "blockdevices": [
-        {
-          "kname": "sdd",
-          "type": "disk",
-          "path": "/dev/sdd",
-          "fstype": null,
-          "fssize": null,
-          "size": 4000000000,
-          "mountpoint": null,
-          "parttype": null,
-          "partuuid": null,
-          "partlabel": null,
-          "wwn": null,
-          "vendor": "QEMU    ",
-          "rev": "2.5+",
-          "wwid": "scsi-0QEMU_QEMU_HARDDISK_drive-scsi0-0-0-3"
-        },
-        {
-          "kname": "sdc",
-          "type": "disk",
-          "path": "/dev/sdc",
-          "fstype": null,
-          "fssize": null,
-          "size": 4000000000,
-          "mountpoint": null,
-          "parttype": null,
-          "partuuid": null,
-          "partlabel": null,
-          "wwn": null,
-          "vendor": "QEMU    ",
-          "rev": "2.5+",
-          "wwid": "scsi-0QEMU_QEMU_HARDDISK_drive-scsi0-0-0-4"
-        }
-      ],
-      "redundancy": "stripe",
-      "type": "data-2",
-      "delete": false,
-      "dspares": 0
-    }
-  ],
-  "setupid": "AGA771-4",
-  "debug": true
-}
-
-
-
-//test
-// initialSetup(example)
-//   .then((response) => {
-//     console.log(`THEN`)
-//     console.log(response)
-//   })
-//   .catch((error) => {
-//     console.log(`CATCH`)
-//     console.log(error)
-//   }
-//   )
-
-

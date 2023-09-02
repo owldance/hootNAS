@@ -9,8 +9,8 @@ import { fileURLToPath } from 'node:url'
  * Opens the webapi-settings.json file and returns the settings object
  * @function getSettings - Get the settings from the webapi-settings.json file
  * @async
- * @returns {Promise<object>} - A Promise that resolves with the settings object.
- * @throws {Promise<Error>} - A Promise that rejects with the error
+ * @returns {Object} - The settings object.
+ * @throws {Error} - Error message
  */
 export async function getSettings() {
     try {

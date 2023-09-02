@@ -1,4 +1,5 @@
 {
     "storagepoolname": "dpool",
-    "persistencezvolname": "sysstate"
+    "persistencezvolname": "sysstate",
+    "datafsname": "data"
 }
