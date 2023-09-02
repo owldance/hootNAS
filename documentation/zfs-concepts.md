@@ -1,9 +1,6 @@
 # hootNAS - ZFS concepts
 
 For details, see [man zpoolconcepts](https://openzfs.github.io/openzfs-docs/man/7/zpoolconcepts.7.html)
-and [man zpoolprops](https://openzfs.github.io/openzfs-docs/man/7/zpoolprops.7.html) 
-and [man zpool-features](https://openzfs.github.io/openzfs-docs/man/7/zpool-features.7.html)
-and [man zfsprops](https://openzfs.github.io/openzfs-docs/man/7/zfsprops.7.html) 
 
 ## Pool
 
@@ -17,6 +14,16 @@ A pool can have any number of virtual devices at the top of the configuration
 (known as root vdevs).  Data is dynamically distributed across all top-level 
 devices to balance data among devices.  As new virtual devices are added, ZFS 
 automatically places data on the newly available devices.
+
+Note: when creating a zpool, the create command accepts the `-O` (Captial O) 
+option to specify file system (dataset) properties in the root file system of 
+the pool `-O file-system-property=value` see 
+[zfsprops](https://openzfs.github.io/openzfs-docs/man/7/zfsprops.7.html). 
+This is different from the `-o` (lowercase o) option which is used to specify 
+pool properties 
+[zpoolprops](https://openzfs.github.io/openzfs-docs/man/7/zpoolprops.7.html) 
+and features 
+[zpool-features](https://openzfs.github.io/openzfs-docs/man/7/zpool-features.7.html)
 
 ## Virtual device
 
@@ -103,6 +110,9 @@ redundancy of the data vdevs in the pool.
 
 The `zfs` command configures ZFS datasets within a ZFS storage pool, as 
 described above. 
+
+Note: The `-o` (lowercase o) option is used to specify dataset properties 
+[zfsprops](https://openzfs.github.io/openzfs-docs/man/7/zfsprops.7.html)
 
 A dataset is identified by a unique path within the ZFS namespace e.g. 
 `pool/{filesystem,volume,snapshot}` and can be one of the following types:

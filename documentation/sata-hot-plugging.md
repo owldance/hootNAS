@@ -64,7 +64,7 @@ damaged due to inrush current.
 
 To prevent this, it requires the use of ac-coupling capacitors. See calculation 
 of the capacitor value in **7.2.5.3 Common-Mode Transients**. Suggested values 
-by e.g. TI for the capacitor is 10nF, see 
+by e.g. TI for the capacitors is 10nF each, see 
 [SN75LVCP601 datasheet](https://www.ti.com/lit/ds/symlink/sn75lvcp601.pdf?ts=1693568146060)
 
 ### Disable Staggered Spin-up (DSS) pin P11 
@@ -87,8 +87,16 @@ for host in /sys/class/scsi_host/*; do
     echo "- - -" >> $host/scan
 done
 ```
-
 The three dashes are wildcards to scan: channel, SCSI target ID, and LUN.
+
+For sake of completeness, the following command can be used to spin-down and 
+detach a disk from the system:
+
+```bash
+echo 1 > /sys/block/$KNAME/device/delete
+```
+
+Where `$KNAME` is the kernel name of the disk, e.g. `sda`.
 
 ## Standard SATA connector 3.5" and 2.5"
 ![SATA connector](assets/Standard-SATA-Connector.png)
