@@ -27,9 +27,12 @@ particular adding context, reasoning and references.
 
 ## Features
 
-* Runs in-memory, no installation required
+* Super fast, runs in-memory
+* No installation required
 * Simple setup and easy to upgrade
-* Boot from any media, even a slow USB-stick, or network
+* Boot from any media, even a slow USB-stick
+* Boot from network drive or PXE boot
+* No dedicated boot disk required
 * True data and system OS separation 
 * Local authentication, or remote LDAP or Active Directory servers
 * SMB, NFS and iSCSI network folders and blockdevices

@@ -26,7 +26,7 @@
     - [Create a BIOS/UEFI hybrid ubuntu boot disk](/documentation/tech/create-bios-uefi-hybrid-boot-disk.md) - 
     A guide to creating a ubuntu boot disk that can boot both BIOS and UEFI systems.
     - [SATA hot-plug support for hardware](/documentation/sata-hot-plugging.md) - 
-    Designing hardware for SATA hot-plug support.
+    Design hardware for SATA hot-plug support.
 
 ## Writing documentation
 
