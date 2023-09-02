@@ -5,6 +5,7 @@
  * vdevType prop, which is unique, is prepended to most id's and names in this 
  * component.
  * @module VdevConfig
+ * @todo add support for selecting hot spares for draid vdevs
  */
 import { inject, nextTick, onMounted } from 'vue'
 const storagepool = inject('storagepool')

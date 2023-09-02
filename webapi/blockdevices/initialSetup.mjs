@@ -98,9 +98,8 @@ function sortVdevs(storagepool) {
 async function configurePersistence() {
   try {
     const settings = await getSettings()
-    console.log(`creating zvol ${settings.storagepoolname}/${settings.persistencezvolname}`)
-    await createZvol(`1G`, `${settings.storagepoolname}/${settings.persistencezvolname}`)
-    console.log(`created zvol ${settings.storagepoolname}/${settings.persistencezvolname}`)
+    await createZvol(`1G`, 
+      `${settings.storagepoolname}/${settings.persistencezvolname}`)
     // the volume is exported as a block device in /dev/zvol/path
     await shell(`mkfs.ext4 -L persistence /dev/zd0`)
     await shell(`mount /dev/zd0 /mnt`)
@@ -142,6 +141,7 @@ async function configurePersistence() {
  * @throws {Error} On reject
  */
 export async function initialSetup(storagepool) {
+  const settings = await getSettings()
   if (storagepool.debug) {
     let debugMessage = ''
     try {
@@ -165,7 +165,9 @@ export async function initialSetup(storagepool) {
     creationMessage = await createZpool(storagepool)
     await configurePersistence()
     // create the root zfs filesystem
-    await createZfs('dpool/data', undefined, { mountpoint: '/data' })
+    await createZfs(`${settings.storagepoolname}/${settings.datafsname}`, 
+      undefined, 
+      { mountpoint: `/${settings.datafsname}` })
     return { message: creationMessage }
   }
   catch (e) {
