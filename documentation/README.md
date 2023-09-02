@@ -22,9 +22,11 @@
     - [ZFS concepts](./zfs-concepts.md) - A brief introduction to ZFS concepts 
     and definition of terms.
 
-3. Technical blogs
-    - [Create a BIOS/UEFI hybrid ubuntu boot disk](./tech/create-bios-uefi-hybrid-boot-disk.md) - 
+3. Technical notes
+    - [Create a BIOS/UEFI hybrid ubuntu boot disk](/documentation/tech/create-bios-uefi-hybrid-boot-disk.md) - 
     A guide to creating a ubuntu boot disk that can boot both BIOS and UEFI systems.
+    - [SATA hot-plug support for hardware](/documentation/sata-hot-plugging.md) - 
+    Designing hardware for SATA hot-plug support.
 
 ## Writing documentation
 
