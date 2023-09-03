@@ -27,6 +27,9 @@
     A guide to creating a ubuntu boot disk that can boot both BIOS and UEFI systems.
     - [SATA hot-plug support for hardware](/documentation/sata-hot-plugging.md) - 
     Design hardware for SATA hot-plug support.
+    - [NFS export options](/documentation/nfs-exports.md) - 
+    An overwiew of which options are available, and which options should be 
+    supported by the webapp
 
 ## Writing documentation
 
