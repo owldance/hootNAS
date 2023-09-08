@@ -3,7 +3,7 @@
  * This is the dashboard component
  * @module DashBoard
  */
-'use strict'
+import NfsShareAdd from './dashboard-cards/NfsShareAdd.vue'
 import { post } from './shared.mjs'
 import { inject, ref, reactive } from 'vue'
 const appstate = inject('appstate')
@@ -40,65 +40,63 @@ function showCard(event) {
           <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
             <li class="nav-item">
               <a href="#" class="nav-link align-middle px-0">
-                <i class="fs-4 bi-house"></i> <span class="ms-1 d-none d-sm-inline" v-on:click="showCard"
+                <i class="fs-4 bi-gear"></i> <span class="ms-1 d-none d-sm-inline" v-on:click="showCard"
                   id="settings">Settings</span>
               </a>
             </li>
-            <!-- #submenu1 -->
+            <!-- metrics submenu -->
             <li>
-              <a href="#submenu1" data-bs-toggle="collapse" class="nav-link px-0 align-middle">
-                <i class="fs-4 bi-speedometer2"></i> <span class="ms-1 d-none d-sm-inline">Dashboard</span> </a>
-              <ul class="collapse show nav flex-column ms-1" id="submenu1" data-bs-parent="#menu">
+              <a href="#metrics" data-bs-toggle="collapse" class="nav-link px-0 align-middle">
+                <i class="fs-4 bi-speedometer2"></i> <span class="ms-1 d-none d-sm-inline">Metrics</span> </a>
+              <ul class="collapse nav flex-column ms-1" id="metrics" data-bs-parent="#menu">
                 <li class="w-100">
-                  <a href="#" class="nav-link px-0"> <span class="d-none d-sm-inline">Item</span> 1 </a>
+                  <a href="#" class="nav-link px-0"> <span class="d-none d-sm-inline" v-on:click="showCard"
+                      id="metrics-disk">Disk</span></a>
                 </li>
                 <li>
-                  <a href="#" class="nav-link px-0"> <span class="d-none d-sm-inline">Item</span> 2 </a>
-                </li>
-              </ul>
-            </li>
-            <li>
-              <a href="#" class="nav-link px-0 align-middle">
-                <i class="fs-4 bi-table"></i> <span class="ms-1 d-none d-sm-inline">Orders</span></a>
-            </li>
-            <!-- #submenu2 -->
-            <li>
-              <a href="#submenu2" data-bs-toggle="collapse" class="nav-link px-0 align-middle ">
-                <i class="fs-4 bi-bootstrap"></i> <span class="ms-1 d-none d-sm-inline">Bootstrap</span></a>
-              <ul class="collapse nav flex-column ms-1" id="submenu2" data-bs-parent="#menu">
-                <li class="w-100">
-                  <a href="#" class="nav-link px-0"> <span class="d-none d-sm-inline">Item</span> 1</a>
-                </li>
-                <li>
-                  <a href="#" class="nav-link px-0"> <span class="d-none d-sm-inline">Item</span> 2</a>
+                  <a href="#" class="nav-link px-0"> <span class="d-none d-sm-inline" v-on:click="showCard"
+                      id="metrics-network">Network</span></a>
                 </li>
               </ul>
             </li>
             <!-- shares submenu -->
             <li>
               <a href="#shares" data-bs-toggle="collapse" class="nav-link px-0 align-middle">
-                <i class="fs-4 bi-grid"></i> <span class="ms-1 d-none d-sm-inline">Shares</span> </a>
+                <i class="fs-4 bi-share"></i> <span class="ms-1 d-none d-sm-inline">Shares</span> </a>
               <ul class="collapse nav flex-column ms-1" id="shares" data-bs-parent="#menu">
                 <li class="w-100">
                   <a href="#" class="nav-link px-0"> <span class="d-none d-sm-inline" v-on:click="showCard"
-                      id="nfs">NFS</span> 1</a>
+                      id="nfs">NFS</span></a>
                 </li>
                 <li>
-                  <a href="#" class="nav-link px-0"> <span class="d-none d-sm-inline">SMB</span> 2</a>
+                  <a href="#" class="nav-link px-0"> <span class="d-none d-sm-inline" v-on:click="showCard"
+                      id="smb">SMB</span></a>
                 </li>
                 <li>
-                  <a href="#" class="nav-link px-0"> <span class="d-none d-sm-inline">iSCSI</span> 3</a>
+                  <a href="#" class="nav-link px-0"> <span class="d-none d-sm-inline" v-on:click="showCard"
+                      id="iscsi">iSCSI</span></a>
                 </li>
               </ul>
             </li>
+            <!-- users submenu -->
             <li>
-              <a href="#" class="nav-link px-0 align-middle">
-                <i class="fs-4 bi-people"></i> <span class="ms-1 d-none d-sm-inline">Customers</span> </a>
+              <a href="#users" data-bs-toggle="collapse" class="nav-link px-0 align-middle">
+                <i class="fs-4 bi-people"></i> <span class="ms-1 d-none d-sm-inline">Users</span> </a>
+              <ul class="collapse nav flex-column ms-1" id="users" data-bs-parent="#menu">
+                <li class="w-100">
+                  <a href="#" class="nav-link px-0"> <span class="d-none d-sm-inline" v-on:click="showCard"
+                      id="users">Users</span></a>
+                </li>
+                <li>
+                  <a href="#" class="nav-link px-0"> <span class="d-none d-sm-inline" v-on:click="showCard"
+                      id="groups">Groups</span></a>
+                </li>
+              </ul>
             </li>
           </ul>
         </div>
       </div>
-      <div class="col py-3">
+      <div class="col">
         <div class="card text-bg-primary mb-3" style="max-width: 18rem;" id="users-card"
           v-bind:class="{ 'd-none': cardHidden.users }">
           <div class="card-header">Users</div>
@@ -135,34 +133,9 @@ function showCard(event) {
               content.</p>
           </div>
         </div>
-        <div class="card" style="width: 18rem;" id="nfs-card" v-bind:class="{ 'd-none': cardHidden.nfs }">
-          <div class="card-header">
-            Featured
-          </div>
-          <ul class="list-group list-group-flush">
-            <li class="list-group-item">
-              <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" role="switch" id="nfs-ro" checked>
-                <label class="form-check-label" for="nfs-ro">Share is Read Only</label>
-              </div>
-              <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" role="switch" id="nfs-sync" checked>
-                <label class="form-check-label" for="nfs-sync">Reply to requests only after the changes have been committed to storage.</label>
-              </div>
-              <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" role="switch" id="nfs-ro" checked>
-                <label class="form-check-label" for="nfs-ro">Share is Read Only</label>
-              </div>
-              <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" role="switch" id="nfs-ro" checked>
-                <label class="form-check-label" for="nfs-ro">Share is Read Only</label>
-              </div>
 
-            </li>
-            <li class="list-group-item">A second item</li>
-            <li class="list-group-item">A third item</li>
-          </ul>
-        </div>
+        <NfsShareAdd v-if="!cardHidden.nfs" />
+
       </div>
     </div>
   </div>
@@ -178,4 +151,5 @@ function showCard(event) {
 .nav-link:hover,
 .nav-link:focus {
   color: #bdbdbd;
-}</style>
+}
+</style>

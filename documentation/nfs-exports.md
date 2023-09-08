@@ -90,10 +90,9 @@ be in progress or may arrive soon. The `no_wdelay` option has no effect if
 The `hide` option explicitly hides subordinate filesystems for NFSv2 and NFSv3.
 NFSv4 never hides subordinate filesystems.
 
-A filesystem is "hidden" if a server exports two filesystems one of which is 
-mounted on the other, then the client will have to mount both filesystems 
-explicitly to get access to them. If the client only mounts the parent, it 
-will see an empty directory at the place where the other filesystem is mounted.
+If one filesystems is exported on top of the other, then the client will have 
+to mount both filesystems. If the client only mounts the parent, it will see an 
+empty directory at the place where the other filesystem should have been mounted.
 That filesystem is "hidden". 
 
 Setting the `nohide` option on a filesystem causes it not to be hidden, and 
@@ -103,7 +102,7 @@ only after confirming that the client system copes with the situation effectivel
 This option is similar to `nohide` but with `nohide` the child filesystem needs 
 to be explicitly exported, with `crossmnt` it need not. `nocrossmnt` is rarely
 useful.
-### 👍 no_subtree_check (default) / subtree_check
+### no_subtree_check (default) / subtree_check
 This option disables subtree checking, it is the default as subtree checking 
 tends to cause more problems than it is worth. If you put
 neither `no_subtree_check` nor `subtree_check`, `exportfs` will warn you that 
