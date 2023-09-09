@@ -60,8 +60,9 @@ the wildcard entry above) and will match all clients.
 ## Security
 
 ### 👍 sec= 
-Restrict access using restrict RPCSEC_GSS security. [RPCSEC_GSS](https://docs.oracle.com/cd/E19683-01/816-1331/6m7oo9sn3/index.html#overview-13) integrates with 
-with RPC, and is an additional layer on top of GSS-API.
+Restrict access using RPCSEC_GSS security. 
+[RPCSEC_GSS](https://docs.oracle.com/cd/E19683-01/816-1331/6m7oo9sn3/index.html#overview-13) 
+integrates with with RPC, and is an additional layer on top of GSS-API.
 
 The `sec=` option, followed by a colon-delimited list of security flavors, 
 restricts the export to clients using those flavors. Available security flavors  include sys (the default--no cryptographic security), `krb5` (authentication 
@@ -146,11 +147,11 @@ retrieve SELinux security labels/context.
 ### 👍 root_squash (default) / no_root_squash
 Map requests from uid/gid 0 (root) to the anonymous uid/gid. `no_root_squash` 
 option is mainly useful for diskless clients.
-## 👍 no_all_squash (default) / all_squash
+### 👍 no_all_squash (default) / all_squash
 Keep all uids and gids of user requests as they are. `all_squash` map all uids 
 and gids to the anonymous uid/gid. Useful for NFS-exported public FTP 
 directories, news spool directories, etc. 
-## 👍 anonuid and anongid
+### 👍 anonuid and anongid
 By default, exportfs chooses a uid and gid of 65534 for squashed access. These
 values can be explicitly set with these options. This option is primarily 
 useful where you might want all requests appear to be from one user.
