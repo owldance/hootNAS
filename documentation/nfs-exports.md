@@ -1,8 +1,8 @@
 # The /etc/exports file 
 
 This is to serve as an overwiew of which options are available in the 
-`/etc/exports` file, and which options should be implemented in the webapp marked with a 👍 character.
-
+`/etc/exports` file, and which options should be implemented in the webapp 
+marked with a 👍 character.
 
 Each line contains an export point and a whitespace-separated list of clients 
 allowed to mount the file system at that point. Each listed client MAY be 
@@ -65,7 +65,8 @@ Restrict access using RPCSEC_GSS security.
 integrates with with RPC, and is an additional layer on top of GSS-API.
 
 The `sec=` option, followed by a colon-delimited list of security flavors, 
-restricts the export to clients using those flavors. Available security flavors  include sys (the default--no cryptographic security), `krb5` (authentication 
+restricts the export to clients using those flavors. Available security flavors 
+include sys (the default--no cryptographic security), `krb5` (authentication 
 only),  `krb5i`  (integrity protection), and `krb5p` (privacy protection). For 
 the purposes of security flavor negotiation, order counts: preferred flavors 
 should be listed first. The order of the `sec=` option with respect to the 

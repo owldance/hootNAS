@@ -3,6 +3,7 @@
  * This is the dashboard component
  * @module nfsShareAdd
  */
+import { onMounted } from 'vue'
 function toggleArrow(event) {
     // get the the previous sibling of the event.target which is the <a> element
     const arrow = event.target.previousElementSibling
@@ -13,10 +14,6 @@ function toggleArrow(event) {
         arrow.innerHTML = arrow.innerHTML.slice(0, -1) + '▶'
     }
 }
-
-
-import { ref, onMounted } from 'vue'
-
 onMounted(() => {
     const collapseElementList = document.querySelectorAll('.collapse')
     // add event listener to all collapse elements

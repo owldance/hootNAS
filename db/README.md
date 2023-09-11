@@ -3,9 +3,9 @@
 ## Schema
 This is the schema of the sqlite db so far. 
 
-![db schema](/documentation/assets/hoot-db.drawio.svg "db schema")
+![db schema](/db/assets/db-schema.drawio.svg "db schema")
 
-The database `hoot.db` is created by the [hoot.sql](/db/hoot.sql) script, 
+The database `hoot.db` is created by the various sql scripts in this directory, 
 which also inserts some test users, groups and user status, in the respective 
 tables.
 
@@ -13,7 +13,10 @@ To create a new db, run the following commands from the db directory:
 
 ```bash
 rm hoot.db
-sqlite3 hoot.db < hoot.sql
+for sqlfile in $HOOT_REPO/db/????-*.sql
+do
+	[ -e "${sqlfile}" ] && sqlite3 hoot.db < $sqlfile
+done
 ```
 
 To query the database from within JavaScript modules, use the 

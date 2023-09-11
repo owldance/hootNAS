@@ -1,0 +1,26 @@
+/* create table for nfs exports */
+CREATE TABLE IF NOT EXISTS "nfs_exports" (
+    "id"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+    "user_id"	INTEGER NOT NULL,
+    "path" TEXT NOT NULL UNIQUE,
+    "sec" TEXT DEFAULT NULL,
+    "ro" INTEGER DEFAULT TRUE,
+    "sync" INTEGER DEFAULT TRUE,
+    "wdelay" INTEGER DEFAULT TRUE,
+    "hide" INTEGER DEFAULT TRUE,
+    "crossmnt" INTEGER DEFAULT TRUE,
+    "subtree_check" INTEGER DEFAULT FALSE,
+    "secure_locks" INTEGER DEFAULT TRUE,
+    "mountpoint" TEXT DEFAULT NULL,
+    "fsid" TEXT DEFAULT NULL,
+    "nordirplus" INTEGER DEFAULT FALSE,
+    "refer" TEXT DEFAULT NULL,
+    "replicas" TEXT DEFAULT NULL,
+    "pnfs" INTEGER DEFAULT FALSE,
+    "security_label" INTEGER DEFAULT FALSE,
+    "root_squash" INTEGER DEFAULT TRUE,
+    "all_squash" INTEGER DEFAULT FALSE,
+    "anonuid" INTEGER DEFAULT NULL,
+    "anongid" INTEGER DEFAULT NULL,
+    FOREIGN KEY(user_id) REFERENCES users(id)
+);

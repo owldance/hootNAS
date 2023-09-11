@@ -1,38 +1,3 @@
-/*
-sqlite3 
-create tables for hoot.db 
-*/
-
-/* create users table */ 
-CREATE TABLE IF NOT EXISTS "users" (
-    "id"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
-    "name"	TEXT NOT NULL UNIQUE,
-    "mail"	TEXT NOT NULL UNIQUE,
-    "password"	TEXT NOT NULL,
-    "status_id"	NOT NULL DEFAULT 1
-);
-
-/* create table for groups */
-CREATE TABLE IF NOT EXISTS "groups" (
-    "id"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
-    "group"	TEXT NOT NULL
-);
-
-/* create table for user_groups */
-CREATE TABLE IF NOT EXISTS "user_groups" (
-    "id"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
-    "user_id"	INTEGER NOT NULL,
-    "group_id"	INTEGER NOT NULL,
-    FOREIGN KEY("user_id") REFERENCES "users"("id"),
-    FOREIGN KEY("group_id") REFERENCES "groups"("id")
-);
-
-/* create table user_status */
-CREATE TABLE IF NOT EXISTS "user_status" (
-    "id"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
-    "status"	TEXT NOT NULL
-);
-
 /* add admins, users, data-admins, backup-admins to table groups */
 INSERT INTO "groups" ("group") VALUES ('admins');
 INSERT INTO "groups" ("group") VALUES ('users');
@@ -123,24 +88,32 @@ VALUES (
     (SELECT id FROM users WHERE "name" = 'Funky'), 
     (SELECT id FROM groups WHERE "group" = 'backup-admins'));
 
-/* list all tables */
-SELECT name FROM sqlite_master WHERE type='table';
-
-/* list all columns in table */
-PRAGMA table_info(users);
-
-/* list all users' and their group membership, order by name ascending */
-SELECT users.name, groups."group" 
-FROM users 
-INNER JOIN user_groups ON users.id = user_groups.user_id 
-INNER JOIN groups ON user_groups.group_id = groups.id 
-ORDER BY users.name ASC;
-
-/* select user name, status and group membership, by name and password */
-SELECT users.*, user_status.status, groups."group"
-FROM users
-INNER JOIN user_groups ON users.id = user_groups.user_id
-INNER JOIN groups ON user_groups.group_id = groups.id
-INNER JOIN user_status ON users.status_id = user_status.id
-WHERE name ='Monkey' AND password='monk7y';
+/* insert random nfs export for user Superman into table nfs_exports */
+INSERT INTO "nfs_exports" ("user_id", "path", "sec", "ro", "sync", "wdelay", 
+    "hide", "crossmnt", "subtree_check", "secure_locks", "mountpoint", "fsid", 
+    "nordirplus", "refer", "replicas", "pnfs", "security_label", "root_squash", 
+    "all_squash", "anonuid", "anongid")
+VALUES (
+    (SELECT id FROM users WHERE "name" = 'Superman'), 
+    '/home/superman', 
+    'krb5p', 
+    1, 
+    1, 
+    1, 
+    1, 
+    1, 
+    0, 
+    1, 
+    NULL, 
+    NULL, 
+    0, 
+    NULL, 
+    NULL, 
+    0, 
+    0, 
+    1, 
+    0, 
+    NULL, 
+    NULL
+);
 

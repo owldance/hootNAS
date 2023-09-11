@@ -443,7 +443,10 @@ echo "creating empty database"
 cat <<EOF | chroot hootos
 cd /usr/local/hootnas/db
 rm hoot.db
-sqlite3 hoot.db < hoot.sql
+for sqlfile in ./????-*.sql
+do
+	[ -e "${sqlfile}" ] && sqlite3 hoot.db < $sqlfile
+done
 EOF
 
 # copy in tui-network-config if it exists
