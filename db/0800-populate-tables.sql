@@ -89,31 +89,25 @@ VALUES (
     (SELECT id FROM groups WHERE "group" = 'backup-admins'));
 
 /* insert random nfs export for user Superman into table nfs_exports */
-INSERT INTO "nfs_exports" ("user_id", "path", "sec", "ro", "sync", "wdelay", 
-    "hide", "crossmnt", "subtree_check", "secure_locks", "mountpoint", "fsid", 
-    "nordirplus", "refer", "replicas", "pnfs", "security_label", "root_squash", 
-    "all_squash", "anonuid", "anongid")
+INSERT INTO "nfs_exports" ("user_id", "name", "desc", "path", "sec", "ro", 
+    "sync", "wdelay", "hide", "crossmnt", "subtree_check", "secure_locks", 
+    "mountpoint", "fsid", "nordirplus", "refer", "replicas", "pnfs", 
+    "security_label", "root_squash", "all_squash", "anonuid", "anongid")
 VALUES (
     (SELECT id FROM users WHERE "name" = 'Superman'), 
-    '/home/superman', 
-    'krb5p', 
-    1, 
-    1, 
-    1, 
-    1, 
-    1, 
-    0, 
-    1, 
-    NULL, 
-    NULL, 
-    0, 
-    NULL, 
-    NULL, 
-    0, 
-    0, 
-    1, 
-    0, 
-    NULL, 
-    NULL
-);
-
+    'my share',
+    'used for personal files',
+    '/home/superman/personal', 
+    'krb5',
+    1,1,1,1,1,0,1,NULL,NULL,0,NULL,NULL,0,0,1,0,NULL,NULL);
+INSERT INTO "nfs_exports" ("user_id", "name", "desc", "path", "sec", "ro", 
+    "sync", "wdelay", "hide", "crossmnt", "subtree_check", "secure_locks", 
+    "mountpoint", "fsid", "nordirplus", "refer", "replicas", "pnfs", 
+    "security_label", "root_squash", "all_squash", "anonuid", "anongid")
+VALUES (
+    (SELECT id FROM users WHERE "name" = 'Superman'), 
+    'another share',
+    'used for TOP SECRET files',
+    '/home/superman/secret', 
+    'krb5p',
+    1,1,1,1,1,0,1,NULL,NULL,0,NULL,NULL,0,0,1,0,NULL,NULL);

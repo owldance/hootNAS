@@ -13,7 +13,7 @@ To create a new db, run the following commands from the db directory:
 
 ```bash
 rm hoot.db
-for sqlfile in $HOOT_REPO/db/????-*.sql
+for sqlfile in ./????-*.sql
 do
 	[ -e "${sqlfile}" ] && sqlite3 hoot.db < $sqlfile
 done

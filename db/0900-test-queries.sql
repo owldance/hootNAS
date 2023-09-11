@@ -25,9 +25,9 @@ FROM nfs_exports
 INNER JOIN users ON nfs_exports.user_id = users.id
 WHERE users.name = 'Superman';
 
-/* update nfs export with random new path and sync for user Superman   */
+/* update nfs export 1 for user Superman   */
 UPDATE nfs_exports
-SET path = '/mnt/backup', sync = 0
+SET name = 'this is personal', sync = 0
 WHERE id = 1;
 
 

@@ -34,7 +34,8 @@ async function verifyJwt(accessToken) {
 const authRequired = {
     initialSetup: ['admins'],
     rebootSystem: ['admins'],
-    getBlockDevices: ['admins', 'users']
+    getBlockDevices: ['admins', 'users'],
+    selectNfsByUserId: ['users']
 }
 /**
  * @typedef {Object} User
