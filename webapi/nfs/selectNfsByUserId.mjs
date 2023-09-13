@@ -41,6 +41,35 @@ const dbPath = `${basePath}/db/hoot.db`
  */
 
 /**
+https://dev.to/mliakos/how-to-handle-boolean-values-in-sqlite-using-javascript-proxies-1mg1
+SELECT name, type FROM pragma_table_info('nfs_exports');
+id|INTEGER
+user_id|INTEGER
+name|TEXT
+desc|TEXT
+path|TEXT
+sec|TEXT
+ro|BOOLEAN
+sync|BOOLEAN
+wdelay|BOOLEAN
+hide|BOOLEAN
+crossmnt|BOOLEAN
+subtree_check|BOOLEAN
+secure_locks|BOOLEAN
+mountpoint|TEXT
+fsid|TEXT
+nordirplus|BOOLEAN
+refer|TEXT
+replicas|TEXT
+pnfs|BOOLEAN
+security_label|BOOLEAN
+root_squash|BOOLEAN
+all_squash|BOOLEAN
+anonuid|INTEGER
+anongid|INTEGER
+ */
+
+/**
  * Selects NFS shares by id
  * @function selectNfsByUserId
  * @async

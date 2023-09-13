@@ -111,3 +111,14 @@ VALUES (
     '/home/superman/secret', 
     'krb5p',
     1,1,1,1,1,0,1,NULL,NULL,0,NULL,NULL,0,0,1,0,NULL,NULL);
+INSERT INTO "nfs_exports" ("user_id", "name", "desc", "path", "sec", "ro", 
+    "sync", "wdelay", "hide", "crossmnt", "subtree_check", "secure_locks", 
+    "mountpoint", "fsid", "nordirplus", "refer", "replicas", "pnfs", 
+    "security_label", "root_squash", "all_squash", "anonuid", "anongid")
+VALUES (
+    (SELECT id FROM users WHERE "name" = 'Superman'), 
+    'The THIRD share',
+    'Pulic share',
+    '/home/superman/public', 
+    'krb5p',
+    1,FALSE,1,1,1,0,1,NULL,NULL,0,NULL,NULL,0,0,1,0,NULL,NULL);
