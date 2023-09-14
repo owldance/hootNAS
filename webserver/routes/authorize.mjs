@@ -28,7 +28,7 @@ async function verifyJwt(accessToken) {
 /**
  * Object containing the groups required to access a route
  * @constant {Object} authRequired
- * @property {Array<String>} route path
+ * @property {Array<String>} route the route path
  * ...etc
 */
 const authRequired = {

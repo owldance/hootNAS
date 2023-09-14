@@ -2,19 +2,20 @@
 /**
  * This is the nfsListShares component, it produces a list of all the user's 
  * NFS shares which can be managed by the user.
- * Note: There are some Vue issues when passing vue props to modal component 
- * using the v-model directive, it seems to prefer prefer primitive types e.g. 
- * when passing object properties, and the object has been assigned a new 
- * value e.g. nfsShareCopy = Object.assign({},nfsShareTemplate), the modal 
- * component does does not update or throws an error.
  * @module nfsListShares
  */
 /**
  * @typedef {Object} Share
  * @property {Number} id
  * @property {Number} user_id
+ * @property {String} modified default datetime
+ * @property {String} created default datetime
  * @property {String} name a user assigned identifier, default null
  * @property {String} desc description, default null
+ * @property {String} clients client list, default null
+ * @property {String} size_limit default 0
+ * @property {String} expert_config default null
+ * @property {Boolean} kerb_auth default false
  * @property {String} path default null
  * @property {String} sec default null
  * @property {Boolean} ro default true
@@ -42,53 +43,46 @@
  * @property {Array<Share>} share a NFS share
  */
 'use strict'
-import NfsShareAdd from './NfsShareAdd.vue'
+import NfsShare from './NfsShare.vue'
 import { post } from '../shared.mjs'
 import { inject, onMounted, reactive, provide, ref } from 'vue'
 const appstate = inject('appstate')
-
+// get the user's NFS shares
 const nfsShares = reactive(await post('api/selectNfsByUserId', {
     accesstoken: appstate.user.accesstoken,
     userid: appstate.user.id
 }))
+
 console.log(nfsShares)
-// set properties with value 0 to false, 
-// and for value 1, set to true
-nfsShares.forEach((share) => {
-    for (const key in share) {
-        if (share[key] == 0) {
-            share[key] = false
-        } else if (share[key] == 1) {
-            share[key] = true
-        }
-    }
-})
+// template for a new NFS share
 const nfsShareTemplate = {
-    id: 0,
-    user_id: 0,
-    name: null,
-    desc: null,
-    path: null,
-    sec: null,
-    ro: 1,
-    sync: 1,
-    wdelay: 1,
-    hide: 1,
-    crossmnt: 1,
-    subtree_check: 0,
-    secure_locks: 1,
-    mountpoint: null,
-    fsid: null,
-    nordirplus: 0,
-    refer: null,
-    replicas: null,
-    pnfs: 0,
-    security_label: 0,
-    root_squash: 1,
-    all_squash: 0,
-    anonuid: null,
-    anongid: null
+  name: null,
+  desc: null,
+  clients: null,
+  size_limit: 0,
+  expert_config: null,
+  kerb_auth: false,
+  sec: null,
+  ro: true,
+  sync: true,
+  wdelay: true,
+  hide: true,
+  crossmnt: null,
+  subtree_check: false,
+  secure_locks: true,
+  mountpoint: null,
+  fsid: null,
+  nordirplus: false,
+  refer: null,
+  replicas: null,
+  pnfs: false,
+  security_label: false,
+  root_squash: true,
+  all_squash: false,
+  anonuid: null,
+  anongid: null
 }
+// clone the nfsShareTemplate object to the reactive nfsShareCopy object
 const nfsShareCopy = reactive({ ...nfsShareTemplate })
 let selectedShareId = 0
 
@@ -102,7 +96,6 @@ function toggleRowActive(event) {
     // add active class to clicked element's parent <tr>
     event.target.parentElement.classList.add('table-active')
 }
-
 function showEditModal() {
     if (selectedShareId == 0)
         return
@@ -148,12 +141,7 @@ onMounted(() => {
         element.addEventListener('click', toggleRowActive)
     })
 })
-
-
-
-
 </script>
-
 <template>
     <div class="card w-50 nfs-card">
         <div class="card-body">
@@ -194,9 +182,33 @@ onMounted(() => {
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <NfsShareAdd v-model:name="nfsShareCopy.name" 
-                    v-model:desc="nfsShareCopy.desc" 
-                    v-model:ro="nfsShareCopy.ro"/>
+                    <NfsShare v-model:name="nfsShareCopy.name" 
+                    v-model:desc="nfsShareCopy.desc"
+                    v-model:clients="nfsShareCopy.clients" 
+                    v-model:size_limit="nfsShareCopy.size_limit"
+                    v-model:expert_config="nfsShareCopy.expert_config"
+                    v-model:kerb_auth="nfsShareCopy.kerb_auth"
+                    v-model:path="nfsShareCopy.path"
+                    v-model:sec="nfsShareCopy.sec" 
+                    v-model:ro="nfsShareCopy.ro"
+                    v-model:sync="nfsShareCopy.sync"
+                    v-model:wdelay="nfsShareCopy.wdelay"
+                    v-model:hide="nfsShareCopy.hide"
+                    v-model:crossmnt="nfsShareCopy.crossmnt"
+                    v-model:subtree_check="nfsShareCopy.subtree_check"
+                    v-model:secure_locks="nfsShareCopy.secure_locks"
+                    v-model:mountpoint="nfsShareCopy.mountpoint"
+                    v-model:fsid="nfsShareCopy.fsid"
+                    v-model:nordirplus="nfsShareCopy.nordirplus"
+                    v-model:refer="nfsShareCopy.refer"
+                    v-model:replicas="nfsShareCopy.replicas"
+                    v-model:pnfs="nfsShareCopy.pnfs"
+                    v-model:security_label="nfsShareCopy.security_label"
+                    v-model:root_squash="nfsShareCopy.root_squash"
+                    v-model:all_squash="nfsShareCopy.all_squash"
+                    v-model:anonuid="nfsShareCopy.anonuid"
+                    v-model:anongid="nfsShareCopy.anongid"
+                    />
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary btn-sm me-1" v-on:click="applyEdit()">Apply</button>

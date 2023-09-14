@@ -1,14 +1,20 @@
 <script setup>
 /**
  * This is the dashboard component
- * @module nfsShareAdd
+ * @module nfsShare
  */
 /**
  * @typedef {Object} Share
  * @property {Number} id
  * @property {Number} user_id
+ * @property {String} modified default datetime
+ * @property {String} created default datetime
  * @property {String} name a user assigned identifier, default null
  * @property {String} desc description, default null
+ * @property {String} clients client list, default null
+ * @property {String} size_limit default 0
+ * @property {String} expert_config default null
+ * @property {Boolean} kerb_auth default false
  * @property {String} path default null
  * @property {String} sec default null
  * @property {Boolean} ro default true
@@ -39,9 +45,36 @@ import { inject, onMounted } from 'vue'
 defineProps({
     name: String,
     desc: String,
-    ro: Boolean
+    clients: String,
+    size_limit: Number,
+    expert_config: String,
+    kerb_auth: Boolean,
+    path: String,
+    sec: String,
+    ro: Boolean,
+    sync: Boolean,
+    wdelay: Boolean,
+    hide: Boolean,
+    crossmnt: Boolean,
+    subtree_check: Boolean,
+    secure_locks: Boolean,
+    mountpoint: String,
+    fsid: String,
+    nordirplus: Boolean,
+    refer: String,
+    replicas: String,
+    pnfs: Boolean,
+    security_label: Boolean,
+    root_squash: Boolean,
+    all_squash: Boolean,
+    anonuid: Number,
+    anongid: Number
 })
-defineEmits(['update:name', 'update:desc', 'update:ro'])
+defineEmits(['update:name', 'update:desc', 'update:clients',
+    'update:size_limit', 'update:expert_config', , 'update:kerb_auth', 'update:path', 'update:ro',
+    'update:sync', 'update:wdelay', 'update:hide', 'update:crossmnt',
+    'update:subtree_check', 'update:secure_locks', 'update:root_squash',
+    'update:all_squash', 'update:anonuid', 'update:anongid'])
 
 
 function toggleArrow(event) {
@@ -67,16 +100,26 @@ onMounted(() => {
 
 <template>
     <div>
-        <div><input :value="name" @input="$emit('update:name', $event.target.value)" /></div>
-        <div><input :value="desc" @input="$emit('update:desc', $event.target.value)" /></div>
-     
+        <div class="input-group">
+            <span class="input-group-text">Name</span>
+            <input :value="name" @input="$emit('update:name', $event.target.value)" />
+        </div>
+        <div class="form-text">Any name or text that helps you identify this share</div>
+        <div class="input-group">
+            <span class="input-group-text">Description</span>
+            <input :value="desc" @input="$emit('update:desc', $event.target.value)" />
+        </div>
+        <div class="form-text">Any text that describes this share</div>
+        <hr />
         <div id="nfs-machine-names">
-            <div class="nav-link nav-link-nfs">Clients</div>
-            <p>A whitespace-separated list of clients that are allowed to mount this filesystem:</p>
-            <p class="form-floating">
-                <textarea class="form-control" id="nfs-client-list"></textarea>
+            <div class="nav-link nav-link-nfs">Allowed Clients</div>
+            <div class="form-floating">
+                <textarea class="form-control" id="nfs-client-list" :value="clients"
+                    @input="$emit('update:clients', $event.target.value)"></textarea>
                 <label for="nfs-client-list">Client list</label>
-            </p>
+            </div>
+            <div class="form-text">A whitespace-separated list of clients that
+                are allowed to mount this filesystem </div>
             <a href="#collapse-machine-name-format" data-bs-toggle="collapse" class="nav-link">Supported machine name
                 formats ▶</a>
             <div class="collapse" id="collapse-machine-name-format">
@@ -110,7 +153,6 @@ onMounted(() => {
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">
                         <div class="form-check form-switch">
-                            <!-- <input class="form-check-input" type="checkbox" role="switch" id="nfs-ro" checked> -->
                             <input class="form-check-input" type="checkbox" role="switch" id="nfs-ro" 
                             :checked="ro" @change="$emit('update:ro', $event.target.checked)" />
                             <label class="form-check-label" for="nfs-ro">Read Only</label>
@@ -121,8 +163,9 @@ onMounted(() => {
                     </li>
                     <li class="list-group-item">
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" role="switch" id="nfs-kerb">
-                            <label class="form-check-label" for="nfs-kerb">Kerberos Authentication</label>
+                            <input class="form-check-input" type="checkbox" role="switch" id="nfs-kerb_auth"
+                            :checked="kerb_auth" @change="$emit('update:kerb_auth', $event.target.checked)" />
+                            <label class="form-check-label" for="nfs-kerb_auth">Kerberos Authentication</label>
                         </div>
                         <div>
                             Restrict access using cryptographic security, krb5 kerberos authentication.
@@ -130,7 +173,8 @@ onMounted(() => {
                     </li>
                     <li class="list-group-item">
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" role="switch" id="nfs-sync" checked>
+                            <input class="form-check-input" type="checkbox" role="switch" id="nfs-sync" 
+                            :checked="sync" @change="$emit('update:sync', $event.target.checked)" />
                             <label class="form-check-label" for="nfs-sync">Sync</label>
                         </div>
                         <div>
@@ -139,19 +183,20 @@ onMounted(() => {
                     </li>
                     <li class="list-group-item">
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" role="switch" id="nfs-wdelay" checked>
+                            <input class="form-check-input" type="checkbox" role="switch" id="nfs-wdelay" 
+                            :checked="wdelay" @change="$emit('update:wdelay', $event.target.checked)" />
                             <label class="form-check-label" for="nfs-wdelay">Write Delay</label>
                         </div>
                         <div>
                             Delay committing a write request to disc if another related write request may be in progress or
-                            arrive
-                            soon.
+                            arrive soon.
                         </div>
                     </li>
                     <li class="list-group-item">
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" role="switch" id="nfs-crossmnt" checked>
-                            <label class="form-check-label" for="nfs-crossmnt">
+                            <input class="form-check-input" type="checkbox" role="switch" id="nfs-secure-locks" 
+                            :checked="secure_locks" @change="$emit('update:secure_locks', $event.target.checked)" />
+                            <label class="form-check-label" for="nfs-secure-locks">
                                 Secure Locks</label>
                         </div>
                         <div>
@@ -167,7 +212,8 @@ onMounted(() => {
             <ul class="list-group list-group-flush collapse" id="collapse-user-mapping">
                 <li class="list-group-item">
                     <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" role="switch" id="nfs-root-squash" checked>
+                        <input class="form-check-input" type="checkbox" role="switch" id="nfs-root-squash" 
+                        :checked="root_squash" @change="$emit('update:root_squash', $event.target.checked)" />
                         <label class="form-check-label" for="nfs-root-squash">root Squash</label>
                     </div>
                     <div>
@@ -177,7 +223,8 @@ onMounted(() => {
                 </li>
                 <li class="list-group-item">
                     <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" role="switch" id="nfs-all-squash">
+                        <input class="form-check-input" type="checkbox" role="switch" id="nfs-all-squash"
+                        :checked="all_squash" @change="$emit('update:all_squash', $event.target.checked)" />
                         <label class="form-check-label" for="nfs-all-squash">All Squash</label>
                     </div>
                     <div>
@@ -192,9 +239,11 @@ onMounted(() => {
                     </p>
                     <p class="input-group">
                         <span class="input-group-text">anonuid</span>
-                        <input type="text" class="form-control" id="nfs-anonuid">
+                        <input type="text" class="form-control" id="nfs-anonuid"
+                        :value="anonuid" @input="$emit('update:anonuid', $event.target.value)" />
                         <span class="input-group-text">anongid</span>
-                        <input type="text" class="form-control" id="nfs-anongid">
+                        <input type="text" class="form-control" id="nfs-anongid"
+                        :value="anongid" @input="$emit('update:anongid', $event.target.value)" />
                     </p>
                     <div>By default, a uid and gid of <span class="text-danger-emphasis">65534</span> for is used for
                         squashed
@@ -202,9 +251,7 @@ onMounted(() => {
                         explicitly set with these options. This option is primarily useful where you might want all
                         requests appear to be from one user.
                     </div>
-
                 </li>
-
             </ul>
         </div>
     </div>

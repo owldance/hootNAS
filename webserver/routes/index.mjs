@@ -8,7 +8,7 @@ import * as user from '../controllers/users.mjs'
 import * as devices from '../controllers/devices.mjs'
 import * as system from '../controllers/system.mjs'
 import * as shares from '../controllers/shares.mjs'
-import { checkAuthorization } from '../utilities/authorize.mjs'
+import { checkAuthorization } from './authorize.mjs'
 export const apiRouter = express.Router()
 
 

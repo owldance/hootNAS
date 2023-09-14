@@ -3,7 +3,6 @@
  * This is the dashboard component
  * @module DashBoard
  */
-import NfsShareAdd from './dashboard-cards/NfsShareAdd.vue'
 import NfsListShares from './dashboard-cards/NfsListShares.vue'
 import { post } from './shared.mjs'
 import { inject, ref, reactive } from 'vue'
@@ -134,10 +133,7 @@ function showCard(event) {
               content.</p>
           </div>
         </div>
-
-        <!-- <NfsShareAdd v-if="!cardHidden.nfs" /> -->
         <NfsListShares v-if="!cardHidden.nfs" />
-
       </div>
     </div>
   </div>
