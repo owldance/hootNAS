@@ -52,10 +52,9 @@ const nfsShares = reactive(await post('api/selectNfsByUserId', {
     accesstoken: appstate.user.accesstoken,
     userid: appstate.user.id
 }))
-
-console.log(nfsShares)
 // template for a new NFS share
 const nfsShareTemplate = {
+  id: 0,
   name: null,
   desc: null,
   clients: null,
@@ -89,6 +88,7 @@ let selectedShareId = 0
 function toggleRowActive(event) {
     selectedShareId = event.target.attributes.shareid.value
     // remove active class from all elements that are "selectable"
+    console.log(`selectedShareId = ${selectedShareId}`)
     let selectableElements = document.querySelectorAll('.nfs-tr-select')
     selectableElements.forEach((element) => {
         element.classList.remove('table-active')
@@ -106,7 +106,6 @@ function showEditModal() {
             nfsShareCopy[key] = selectedShare[key]
         }
     }
-    console.log(nfsShareCopy)
     const myModal = new bootstrap.Modal(document.getElementById('staticBackdrop'))
     myModal.show()
 }
@@ -116,31 +115,35 @@ function showNewModal() {
     for (const key in nfsShareTemplate) {
         nfsShareCopy[key] = nfsShareTemplate[key]
     }
-    console.log(nfsShareCopy)
     const myModal = new bootstrap.Modal(document.getElementById('staticBackdrop'))
     myModal.show()
 }
 
-function compareObjects(obj1, obj2) {
-    for (const key in obj1) {
-        if (obj1[key] !== obj2[key]) {
-            console.log(`Property ${key} is different: obj1.${key} = ${obj1[key]}, obj2.${key} = ${obj2[key]}`)
+function applyEdit() {
+    if (nfsShareCopy.id == 0) {
+        // add new share
+        nfsShares.push({...nfsShareCopy})
+        return
+    }
+    const originalShare = nfsShares.find((share) => share.id == nfsShareCopy.id)
+    // compare the original share with the modified share
+    for (const key in originalShare) {
+        // ignore properties not in the nfsShareCopy object
+        if (nfsShareCopy[key] !== undefined && originalShare[key] !== nfsShareCopy[key]) {
+            console.log(`Property ${key} is different: originalShare.${key} = ${originalShare[key]}, nfsShareCopy.${key} = ${nfsShareCopy[key]}`)
+            originalShare[key] = nfsShareCopy[key]
         }
     }
 }
-function applyEdit() {
-    console.log(nfsShareCopy)
-    compareObjects(nfsShares.find((share) => share.id == nfsShareCopy.id), nfsShareCopy)
-}
-onMounted(() => {
-    // add click event to all "selectable" elements
-    // note: although the <tr> is the element that is "selectable", it is the 
-    // child <th> element that is clicked and therefore returned.
-    const selectableElements = document.querySelectorAll('.nfs-tr-select')
-    selectableElements.forEach((element) => {
-        element.addEventListener('click', toggleRowActive)
-    })
-})
+// onMounted(() => {
+//     // add click event to all "selectable" elements
+//     // note: although the <tr> is the element that is "selectable", it is the 
+//     // child <th> element that is clicked and therefore returned.
+//     // const selectableElements = document.querySelectorAll('.nfs-tr-select')
+//     // selectableElements.forEach((element) => {
+//     //     element.addEventListener('click', toggleRowActive)
+//     // })
+// })
 </script>
 <template>
     <div class="card w-50 nfs-card">
@@ -159,8 +162,8 @@ onMounted(() => {
                     <tbody>
                         <!-- note: although the <tr> is the element that is "selectable", it is the 
                              child <th> element that is clicked and therefore returned to the eventlistner. -->
-                        <tr class="nfs-tr-select" v-for="share in nfsShares">
-                            <th scope="row" v-bind:shareid="share.id">{{ share.name }}</th>
+                        <tr class="nfs-tr-select" v-for="share in nfsShares" v-on:click="toggleRowActive">
+                            <th scope="row" v-bind:shareid="share.id" >{{ share.name }}</th>
                             <th scope="row" v-bind:shareid="share.id">{{ share.path }}</th>
                             <th scope="row" v-bind:shareid="share.id">{{ share.desc }}</th>
                         </tr>

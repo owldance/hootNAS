@@ -470,6 +470,18 @@ if [ -f "$HOOT_REPO/webserver/webserver.mjs" ] && \
   chroot hootos systemctl enable hootsrv.service
 fi
 
+# copy in sheduler if source directory exists
+if [ -f "$HOOT_REPO/scheduler/jobduler.mjs" ] && \
+  [ -f "$HOOT_REPO/scripts/jobduler.service" ]; then
+  echo "copy in scheduler source"
+  cp -r $HOOT_REPO/sheduler/* hootos/usr/local/hootnas/sheduler
+  chmod 0744 hootos/usr/local/hootnas/sheduler/jobduler.mjs
+  echo "copy in hootsrv.service"
+  cp $HOOT_REPO/scripts/jobduler.service hootos/etc/systemd/system
+  chmod 0664 hootos/etc/systemd/system/jobduler.service
+  chroot hootos systemctl enable jobduler.service
+fi
+
 # this feature checks if persistence is active and enables or disables the 
 # TUI network configuration script, and starts a tty with or without root 
 # autologin accordingly.

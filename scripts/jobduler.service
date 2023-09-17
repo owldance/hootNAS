@@ -1,0 +1,12 @@
+[Unit]
+Description=Start Job sheduler when webserver is up
+After=webserver.service
+[Service]
+Type=simple
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+ExecStart=/usr/local/hootnas/scheduler/jobduler.mjs
+[Install]
+WantedBy=multi-user.target

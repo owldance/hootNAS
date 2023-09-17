@@ -1,5 +1,4 @@
 # See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
-
 hoot-os/assets/boot
 hoot-os/assets/EFI
 hoot-os/assets/images
