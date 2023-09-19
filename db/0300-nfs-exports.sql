@@ -1,10 +1,7 @@
 /* 
     * nfs_exports table
-    * note: if you add a new boolean column, you must also add it to the
-    * booleanProperties object in webapi/nfs/selectNfsByUserId.mjs file
     *
 */
-
 CREATE TABLE IF NOT EXISTS nfs_exports (
     id	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     user_id	INTEGER NOT NULL,
@@ -40,7 +37,7 @@ CREATE TABLE IF NOT EXISTS nfs_exports (
     FOREIGN KEY(user_id) REFERENCES users(id)
 );
 
-/* create table user_status */
+/* create table share_status */
 CREATE TABLE IF NOT EXISTS share_status (
     id	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     status	TEXT NOT NULL

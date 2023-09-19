@@ -20,6 +20,13 @@ done
 ```
 
 To query the database from within JavaScript modules, use the 
-[sqlite-node client](https://github.com/kriasoft/node-sqlite) which is 
-already installed along with the 
+[sqlite-node client](https://github.com/kriasoft/node-sqlite) 
+```bash
+npm install sqlite
+```
+which is already installed along with the 
 [sqlite3-node database driver](https://github.com/TryGhost/node-sqlite3).
+
+```bash
+npm install sqlite3
+```

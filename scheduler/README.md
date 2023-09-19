@@ -8,8 +8,6 @@ minute for jobs to run. The jobduler service will run the job if the job is
 enabled. Each job has a corresponding ES6 module file in the 
 [jobs directory](/scheduler/jobs/) which is the actual job code. 
 
-Jobduler uses [Bree](https://github.com/breejs/bree) as the scheduling engine, 
-which runs all jobs in worker threads.
 
 ## Contributing
 
