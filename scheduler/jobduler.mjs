@@ -8,37 +8,46 @@ import { fileURLToPath } from 'node:url'
 import { setTimeout, setInterval } from 'timers'
 import { setTimeout as setTimeoutPromise } from 'timers/promises'
 import { getActiveJobs } from './queries/getJobs.mjs'
+import { updateJobStatus } from './queries/updateJobStatus.mjs'
 
 const jobsPath = path.join(
     path.dirname(fileURLToPath(import.meta.url)), '/jobs')
 
 // callback functions for workers
-function onWorkerMessage(event){
-    console.log(`message: ${event.threadId}: ${event.msg}`)
+function onWorkerMessage(event) {
+    updateJobStatus(event.jobId, null, 'idle', event.msg)
 }
-function onWorkerOnline(event){
-    console.log(`status: ${event.threadId}: ${event.msg}`)
+function onWorkerOnline(event) {
+    updateJobStatus(event.jobId, 'running')
 }
-function onWorkerError(event){
-    console.log(`error: ${event.threadId}: ${event.msg}`)
+function onWorkerExit(event) {
+    console.log(`jobId ${event.jobId} exited with code ${event.code}`)
+    updateJobStatus(event.jobId, true, 'idle', event.msg)
+}
+function onWorkerError(event) {
+    updateJobStatus(event.jobId, false, 'idle', event.msg)
 }
 // spawn worker function
 const spawnWorker = (job) => {
     const worker = new Worker(
-        `${jobsPath}/${job.job}.mjs`, {
-            name: `${job.job}`,
-            workerData: JSON.parse(job.data)
-        })
-    const threadId = worker.threadId
-    worker.on('message', (message) => {
-        onWorkerMessage({threadId: threadId, msg: message})
+        `${jobsPath}/${job.runjob}.mjs`, {
+        name: `${job.runjob}`,
+        workerData: JSON.parse(job.data)
     })
-    worker.on('error', (e) => { 
-        onWorkerError({threadId: threadId, msg: e})})
-    worker.on('online', () => { 
-        onWorkerOnline({threadId: threadId, msg: 'online'})})
-    worker.on('exit', (code) => {
-        onWorkerOnline({threadId: threadId, msg: 'offline'})})
+    //const threadId = worker.threadId
+    worker.on('message', (message) => {
+        onWorkerMessage({ jobId: job.id, msg: message })
+    })
+    worker.on('error', (e) => {
+        onWorkerError({ jobId: job.id, msg: e.message })
+    })
+    worker.on('online', () => {
+        onWorkerOnline({ jobId: job.id })
+    })
+    worker.on('exit', (xcode) => {
+        // worker.threadId is out of scope here
+        onWorkerExit({ jobId: job.id, code: xcode })
+    })
 }
 // query database for active jobs
 const activeJobs = await getActiveJobs()

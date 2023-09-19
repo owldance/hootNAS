@@ -9,7 +9,7 @@ const basePath = process.env.HOOT_REPO || '/usr/local/hootnas'
 const dbPath = `${basePath}/db/hoot.db`
 
 
-export async function getActiveJobs() {
+export async function getNfsExport(id) {
   try {
     let result = null
     const db = await open({
@@ -18,8 +18,8 @@ export async function getActiveJobs() {
     })
     result = await db.all(
       `SELECT * 
-      FROM job_queue 
-      WHERE status_id = (SELECT id FROM job_status WHERE status = 'idle')`
+      FROM nfs_exports 
+      WHERE id = ${id}`
     )
     await db.close()
     return result

@@ -10,14 +10,16 @@ CREATE TABLE IF NOT EXISTS job_queue (
     created	TEXT DEFAULT CURRENT_TIMESTAMP,
     name	TEXT DEFAULT NULL,
     desc	TEXT DEFAULT NULL,
-    job	TEXT NOT NULL,
+    runjob	TEXT NOT NULL,
     runon  TEXT DEFAULT NULL,
     interval INTEGER NOT NULL DEFAULT 0,
     data TEXT DEFAULT NULL,
+    message  TEXT DEFAULT NULL,
+    success BOOLEAN DEFAULT FALSE,
     FOREIGN KEY(user_id) REFERENCES users(id)
 );
 
-/* create table share_status */
+/* create table export_status */
 CREATE TABLE IF NOT EXISTS job_status (
     id	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     status	TEXT NOT NULL

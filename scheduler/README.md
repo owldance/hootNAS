@@ -1,4 +1,4 @@
-# hootNAS - Jobduler, a job scheduler
+# hootNAS - Jobduler, a persistent job scheduler
 
 **On boot** the service [jobduler.service](/scripts/jobduler.service) 
 starts the jobduler target [jobduler.mjs](/scheduler/jobduler.mjs).

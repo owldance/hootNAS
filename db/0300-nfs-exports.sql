@@ -37,8 +37,8 @@ CREATE TABLE IF NOT EXISTS nfs_exports (
     FOREIGN KEY(user_id) REFERENCES users(id)
 );
 
-/* create table share_status */
-CREATE TABLE IF NOT EXISTS share_status (
+/* create table export_status */
+CREATE TABLE IF NOT EXISTS export_status (
     id	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     status	TEXT NOT NULL
 );

@@ -1,6 +1,6 @@
 /**
- * Selects all active jobs from the database
- * @module getJobs
+ * Update the status of an NFS export
+ * @module updateNfsExportStatus
  */
 'use strict'
 import sqlite3 from 'sqlite3'
@@ -9,17 +9,17 @@ const basePath = process.env.HOOT_REPO || '/usr/local/hootnas'
 const dbPath = `${basePath}/db/hoot.db`
 
 
-export async function getActiveJobs() {
+export async function updateNfsExportStatus(id, status) {
   try {
     let result = null
     const db = await open({
       filename: dbPath,
       driver: sqlite3.Database
     })
-    result = await db.all(
-      `SELECT * 
-      FROM job_queue 
-      WHERE status_id = (SELECT id FROM job_status WHERE status = 'idle')`
+    result = await db.run(
+      `UPDATE nfs_exports
+      SET status_id = (SELECT id FROM export_status WHERE status = '${status}') 
+      WHERE id = ${id}`
     )
     await db.close()
     return result
