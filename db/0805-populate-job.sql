@@ -13,7 +13,8 @@ INSERT INTO job_status (status) VALUES ('inactive');
 
 
 -- insert one random row into table job_queue
-INSERT INTO job_queue (user_id, status_id, name, desc, runjob, runon, interval, data)
+-- insert one random row into table job_queue
+INSERT INTO job_queue (user_id, status_id, name, desc, run_job, run_on, run_interval, run_data)
 VALUES (
     (SELECT id FROM users WHERE name = 'Superman'), 
     (SELECT id FROM job_status WHERE status = 'idle'),
@@ -24,8 +25,7 @@ VALUES (
     0,
     '{"nfs_exports_id": 1}');
 
--- insert one random row into table job_queue
-INSERT INTO job_queue (user_id, status_id, name, desc, runjob, runon, interval, data)
+INSERT INTO job_queue (user_id, status_id, name, desc, run_job, run_on, run_interval, run_data)
 VALUES (
     (SELECT id FROM users WHERE name = 'Superman'), 
     (SELECT id FROM job_status WHERE status = 'idle'),
@@ -36,4 +36,32 @@ VALUES (
     0,
     '{"nfs_exports_id": 2}');
 
+INSERT INTO job_queue (user_id, status_id, name, desc, run_job, run_on, run_interval, run_data)
+VALUES (
+    (SELECT id FROM users WHERE name = 'Superman'), 
+    (SELECT id FROM job_status WHERE status = 'idle'),
+    'my job',
+    'used for personal files',
+    'create-nfs',
+    '* * * * *',
+    0,
+    '{"nfs_exports_id": 3}');
+
+
+
+SELECT 
+    job_queue.id, 
+    job_queue.status_id, 
+    job_status.status, 
+    job_queue.run_interval, 
+    job_queue.run_message, 
+    job_queue.run_success, 
+    job_queue.run_exit_code
+FROM job_queue
+JOIN job_status ON job_queue.status_id = job_status.id;
+
+-- update job_queue, set status to idle where status is running
+UPDATE job_queue 
+SET status_id = (SELECT id FROM job_status WHERE status = 'idle') 
+WHERE status_id = (SELECT id FROM job_status WHERE status = 'running');
 

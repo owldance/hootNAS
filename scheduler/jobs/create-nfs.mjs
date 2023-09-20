@@ -5,7 +5,7 @@ import { getNfsExport } from '../queries/getNfsExport.mjs'
 import { updateNfsExportStatus } from '../queries/updateNfsExportStatus.mjs'
 
 const nfs = await getNfsExport(workerData.nfs_exports_id)
-parentPort.postMessage(`path: ${nfs[0].path} size_limit: ${nfs[0].size_limit}`)
+parentPort.postMessage(`hello from worker ${threadId}`)
 
 // parentPort.postMessage(JSON.stringify(workerData))
 // generate random number between 2000 and 10000
