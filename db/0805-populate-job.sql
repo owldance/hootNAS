@@ -1,67 +1,52 @@
-/* populate table job_status */
-INSERT INTO job_status (status) VALUES ('idle');
-INSERT INTO job_status (status) VALUES ('running');
-INSERT INTO job_status (status) VALUES ('finished');
-INSERT INTO job_status (status) VALUES ('disabled');
-INSERT INTO job_status (status) VALUES ('error');
-INSERT INTO job_status (status) VALUES ('pending');
-INSERT INTO job_status (status) VALUES ('provisioning');
-INSERT INTO job_status (status) VALUES ('enabled');
-INSERT INTO job_status (status) VALUES ('queued');
-INSERT INTO job_status (status) VALUES ('active');
-INSERT INTO job_status (status) VALUES ('inactive');
-
-
 -- insert one random row into table job_queue
--- insert one random row into table job_queue
-INSERT INTO job_queue (user_id, status_id, name, desc, run_job, run_on, run_interval, run_data)
+INSERT INTO job_queue (user_id, name, desc, script, run_on, run_interval, run_data)
 VALUES (
     (SELECT id FROM users WHERE name = 'Superman'), 
-    (SELECT id FROM job_status WHERE status = 'idle'),
     'my job',
     'used for personal files',
     'create-nfs',
-    '* * * * *',
+    datetime('now', 'localtime', '-10 seconds'),
     0,
-    '{"nfs_exports_id": 1}');
+    '{"nfs_exports_id": 4}');
 
-INSERT INTO job_queue (user_id, status_id, name, desc, run_job, run_on, run_interval, run_data)
+INSERT INTO job_queue (user_id, name, desc, script, run_on, run_interval, run_data)
 VALUES (
     (SELECT id FROM users WHERE name = 'Superman'), 
-    (SELECT id FROM job_status WHERE status = 'idle'),
     'my job',
     'used for personal files',
     'create-nfs',
-    '* * * * *',
-    0,
-    '{"nfs_exports_id": 2}');
-
-INSERT INTO job_queue (user_id, status_id, name, desc, run_job, run_on, run_interval, run_data)
-VALUES (
-    (SELECT id FROM users WHERE name = 'Superman'), 
-    (SELECT id FROM job_status WHERE status = 'idle'),
-    'my job',
-    'used for personal files',
-    'create-nfs',
-    '* * * * *',
+    datetime('now', 'localtime', '-60 seconds'),
     0,
     '{"nfs_exports_id": 3}');
 
+INSERT INTO job_queue (user_id, name, desc, script, run_on, run_interval, run_data)
+VALUES (
+    (SELECT id FROM users WHERE name = 'Superman'), 
+    'my job',
+    'used for personal files',
+    'create-nfs',
+    datetime('now', 'localtime', '-30 seconds'),
+    0,
+    '{"nfs_exports_id": 2}');
+
+INSERT INTO job_queue (user_id, name, desc, script, run_on, run_interval, run_data)
+VALUES (
+    (SELECT id FROM users WHERE name = 'Superman'), 
+    'my job',
+    'used for personal files',
+    'create-nfs',
+    datetime('now', 'localtime', '-90 seconds'),
+    0,
+    '{"nfs_exports_id": 1}');
 
 
-SELECT 
-    job_queue.id, 
-    job_queue.status_id, 
-    job_status.status, 
-    job_queue.run_interval, 
-    job_queue.run_message, 
-    job_queue.run_success, 
-    job_queue.run_exit_code
-FROM job_queue
-JOIN job_status ON job_queue.status_id = job_status.id;
+SELECT id, script, run_on, run_interval, run_exit_code FROM job_queue
+WHERE idle = 1 AND run_on < datetime('now', 'localtime') AND run_interval != 0 OR run_exit_code IS NULL
+ORDER BY run_on ASC;
 
--- update job_queue, set status to idle where status is running
-UPDATE job_queue 
-SET status_id = (SELECT id FROM job_status WHERE status = 'idle') 
-WHERE status_id = (SELECT id FROM job_status WHERE status = 'running');
+
+-- update job_queue job
+-- UPDATE job_queue 
+-- SET run_exit_code = 0
+-- WHERE id = 3;
 

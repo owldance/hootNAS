@@ -29,8 +29,17 @@ VALUES (
     (SELECT id FROM users WHERE name = 'Superman'), 
     (SELECT id FROM export_status WHERE status = 'active'),
     'The PUBLIC share',
-    'Pulic share',
+    'Public share',
     '/home/superman/public', 
     false,
     false);
+INSERT INTO nfs_exports (user_id, status_id, name, desc, path, ro, kerb_auth)
+VALUES (
+    (SELECT id FROM users WHERE name = 'Superman'), 
+    (SELECT id FROM export_status WHERE status = 'active'),
+    'Very PRIVATE share',
+    'Why share it, if it is private??',
+    '/home/superman/private', 
+    true,
+    true);
 

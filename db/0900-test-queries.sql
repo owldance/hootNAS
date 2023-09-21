@@ -31,6 +31,6 @@ SET name = 'this is personal', sync = 0
 WHERE id = 1;
 
 UPDATE job_queue
-SET data = '{"nfs_exports_id": 1}'
+SET run_data = '{"nfs_exports_id": 1}'
 WHERE id = 1;
 

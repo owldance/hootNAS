@@ -11,26 +11,40 @@ const dbPath = `${basePath}/db/hoot.db`
 /**
  * A job 
  * @typedef {Object} Job
- * @property {number} id - The unique ID of the job queue.
- * @property {number} user_id - The ID of the user who owns the job queue.
- * @property {number} status_id - The ID of the status of the job queue.
- * @property {string} modified - The date and time the job queue was last modified by the user.
- * @property {string} created - The date and time the job queue was created.
- * @property {string} name - The name of the job queue.
- * @property {string} desc - The description of the job queue.
- * @property {string} run_job - The file name without extenstion of the ES6 module to run
- * @property {string} run_on - The date and time to run the job in the job queue.
- * @property {number} run_interval - The interval at which to run the job in the job queue.
- * @property {string} run_data - The data to pass to the job when it runs in the job queue.
- * @property {string} run_message - The message returned by the job when it runs in the job queue.
- * @property {boolean} run_success - Whether the job ran successfully in the job queue.
- * @property {number} run_exit_code - The exit code returned by the job when it runs in the job queue.
+ * @property {number} id - The unique ID of the job.
+ * @property {number} user_id - The ID of the user who owns the job.
+ * @property {string} modified - Date and time the job was modified by the user.
+ * @property {string} created - Date and time the job was created by user.
+ * @property {string} name - The name of the job.
+ * @property {string} desc - Description of the job.
+ * @property {boolean} idle - Whether the job is idle or not.
+ * @property {string} script - File name of the ES6 module to run
+ * @property {string} run_on - Date and time to run the job in the job queue.
+ * @property {number} run_interval - Interval at which to run the job
+ * @property {string} run_data - Data to pass to the job script
+ * @property {string} run_message - Message returned by the job script
+ * @property {number} run_exit_code - Exit code returned by the job script
  */
 
 /**
  * An array of job objects
  * @typedef {Array<Job>} Jobs
  */
+
+async function executeQueryAll(query) {
+  try {
+    let result = null
+    const db = await open({
+      filename: dbPath,
+      driver: sqlite3.Database
+    })
+    result = await db.all(query)
+    await db.close()
+    return result
+  } catch (e) {
+    throw e
+  }
+}
 
 /**
  * Retrieves all jobs with status 'idle' from the job_queue table.
@@ -41,17 +55,13 @@ const dbPath = `${basePath}/db/hoot.db`
  */
 export async function getIdleJobs() {
   try {
-    let result = null
-    const db = await open({
-      filename: dbPath,
-      driver: sqlite3.Database
-    })
-    result = await db.all(
-      `SELECT * 
-      FROM job_queue 
-      WHERE status_id = (SELECT id FROM job_status WHERE status = 'idle')`
-    )
-    await db.close()
+    const query = `SELECT * 
+    FROM job_queue 
+    WHERE idle = 1 
+    AND run_on < datetime('now', 'localtime') 
+    AND run_interval != 0 OR run_exit_code IS NULL
+    ORDER BY run_on ASC`
+    const result = await executeQueryAll(query)
     return result
   } catch (e) {
     throw e
