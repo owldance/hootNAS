@@ -109,9 +109,6 @@ This option disables subtree checking, it is the default as subtree checking
 tends to cause more problems than it is worth. If you put
 neither `no_subtree_check` nor `subtree_check`, `exportfs` will warn you that 
 the change is pending.
-
-If you genuinely require subtree checking, you should explicitly put 
-`subtree_check` option in the exports file.
 ### 👍 auth_nlm, secure_locks (default) / insecure_locks, no_auth_nlm
 This option (the two names are synonymous) tells the NFS server to require a 
 lock request (i.e. requests which use the NLM protocol) to hold a credential 

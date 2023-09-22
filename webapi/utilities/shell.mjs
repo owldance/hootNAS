@@ -12,7 +12,7 @@ import { spawn } from 'child_process'
  * @async 
  * @function
  * @param {String} cmd a valid shell command
- * @returns {String} raw output of the shell command
+ * @returns {Promise<String>} raw output of the shell command
  * @throws {Error} On reject, Error object with error message and 
  * exit code of the last command that was executed in the shell
  */

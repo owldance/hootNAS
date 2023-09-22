@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS nfs_exports (
     name	TEXT DEFAULT NULL,
     desc	TEXT DEFAULT NULL,
     clients	TEXT DEFAULT NULL,
-    size_limit	INTEGER NOT NULL DEFAULT 0,
+    vol_size	INTEGER NOT NULL DEFAULT 0,
     expert_config	TEXT DEFAULT NULL,
     kerb_auth BOOLEAN DEFAULT FALSE,
     path TEXT NOT NULL UNIQUE,

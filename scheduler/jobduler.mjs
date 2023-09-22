@@ -8,8 +8,8 @@
  * 
  * @module jobduler
  * @todo implement retry on error
- * @typedef {import('./queries/getJobs.mjs').Job} Job
- * @typedef {import('./queries/getJobs.mjs').Jobs} Jobs
+ * @typedef {import('./queries/job_queue.mjs').Job} Job
+ * @typedef {import('./queries/job_queue.mjs').Jobs} Jobs
  */
 'use strict'
 import { Worker } from 'worker_threads'
@@ -17,8 +17,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { setTimeout, setInterval } from 'timers'
 import { setTimeout as setTimeoutPromise } from 'timers/promises'
-import { getIdleJobs } from './queries/getJobs.mjs'
-import { updateJobs } from './queries/updateJobs.mjs'
+import { getIdleJobs, updateJobs } from './queries/job_queue.mjs'
 
 /** @const {Number} maxWorkers max number of simultaneous workers */
 const maxWorkers = 2 
@@ -34,7 +33,7 @@ const jobsPath = path.join(
 
 // reset all jobs to idle on startup
 // this is to ensure a known state on startup, in case of abnormal shutdown
-await updateJobs(0, true, null, null)
+await updateJobs(0, 'startup', true, null, null)
 
 
 /**
@@ -44,7 +43,6 @@ await updateJobs(0, true, null, null)
  * @param {Job} job - The job object to run.
  */
 const spawnWorker = async (job) => {
-    try {
         // append .mjs, if not already present
         if (!job.script.endsWith('.mjs'))
             job.script += '.mjs'
@@ -59,27 +57,22 @@ const spawnWorker = async (job) => {
         })
         // configure worker event handlers
         worker.on('online', () => {
-            updateJobs(job.id, false, null, null)
+            updateJobs(job.id, 'online', false, null, null)
         })
         worker.on('message', (message) => {
-            updateJobs(job.id, null, message, null)
+            updateJobs(job.id, 'message', null, message, null)
         })
         worker.on('error', (e) => {
             // uncaught exception, worker is terminated
             // log the error message
-            updateJobs(job.id, null, e.message, null)
+            updateJobs(job.id, 'error', null, e.message, null)
         })
         worker.on('exit', (exitCode) => {
             // if process.exit(exitCode) was called, the exitCode is passed
             // if the worker was terminated, then exitCode=1
             runningWorkers--
-            updateJobs(job.id, true, null, exitCode)
+            updateJobs(job.id, 'exit', true, null, exitCode)
         })
-    } catch (e) {
-        console.log(`spawnWorker error: ${e.message}`)
-        // stop the queue
-        clearInterval(intervalId)
-    }
 }
 
 
@@ -92,12 +85,12 @@ function startQueue() {
                 spawnWorker(job)
                 runningWorkers++
             }
-            else {
-                console.log(`job id:${job.id} queued`)
-            }
         })
     }, pollInterval)
 }
+
+// stop the queue
+// clearInterval(intervalId)
 
 startQueue()
 

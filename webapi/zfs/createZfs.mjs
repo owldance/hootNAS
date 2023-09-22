@@ -12,12 +12,12 @@ import { shell } from "../utilities/shell.mjs"
  * to left. i.e. if you only want to specify 'properties', you must assign the 
  * primitive JavaScript value undefined to 'options' and 'properties'.
  * @async
- * @param {string} filesystem - The name of the filesystem to create.
- * @param {string} options - One or more options [Pnpuv], or value undefined
- * @param {Object} properties - Object with one or more properties
+ * @param {string} filesystem Name of the filesystem to create.
+ * @param {string} options One or more options [Pnpuv], or value undefined
+ * @param {Object} properties Object with one or more properties
  * { property : value }, or value undefined
- * @returns {string} - The result of the shell command.
- * @throws {Error} - Error from the shell command.
+ * @returns {Promise<string>} Result of the shell command.
+ * @throws {Error} Error from the shell command.
  */
 export async function createZfs(filesystem, options='P', properties={}) {
     try {

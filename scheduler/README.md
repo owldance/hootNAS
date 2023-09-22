@@ -1,5 +1,11 @@
 # hootNAS - Jobduler, a persistent job scheduler
 
+ Jobduler executes scheduled jobs on a 'best effort' basis, meaning that exact 
+ time of execution is not guaranteed, only that the job will be executed as 
+ early as possible after the scheduled time. This limitation is due to the 
+ database polling interval and the number of workers threads available. Jobs 
+ are ordered and executed by ascending schedueled time i.e. oldest first.
+
 **On boot** the service [jobduler.service](/scripts/jobduler.service) 
 starts the jobduler target [jobduler.mjs](/scheduler/jobduler.mjs).
 

@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS job_queue (
     idle BOOLEAN NOT NULL DEFAULT TRUE,
     script	TEXT NOT NULL,
     run_on  TEXT DEFAULT NULL,
+    run_started  TEXT DEFAULT NULL,
+    run_ended  TEXT DEFAULT NULL,
     run_interval INTEGER NOT NULL DEFAULT 0,
     run_data TEXT DEFAULT NULL,
     run_message  TEXT DEFAULT NULL,
