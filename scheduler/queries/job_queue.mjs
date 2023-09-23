@@ -8,21 +8,21 @@ import { executeQueryAll, executeQueryRun } from './sqlite3-api-calls.mjs'
 /**
  * A job 
  * @typedef {Object} Job
- * @property {number} id - The unique ID of the job.
- * @property {number} user_id - The ID of the user who owns the job.
- * @property {string} modified - Date and time the job was modified by the user.
- * @property {string} created - Date and time the job was created by user.
- * @property {string} name - The name of the job.
- * @property {string} desc - Description of the job.
- * @property {boolean} idle - Whether the job is idle or not.
- * @property {string} script - File name of the ES6 module to run
- * @property {string} run_on - Shedueled Date and time to run the job.
- * @property {string} run_started - Date and time when the job started running.
- * @property {string} run_ended - Date and time when the job finished running.
- * @property {number} run_interval - Interval at which to run the job
- * @property {string} run_data - Data to pass to the job script
- * @property {string} run_message - Message returned by the job script
- * @property {number} run_exit_code - Exit code returned by the job script
+ * @property {number} id The unique ID of the job.
+ * @property {number} user_id The ID of the user who owns the job.
+ * @property {string} modified Date and time the job was modified by the user.
+ * @property {string} created Date and time the job was created by user.
+ * @property {string} name The name of the job.
+ * @property {string} desc Description of the job.
+ * @property {boolean} idle Whether the job is idle or not.
+ * @property {string} script File name of the ES6 module to run
+ * @property {string} run_on Shedueled Date and time to run the job.
+ * @property {string} run_started Date and time when the job started running.
+ * @property {string} run_ended Date and time when the job finished running.
+ * @property {number} run_interval Interval at which to run the job
+ * @property {string} run_data Data to pass to the job script
+ * @property {string} run_message Message returned by the job script
+ * @property {number} run_exit_code Exit code returned by the job script
  */
 
 /**
@@ -60,15 +60,15 @@ export async function getIdleJobs() {
  * that parameter will not be updated.
  * @async
  * @function updateJobs
- * @param {number} id - The ID of the job, if 0, all jobs will be updated.
+ * @param {number} id The ID of the job, if 0, all jobs will be updated.
  * @param {string|null} [event=null] If the value is 'online' or 'exit', the
  * run_started or run_ended column will be updated with the current datetime
  * @param {boolean|null} [idle=null] The status of the job.
  * @param {string|null} [message=null] The message associated with the job.
  * @param {number|null} [exit=null] The exit code of the job.
- * @returns {object} - A object with the property `changes' indicating the 
+ * @returns {object} A object with the property `changes' indicating the 
  * number of rows updated.
- * @throws {Error} - Throws an error if there was a problem updating the job.
+ * @throws {Error} Throws an error if there was a problem updating the job.
  */
 export async function updateJobs(id, event = null, idle = null, message = null,
   exitCode = null) {

@@ -13,7 +13,7 @@
  * @property {String} name a user assigned identifier, default null
  * @property {String} desc description, default null
  * @property {String} clients client list, default null
- * @property {String} size_limit default 0
+ * @property {String} quota default 0
  * @property {String} expert_config default null
  * @property {Boolean} kerb_auth default false
  * @property {String} path default null
@@ -54,32 +54,32 @@ const nfsShares = reactive(await post('api/selectNfsByUserId', {
 }))
 // template for a new NFS share
 const nfsShareTemplate = {
-  id: 0,
-  name: null,
-  desc: null,
-  clients: null,
-  size_limit: 0,
-  expert_config: null,
-  kerb_auth: false,
-  sec: null,
-  ro: true,
-  sync: true,
-  wdelay: true,
-  hide: true,
-  crossmnt: null,
-  subtree_check: false,
-  secure_locks: true,
-  mountpoint: null,
-  fsid: null,
-  nordirplus: false,
-  refer: null,
-  replicas: null,
-  pnfs: false,
-  security_label: false,
-  root_squash: true,
-  all_squash: false,
-  anonuid: null,
-  anongid: null
+    id: 0,
+    name: null,
+    desc: null,
+    clients: null,
+    quota: 0,
+    expert_config: null,
+    kerb_auth: false,
+    sec: null,
+    ro: true,
+    sync: true,
+    wdelay: true,
+    hide: true,
+    crossmnt: null,
+    subtree_check: false,
+    secure_locks: true,
+    mountpoint: null,
+    fsid: null,
+    nordirplus: false,
+    refer: null,
+    replicas: null,
+    pnfs: false,
+    security_label: false,
+    root_squash: true,
+    all_squash: false,
+    anonuid: null,
+    anongid: null
 }
 // clone the nfsShareTemplate object to the reactive nfsShareCopy object
 const nfsShareCopy = reactive({ ...nfsShareTemplate })
@@ -119,10 +119,39 @@ function showNewModal() {
     myModal.show()
 }
 
+/**
+ * Creates a job in the job queue table.
+ * @typedef {Object} Job
+ * @property {number} job.user_id The ID of the user who owns the job.
+ * @property {string} job.name The name of the job.
+ * @property {string} job.desc The description of the job.
+ * @property {string} job.script The script to be executed for the job.
+ * @property {string} job.script_data The data to be passed to the script
+ * @property {string} job.run_on The date and time when the job should be run, 
+ * defaults to current date and time.
+ * @property {number} job.run_interval The interval at which the job should be run,
+ * defaults to 0 (run once).
+ */
+
+
 function applyEdit() {
     if (nfsShareCopy.id == 0) {
-        // add new share
-        nfsShares.push({...nfsShareCopy})
+        // add as new share
+        nfsShares.push({ ...nfsShareCopy })
+        post('api/schedule/insertJob', {
+            accesstoken: appstate.user.accesstoken,
+            userid: appstate.user.id,
+            job:
+            {
+                user_id: appstate.user.id,
+                name: 'createNfsShare',
+                desc: 'Create a new NFS share',
+                script: 'createNfsShare.sh',
+                script_data: JSON.stringify(nfsShareCopy),
+                run_on: new Date().toISOString(),
+                run_interval: 0
+            }
+        })
         return
     }
     const originalShare = nfsShares.find((share) => share.id == nfsShareCopy.id)
@@ -163,7 +192,7 @@ function applyEdit() {
                         <!-- note: although the <tr> is the element that is "selectable", it is the 
                              child <th> element that is clicked and therefore returned to the eventlistner. -->
                         <tr class="nfs-tr-select" v-for="share in nfsShares" v-on:click="toggleRowActive">
-                            <th scope="row" v-bind:shareid="share.id" >{{ share.name }}</th>
+                            <th scope="row" v-bind:shareid="share.id">{{ share.name }}</th>
                             <th scope="row" v-bind:shareid="share.id">{{ share.path }}</th>
                             <th scope="row" v-bind:shareid="share.id">{{ share.desc }}</th>
                         </tr>
@@ -185,33 +214,19 @@ function applyEdit() {
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <NfsShare v-model:name="nfsShareCopy.name" 
-                    v-model:desc="nfsShareCopy.desc"
-                    v-model:clients="nfsShareCopy.clients" 
-                    v-model:size_limit="nfsShareCopy.size_limit"
-                    v-model:expert_config="nfsShareCopy.expert_config"
-                    v-model:kerb_auth="nfsShareCopy.kerb_auth"
-                    v-model:path="nfsShareCopy.path"
-                    v-model:sec="nfsShareCopy.sec" 
-                    v-model:ro="nfsShareCopy.ro"
-                    v-model:sync="nfsShareCopy.sync"
-                    v-model:wdelay="nfsShareCopy.wdelay"
-                    v-model:hide="nfsShareCopy.hide"
-                    v-model:crossmnt="nfsShareCopy.crossmnt"
-                    v-model:subtree_check="nfsShareCopy.subtree_check"
-                    v-model:secure_locks="nfsShareCopy.secure_locks"
-                    v-model:mountpoint="nfsShareCopy.mountpoint"
-                    v-model:fsid="nfsShareCopy.fsid"
-                    v-model:nordirplus="nfsShareCopy.nordirplus"
-                    v-model:refer="nfsShareCopy.refer"
-                    v-model:replicas="nfsShareCopy.replicas"
-                    v-model:pnfs="nfsShareCopy.pnfs"
-                    v-model:security_label="nfsShareCopy.security_label"
-                    v-model:root_squash="nfsShareCopy.root_squash"
-                    v-model:all_squash="nfsShareCopy.all_squash"
-                    v-model:anonuid="nfsShareCopy.anonuid"
-                    v-model:anongid="nfsShareCopy.anongid"
-                    />
+                    <NfsShare v-model:name="nfsShareCopy.name" v-model:desc="nfsShareCopy.desc"
+                        v-model:clients="nfsShareCopy.clients" v-model:quota="nfsShareCopy.quota"
+                        v-model:expert_config="nfsShareCopy.expert_config" v-model:kerb_auth="nfsShareCopy.kerb_auth"
+                        v-model:path="nfsShareCopy.path" v-model:sec="nfsShareCopy.sec" v-model:ro="nfsShareCopy.ro"
+                        v-model:sync="nfsShareCopy.sync" v-model:wdelay="nfsShareCopy.wdelay"
+                        v-model:hide="nfsShareCopy.hide" v-model:crossmnt="nfsShareCopy.crossmnt"
+                        v-model:subtree_check="nfsShareCopy.subtree_check" v-model:secure_locks="nfsShareCopy.secure_locks"
+                        v-model:mountpoint="nfsShareCopy.mountpoint" v-model:fsid="nfsShareCopy.fsid"
+                        v-model:nordirplus="nfsShareCopy.nordirplus" v-model:refer="nfsShareCopy.refer"
+                        v-model:replicas="nfsShareCopy.replicas" v-model:pnfs="nfsShareCopy.pnfs"
+                        v-model:security_label="nfsShareCopy.security_label" v-model:root_squash="nfsShareCopy.root_squash"
+                        v-model:all_squash="nfsShareCopy.all_squash" v-model:anonuid="nfsShareCopy.anonuid"
+                        v-model:anongid="nfsShareCopy.anongid" />
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary btn-sm me-1" v-on:click="applyEdit()">Apply</button>

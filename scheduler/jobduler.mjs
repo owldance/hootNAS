@@ -81,6 +81,7 @@ function startQueue() {
         const idleJobs = await getIdleJobs()
         // spawn workers for each idle job
         idleJobs.forEach((job) => {
+            console.log(`spawning worker for job id:${job.id}`)
             if (runningWorkers < maxWorkers) {
                 spawnWorker(job)
                 runningWorkers++

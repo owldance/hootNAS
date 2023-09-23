@@ -15,7 +15,7 @@ const dbPath = `${basePath}/db/hoot.db`
  * @returns {Promise<object>} Object with the result of the query.
  * @throws {Error} In case of error executing the query or closing the database.
  */
-async function executeQueryRun(query) {
+export async function executeQueryRun(query) {
   try {
     let result = null
     const db = await open({
@@ -37,7 +37,7 @@ async function executeQueryRun(query) {
  * @returns {Promise<Array<Object>>} An array of objects.
  * @throws {Error} In case of error executing the query or closing the database.
  */
-async function executeQueryAll(query) {
+export async function executeQueryAll(query) {
     try {
       let result = null
       const db = await open({
@@ -60,7 +60,7 @@ async function executeQueryAll(query) {
  * @returns {Promise<Object>} The retrieved row as an object.
  * @throws {Error} In case of error executing the query or closing the database.
  */
-async function executeQueryGet(query) {
+export async function executeQueryGet(query) {
     try {
       let result = null
       const db = await open({

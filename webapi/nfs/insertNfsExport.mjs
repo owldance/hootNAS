@@ -1,12 +1,13 @@
 /**
- * Queries for the nfs_exports table
- * @module nfs_exports
+ * Inserts a nfsExport object in the nfs_exports table.
+ * @module insertNfsExport
+ * @typedef {import('../../db/executeQueryRun.mjs').QueryResult} QueryResult
  */
 'use strict'
-import { executeQueryRun, executeQueryAll, executeQueryGet } from './sqlite3-api-calls.mjs'
+import { executeQueryRun } from '../../db/executeQueryRun.mjs'
 
 /**
- * Represents the NFS export object resulting from query.
+ * Represents the `nfs_exports` table.
  * @typedef {Object} NfsExport
  * @property {number} id Unique identifier of the export.
  * @property {number} user_id ID of the user who created the export.
@@ -39,63 +40,87 @@ import { executeQueryRun, executeQueryAll, executeQueryGet } from './sqlite3-api
  * @property {boolean} all_squash Whether all squashing is enabled.
  * @property {number} anonuid anonymous user ID of the export.
  * @property {number} anongid anonymous group ID of the export.
- * @property {string} user_name Name of the owner.
  */
 
-/**
- * Retrieves an NFS export by ID from the database.
- * @async
- * @param {number} [id=0] ID of the NFS export to retrieve.
- * @returns {Promise<NfsExport>} The NFS export object.
- * @throws {Error} If there was an error executing the query.
- */
-export async function getNfsExport(id = 0) {
+export async function insertNfsExport(nfsExport) {
   try {
-    const query = `SELECT nfs_exports.*, users.name AS user_name 
-    FROM nfs_exports JOIN users ON nfs_exports.user_id = users.id 
-    WHERE nfs_exports.id = ${id}`
-    const result = await executeQueryGet(query)
+    // for each property of the nfsExport object, that is not undefined, 
+    // add it to the fields and values arrays
+    const fields = []
+    const values = []
+    for (const [key, value] of Object.entries(nfsExport)) {
+      if (value !== undefined) {
+        fields.push(key)
+        values.push(value)
+      }
+    }
+    // create query string
+    const query = `
+    INSERT INTO nfs_exports (${fields.join(', ')}) 
+    VALUES (${values.map((value) => '?').join(', ')})`
+    console.log(query)
+    const result = await executeQueryRun(query, values)
     return result
   } catch (e) {
     throw e
   }
 }
 
-/**
- * Updates an NFS export with the provided properties.
- * @param {Object} nfsExport NFS export object to update.
- * @param {string} nfsExport.status status of the NFS export.
- * @param {string} nfsExport.path path of the NFS export.
- * @param {string} nfsExport.mountpoint mountpoint of the NFS export.
- * @param {number} nfsExport.id ID of the NFS export to update.
- * @returns {Promise<Object>} result of the update query.
- * @throws {Error} If there's an error executing the query.
- */
-export async function updateNfsExport(nfsExport) {
-  try {
-    let sets = []
-    // if property exists, add to sets array
-    if (nfsExport.status !== undefined)
-      sets.push(`status_id = 
-        (SELECT id FROM export_status WHERE status = '${nfsExport.status}')`)
-      if (nfsExport.path !== undefined)
-      sets.push(`path = ${nfsExport.path}`)
-    if (nfsExport.mountpoint !== undefined)
-      sets.push(`mountpoint = ${nfsExport.mountpoint}`)
-    const query = `UPDATE nfs_exports
-      SET ${sets.join(', ')}
-      WHERE id = ${nfsExport.id}`
-    const result = await executeQueryRun(query)
-    return result
-  } catch (e) {
-    throw e
-  }
+// run test if this module is executed directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  insertNfsExport({
+    user_id: 1,
+    status_id: 1,
+    name: 'test',
+    desc: 'test',
+    clients: '*',
+    quota: 0,
+    kerb_auth: true,
+    sec: 'sys',
+    ro: false,
+  }).then((result) => {
+    console.log(result)
+  }).catch((e) => {
+    console.log(e)
+  })
 }
 
-// getNfsExport(1)
-//   .then((result) => {
-//     console.log(result)
-//   })
-//   .catch((err) => {
-//     console.log(err)
-//   })
+
+
+
+
+
+
+
+/*
+
+
+# create a nfs share
+mkdir -p /bzpool/share/herman-share
+# all users on any client can read/write, files on server owned by "nobody"
+chown nobody:nogroup /bzpool/share/herman-share
+# in /etc/exports add
+#/bzpool/share/herman-share      *(rw,all_squash,no_subtree_check)
+exportfs -ra
+
+# alternative to above
+mkdir -p /bzpool/share/herman-share
+# only root on client can write, all other users on client can only
+# read. Files on server are owned by user "root"
+# NOTE privilege escalation is possible on the NFS server, use only if 
+# the client is trusted.
+# in /etc/exports add
+#/bzpool/share/herman-share      *(rw,sync,no_subtree_check,no_root_squash)
+exportfs -ra
+
+
+# remove nfs share
+
+# nfs client connect
+sudo apt install nfs-common
+sudo mkdir /home/administrator/nfs
+sudo mount 192.168.139.139:/bzpool/share/herman-share /home/administrator/nfs
+# disconnect nfs
+sudo umount /home/administrator/nfs
+
+*/

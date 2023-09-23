@@ -12,7 +12,7 @@
  * @property {String} name a user assigned identifier, default null
  * @property {String} desc description, default null
  * @property {String} clients client list, default null
- * @property {String} size_limit default 0
+ * @property {String} quota default 0
  * @property {String} expert_config default null
  * @property {Boolean} kerb_auth default false
  * @property {String} path default null
@@ -46,7 +46,7 @@ defineProps({
     name: String,
     desc: String,
     clients: String,
-    size_limit: Number,
+    quota: Number,
     expert_config: String,
     kerb_auth: Boolean,
     path: String,
@@ -71,7 +71,7 @@ defineProps({
     anongid: Number
 })
 defineEmits(['update:name', 'update:desc', 'update:clients',
-    'update:size_limit', 'update:expert_config', , 'update:kerb_auth', 'update:path', 'update:ro',
+    'update:quota', 'update:expert_config', , 'update:kerb_auth', 'update:path', 'update:ro',
     'update:sync', 'update:wdelay', 'update:hide', 'update:crossmnt',
     'update:subtree_check', 'update:secure_locks', 'update:root_squash',
     'update:all_squash', 'update:anonuid', 'update:anongid'])

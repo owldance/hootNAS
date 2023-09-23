@@ -14,11 +14,9 @@ INSERT INTO "user_status" ("status") VALUES ('locked');
 INSERT INTO "users" ("name", "mail", "password") 
 VALUES ('Superman', 'super@man.me', 'kryp2Nite');
 INSERT INTO "users" ("name", "mail", "password") 
-VALUES ('Monkey', 'monkey@mail.me', 'monk7y');
+VALUES ('OneTimeUser', 'one@time.user', 'Zn05z1mfk7y');
 INSERT INTO "users" ("name", "mail", "password") 
-VALUES ('Donkey', 'donkey@kong.om', 'donk3y');
-INSERT INTO "users" ("name", "mail", "password") 
-VALUES ('Funky', 'funky@brothers.io', 'funke4');
+VALUES ('DonkeyKong', 'donkey@kong.om', 'Donk3yK0ng');
 
 /* assign users a new status */
 UPDATE users 
@@ -26,10 +24,10 @@ SET status_id = (SELECT id FROM user_status WHERE status = 'active')
 WHERE name = 'Superman';
 UPDATE users 
 SET status_id = (SELECT id FROM user_status WHERE status = 'active') 
-WHERE name = 'Donkey';
+WHERE name = 'DonkeyKong';
 UPDATE users 
 SET status_id = (SELECT id FROM user_status WHERE status = 'active') 
-WHERE name = 'Monkey';
+WHERE name = 'OneTimeUser';
 UPDATE users 
 SET status_id = (SELECT id FROM user_status WHERE status = 'inactive') 
 WHERE name = 'Funky';
@@ -54,38 +52,29 @@ INSERT INTO "user_groups" ("user_id", "group_id")
 VALUES (
     (SELECT id FROM users WHERE "name" = 'Superman'), 
     (SELECT id FROM groups WHERE "group" = 'data-admins'));
-/* mokey */
+/* OneTimeUser */
 INSERT INTO "user_groups" ("user_id", "group_id") 
 VALUES (
-    (SELECT id FROM users WHERE "name" = 'Monkey'), 
+    (SELECT id FROM users WHERE "name" = 'OneTimeUser'), 
     (SELECT id FROM groups WHERE "group" = 'users'));
 
 INSERT INTO "user_groups" ("user_id", "group_id") 
 VALUES (
-    (SELECT id FROM users WHERE "name" = 'Monkey'), 
+    (SELECT id FROM users WHERE "name" = 'OneTimeUser'), 
     (SELECT id FROM groups WHERE "group" = 'admins'));
 INSERT INTO "user_groups" ("user_id", "group_id") 
 VALUES (
-    (SELECT id FROM users WHERE "name" = 'Monkey'), 
+    (SELECT id FROM users WHERE "name" = 'OneTimeUser'), 
     (SELECT id FROM groups WHERE "group" = 'data-admins'));
-/* donkey */
+/* DonkeyKong */
 INSERT INTO "user_groups" ("user_id", "group_id") 
 VALUES (
-    (SELECT id FROM users WHERE "name" = 'Donkey'), 
+    (SELECT id FROM users WHERE "name" = 'DonkeyKong'), 
     (SELECT id FROM groups WHERE "group" = 'users'));
 
 INSERT INTO "user_groups" ("user_id", "group_id") 
 VALUES (
-    (SELECT id FROM users WHERE "name" = 'Donkey'), 
-    (SELECT id FROM groups WHERE "group" = 'users'));
-/* Funky */
-INSERT INTO "user_groups" ("user_id", "group_id") 
-VALUES (
-    (SELECT id FROM users WHERE "name" = 'Funky'), 
+    (SELECT id FROM users WHERE "name" = 'DonkeyKong'), 
     (SELECT id FROM groups WHERE "group" = 'users'));
 
-INSERT INTO "user_groups" ("user_id", "group_id") 
-VALUES (
-    (SELECT id FROM users WHERE "name" = 'Funky'), 
-    (SELECT id FROM groups WHERE "group" = 'backup-admins'));
 

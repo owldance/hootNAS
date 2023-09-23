@@ -1,5 +1,5 @@
 -- insert one random row into table job_queue
-INSERT INTO job_queue (user_id, name, desc, script, run_on, run_interval, run_data)
+INSERT INTO job_queue (user_id, name, desc, script, run_on, run_interval, script_data)
 VALUES (
     (SELECT id FROM users WHERE name = 'Superman'), 
     'my job',
@@ -9,7 +9,7 @@ VALUES (
     0,
     '{"nfs_exports_id": 4}');
 
-INSERT INTO job_queue (user_id, name, desc, script, run_on, run_interval, run_data)
+INSERT INTO job_queue (user_id, name, desc, script, run_on, run_interval, script_data)
 VALUES (
     (SELECT id FROM users WHERE name = 'Superman'), 
     'my job',
@@ -19,7 +19,7 @@ VALUES (
     0,
     '{"nfs_exports_id": 3}');
 
-INSERT INTO job_queue (user_id, name, desc, script, run_on, run_interval, run_data)
+INSERT INTO job_queue (user_id, name, desc, script, run_on, run_interval, script_data)
 VALUES (
     (SELECT id FROM users WHERE name = 'Superman'), 
     'my job',
@@ -29,7 +29,7 @@ VALUES (
     0,
     '{"nfs_exports_id": 2}');
 
-INSERT INTO job_queue (user_id, name, desc, script, run_on, run_interval, run_data)
+INSERT INTO job_queue (user_id, name, desc, script, run_on, run_interval, script_data)
 VALUES (
     (SELECT id FROM users WHERE name = 'Superman'), 
     'my job',
