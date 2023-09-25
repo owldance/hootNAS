@@ -1,7 +1,8 @@
 /**
  * Selects NFS shares
- * @module selectNfs
- */
+ * @module selectNfsExportsByUserId
+ * @typedef {import('./insertNfsExport.mjs').NfsExport} NfsExport
+*/
 'use strict'
 import sqlite3 from 'sqlite3'
 import { open } from 'sqlite'
@@ -9,14 +10,18 @@ const basePath = process.env.HOOT_REPO || '/usr/local/hootnas'
 const dbPath = `${basePath}/db/hoot.db`
 
 /**
- * Selects NFS shares by id
- * @function selectNfsByUserId
+ * @typedef {Array<NfsExport>} NfsExports
+ */
+
+/**
+ * Selects NFS exports by id
+ * @function selectNfsExportsByUserId
  * @async
  * @param {Number} userId user id
- * @returns {Shares} on resolve
+ * @returns {Promise<NfsExports>} on resolve
  * @throws {Error} on reject
  */
-export async function selectNfsByUserId(userId) {
+export async function selectNfsExportsByUserId(userId) {
   try {
     const db = await open({
       filename: dbPath,

@@ -9,39 +9,45 @@ import { executeQueryRun } from '../../db/executeQueryRun.mjs'
 /**
  * Represents the `nfs_exports` table.
  * @typedef {Object} NfsExport
- * @property {number} id Unique identifier of the export.
- * @property {number} user_id ID of the user who created the export.
- * @property {number} status_id ID of the status of the export.
- * @property {string} modified date and time the export modified by user.
- * @property {string} created date and time the export was created by user.
- * @property {string} name name of the export.
- * @property {string} desc description of the export.
- * @property {string} clients clients that are allowed to access the export.
- * @property {number} quota limit on the amount of space used by the export.
- * @property {string} expert_config expert configuration of the export.
- * @property {boolean} kerb_auth Whether Kerberos authentication is enabled.
- * @property {string} path path of the export.
- * @property {string} sec security mode of the export.
- * @property {boolean} ro Whether the export is read-only.
- * @property {boolean} sync Whether the export is synchronous.
- * @property {boolean} wdelay Whether write delays are enabled.
- * @property {boolean} hide Whether the export is hidden.
- * @property {boolean} crossmnt Whether the export is a cross-mount.
- * @property {boolean} subtree_check Whether subtree checking is enabled.
- * @property {boolean} secure_locks Whether secure locks are enabled.
- * @property {string} mountpoint mount point of the export.
- * @property {string} fsid file system ID of the export.
- * @property {boolean} nordirplus Whether the export is using NFSv4.1 without the `DIRPLUS` feature.
- * @property {string} refer reference of the export.
- * @property {string} replicas replicas of the export.
- * @property {boolean} pnfs Whether the export is using pNFS.
- * @property {boolean} security_label Whether security labels are enabled.
- * @property {boolean} root_squash Whether root squashing is enabled.
- * @property {boolean} all_squash Whether all squashing is enabled.
- * @property {number} anonuid anonymous user ID of the export.
- * @property {number} anongid anonymous group ID of the export.
+ * @property {number} id - The ID of the NFS export.
+ * @property {number} user_id - The ID of the user who owns the NFS export.
+ * @property {number} status_id - The ID of the status of the NFS export. Default value: 1.
+ * @property {string} modified - The date and time when the NFS export was last modified. Default value: CURRENT_TIMESTAMP.
+ * @property {string} created - The date and time when the NFS export was created. Default value: CURRENT_TIMESTAMP.
+ * @property {string|null} name - The name of the NFS export. Default value: NULL.
+ * @property {string|null} desc - The description of the NFS export. Default value: NULL.
+ * @property {string|null} clients - The clients that are allowed to access the NFS export. Default value: NULL.
+ * @property {number} quota - The quota of the NFS export. Default value: 0.
+ * @property {string|null} expert_config - The expert configuration of the NFS export. Default value: NULL.
+ * @property {boolean} kerb_auth - Whether Kerberos authentication is enabled for the NFS export. Default value: FALSE.
+ * @property {string} path - The path of the NFS export.
+ * @property {string|null} sec - The security mode of the NFS export. Default value: NULL.
+ * @property {boolean} ro - Whether the NFS export is read-only. Default value: TRUE.
+ * @property {boolean} sync - Whether synchronous writes are enabled for the NFS export. Default value: TRUE.
+ * @property {boolean} wdelay - Whether write delays are enabled for the NFS export. Default value: TRUE.
+ * @property {boolean} hide - Whether the NFS export is hidden. Default value: TRUE.
+ * @property {boolean|null} crossmnt - Whether the NFS export is a cross-mount point. Default value: NULL.
+ * @property {boolean} subtree_check - Whether subtree checking is enabled for the NFS export. Default value: FALSE.
+ * @property {boolean} secure_locks - Whether secure file locking is enabled for the NFS export. Default value: TRUE.
+ * @property {string|null} mountpoint - The mount point of the NFS export. Default value: NULL.
+ * @property {string|null} fsid - The file system ID of the NFS export. Default value: NULL.
+ * @property {boolean} nordirplus - Whether the NFS export supports NFSv4.1. Default value: FALSE.
+ * @property {string|null} refer - The reference of the NFS export. Default value: NULL.
+ * @property {string|null} replicas - The replicas of the NFS export. Default value: NULL.
+ * @property {boolean} pnfs - Whether the NFS export supports pNFS. Default value: FALSE.
+ * @property {boolean} security_label - Whether security labels are enabled for the NFS export. Default value: FALSE.
+ * @property {boolean} root_squash - Whether root squashing is enabled for the NFS export. Default value: TRUE.
+ * @property {boolean} all_squash - Whether all squashing is enabled for the NFS export. Default value: FALSE.
+ * @property {number|null} anonuid - The anonymous user ID of the NFS export. Default value: NULL.
+ * @property {number|null} anongid - The anonymous group ID of the NFS export. Default value: NULL.
  */
 
+/**
+ * Inserts a new NFS export into the database.
+ * @param {NfsExport} nfsExport - The NFS export object to be inserted.
+ * @returns {Promise<QueryResult>} - A Promise that resolves with the result of the insert query.
+ * @throws {Error} - If there is an error executing the insert query.
+ */
 export async function insertNfsExport(nfsExport) {
   try {
     // for each property of the nfsExport object, that is not undefined, 
@@ -58,7 +64,6 @@ export async function insertNfsExport(nfsExport) {
     const query = `
     INSERT INTO nfs_exports (${fields.join(', ')}) 
     VALUES (${values.map((value) => '?').join(', ')})`
-    console.log(query)
     const result = await executeQueryRun(query, values)
     return result
   } catch (e) {

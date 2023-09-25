@@ -2,28 +2,29 @@
  * Services call various api's and handle the data returned. no experessjs 
  * code should be in the services.
  * @module services/shares
+ * @typedef {import('../../webapi/nfs/insertNfsExport.mjs').NfsExport} NfsExport
+ * @typedef {import('../../webapi/nfs/selectNfsExportsByUserId.mjs').NfsExports} NfsExports
+ * @typedef {import('../../db/executeQueryRun.mjs').QueryResult} QueryResult
  */
-import { selectNfsByUserId } from '../../webapi/nfs/selectNfsByUserId.mjs'
+import { selectNfsExportsByUserId } from '../../webapi/nfs/selectNfsExportsByUserId.mjs'
+import { insertNfsExport } from '../../webapi/nfs/insertNfsExport.mjs'
 
-/**
- * @typedef {Object} Shares
- * @property {Array<Share>} share a NFS share
- */
-/**
- * Selects NFS shares by id
- * @function _selectNfsByUserId
- * @async
- * @param {Number} userId user id
- * @returns {Shares} on resolve
- * @throws {Error} on reject
- * 
- */
-export async function _selectNfsByUserId(userId) {
+export async function _selectNfsExportsByUserId(userId) {
   try {
-    const shares = await selectNfsByUserId(userId)
-    return shares
+    /** @typedef {NfsExports} nfsExports */
+    const nfsExports = await selectNfsExportsByUserId(userId)
+    return nfsExports
   } catch (e) {
-    e
+    throw e
+  }
+}
+
+export async function _insertNfsExport(nfsExport) {
+  try {
+    /** @typedef {QueryResult} queryResult */
+    const queryResult = await insertNfsExport(nfsExport)
+    return queryResult
+  } catch (e) {
     throw e
   }
 }

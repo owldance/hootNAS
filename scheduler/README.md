@@ -39,6 +39,6 @@ the community as outlined in the [hootNAS Community Guidelines](#placeholder).
 This is code is licensed under the Apache License 2.0. Full license is 
 available [here](/LICENSE).
 
-## Placeholder
+## Placeholder 
 
 Placeholder for future content

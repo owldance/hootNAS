@@ -6,7 +6,7 @@ Is the `systemd` service unit file responsible for starting the
 [webserver](/webserver/webserver.mjs) on boot.
 
 
-## [tui-network-config.sh](./network-config.sh)
+## [tui-network-config.sh](./tui-network-config.sh)
 
 Is a text user interface (TUI) terminal (tty) script, when executed, on the 
 terminal screen, the script welcomes the user with the IP address of the system. 

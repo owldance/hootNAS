@@ -13,7 +13,7 @@
     in-memory
     - [Scripts](/scripts/README.md) - Bash scripts used by hootOS software.
     - [Database](/db/README.md) - The state management database
-    - [Sheduler](/sheduler/README.md) - A persistent job scheduler
+    - [Sheduler](/scheduler/README.md) - A persistent job scheduler
 
 2. General concepts
     - [Create a hootNAS instance](/documentation/create-hootnas-instance.md) - 

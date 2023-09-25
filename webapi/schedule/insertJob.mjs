@@ -7,19 +7,20 @@
 import { executeQueryRun } from '../../db/executeQueryRun.mjs'
 
 /**
+ * @typedef {Object} NewJob
+ * @property {number} user_id The ID of the user who owns the job.
+ * @property {string} name The name of the job. Default: undefined.
+ * @property {string} desc The description of the job. Default: undefined.
+ * @property {string} script The script to be executed for the job.
+ * @property {string} script_data The data to be passed to the script.Default: undefined.
+ * @property {string} run_on The date and time when the job should be run. Default: current date and time.
+ * @property {number} run_interval The interval at which the job should be run. Default: 0 (run once).
+ */
+/**
  * Creates a job in the job queue table.
  * @async
  * @function insertJob
- * @param {Object} job The job object containing the job details.
- * @param {number} job.user_id The ID of the user who owns the job.
- * @param {string} job.name The name of the job.
- * @param {string} job.desc The description of the job.
- * @param {string} job.script The script to be executed for the job.
- * @param {string} job.script_data The data to be passed to the script
- * @param {string} job.run_on The date and time when the job should be run, 
- * defaults to current date and time.
- * @param {number} job.run_interval The interval at which the job should be run,
- * defaults to 0 (run once).
+ * @param {NewJob} job The job object containing the job details.
  * @returns {Promise<QueryResult>} The result of the query execution.
  * @throws {Error} If there is an error executing the query.
  */

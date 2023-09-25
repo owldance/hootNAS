@@ -19,7 +19,6 @@ export async function getBlockDevices(req, res, next) {
   }
 }
 export async function initialSetup(req, res, next) {
-  console.log(req.body)
   const { storagepool } = req.body
   try {
     const result = await setupDevices(storagepool)

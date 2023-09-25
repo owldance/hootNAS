@@ -6,26 +6,26 @@
  */
 'use strict'
 import {
-  _selectNfsExportByUserId,
-  _insertNfsExport
-} from "../services/shares.mjs"
+  _deleteJobById,
+  _insertJob
+} from "../services/schedule.mjs"
 import { getErrorObject } from '../../webapi/utilities/getErrorObject.mjs'
 
-export async function selectNfsExportByUserId(req, res, next) {
-  const { userid } = req.body
+export async function deleteJobById(req, res, next) {
+  const { jobId } = req.body
   try {
-    const nfsExports = await _selectNfsExportByUserId(userid)
-    res.status(201).send(nfsExports)
+    const queryResult  = await _deleteJobById(jobId)
+    res.status(201).send(queryResult)
     next()
   } catch (e) {
     res.status(500).send(getErrorObject(e)) //&& next(error)
   }
 }
 
-export async function insertNfsExport(req, res, next) {
-  const { userid, nfsExport } = req.body
+export async function insertJob(req, res, next) {
+  const { newJob } = req.body
   try {
-    const queryResult = await _insertNfsExport(nfsExport)
+    const queryResult = await _insertJob(newJob)
     res.status(201).send(queryResult)
     next()
   } catch (e) {

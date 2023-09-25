@@ -10,7 +10,7 @@ import { accessTokenSecret } from '../../webserver/webserver.mjs'
  * Verifies a jwt token and returns the payload
  * @function verifyJwt
  * @param {String} accessToken 
- * @returns {User} on resolve
+ * @returns {Promise<User>} on resolve
  * @returns {Error} on reject
  */
 async function verifyJwt(accessToken) {
@@ -35,7 +35,10 @@ const authRequired = {
     initialSetup: ['admins'],
     rebootSystem: ['admins'],
     getBlockDevices: ['admins', 'users'],
-    selectNfsByUserId: ['users']
+    selectNfsExportsByUserId: ['users'],
+    insertNfsExport: ['users'],
+    insertJob: ['users'],
+    deleteJobById: ['users']
 }
 /**
  * @typedef {Object} User

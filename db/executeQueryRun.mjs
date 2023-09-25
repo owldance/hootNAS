@@ -1,6 +1,6 @@
 /**
  * Executes the given SQL query using the 'run' method
- * @module executeQueryRun
+ * @module db/executeQueryRun
  */
 'use strict'
 import sqlite3 from 'sqlite3'
