@@ -8,6 +8,8 @@
  */
 import { selectNfsExportsByUserId } from '../../webapi/nfs/selectNfsExportsByUserId.mjs'
 import { insertNfsExport } from '../../webapi/nfs/insertNfsExport.mjs'
+import { updateNfsExport } from '../../webapi/nfs/updateNfsExport.mjs'
+import { deleteNfsExportById } from '../../webapi/nfs/deleteNfsExportById.mjs'
 
 export async function _selectNfsExportsByUserId(userId) {
   try {
@@ -23,6 +25,26 @@ export async function _insertNfsExport(nfsExport) {
   try {
     /** @typedef {QueryResult} queryResult */
     const queryResult = await insertNfsExport(nfsExport)
+    return queryResult
+  } catch (e) {
+    throw e
+  }
+}
+
+export async function _updateNfsExport(nfsExport) {
+  try {
+    /** @typedef {QueryResult} queryResult */
+    const queryResult = await updateNfsExport(nfsExport)
+    return queryResult
+  } catch (e) {
+    throw e
+  }
+}
+
+export async function _deleteNfsExportById(nfsExport_id) {
+  try {
+    /** @typedef {QueryResult} queryResult */
+    const queryResult = await deleteNfsExportById(nfsExport_id)
     return queryResult
   } catch (e) {
     throw e

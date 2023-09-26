@@ -64,27 +64,18 @@ export async function getNfsExport(id = 0) {
 /**
  * Updates an NFS export with the provided properties.
  * @param {Object} nfsExport NFS export object to update.
- * @param {string} nfsExport.status status of the NFS export.
- * @param {string} nfsExport.path path of the NFS export.
- * @param {string} nfsExport.mountpoint mountpoint of the NFS export.
- * @param {number} nfsExport.id ID of the NFS export to update.
  * @returns {Promise<Object>} result of the update query.
  * @throws {Error} If there's an error executing the query.
  */
 export async function updateNfsExport(nfsExport) {
   try {
-    let sets = []
-    // if property exists, add to sets array
-    if (nfsExport.status !== undefined)
-      sets.push(`status_id = 
-        (SELECT id FROM export_status WHERE status = '${nfsExport.status}')`)
-      if (nfsExport.path !== undefined)
-      sets.push(`path = ${nfsExport.path}`)
-    if (nfsExport.mountpoint !== undefined)
-      sets.push(`mountpoint = ${nfsExport.mountpoint}`)
-    const query = `UPDATE nfs_exports
-      SET ${sets.join(', ')}
-      WHERE id = ${nfsExport.id}`
+    // build the query, for each property in the object
+    let query = `UPDATE nfs_exports SET `
+    for (const [key, value] of Object.entries(nfsExport)) {
+      query += `${key} = ${value}, `
+    }
+    
+
     const result = await executeQueryRun(query)
     return result
   } catch (e) {

@@ -5,12 +5,12 @@
 import { parentPort, workerData, threadId } from 'node:worker_threads'
 import process from 'node:process'
 import { setTimeout } from 'timers/promises'
-import { getNfsExport, updateNfsExportStatus } from '../queries/nfs_exports.mjs'
-import { createZfs } from '../zfs/createZfs.mjs'
+import { selectNfsExport } from '../../webapi/nfs/selectNfsExport.mjs'
+import { updateNfsExport } from '../../webapi/nfs/updateNfsExport.mjs'
 
-const nfsExport = await getNfsExport(workerData.data.nfs_exports_id)
-parentPort.postMessage(`hello from ${nfsExport.user_name} in job id:${workerData.id}`)
-console.log(`hello from ${nfsExport.user_name} in job id:${workerData.id}`)
+const nfsExport = await selectNfsExport(workerData.data.lastID)
+parentPort.postMessage(`create-nfs ${nfsExport.user_name} in job id:${workerData.id}`)
+console.log(`create-nfs ${nfsExport.user_name} in job id:${workerData.id}`)
 
 // createZfs(`dpool/data/${nfsExport.user_name}`, 'X',
 //     {
@@ -30,7 +30,7 @@ console.log(`hello from ${nfsExport.user_name} in job id:${workerData.id}`)
 // generate random number between 5000 and 10000
 const randomTime = Math.floor(Math.random() * (10000 - 5000 + 1) + 5000)
 await setTimeout(randomTime)
-await updateNfsExportStatus({ 
+await updateNfsExport({ 
     id: nfsExport.id, 
     status: 'enabled',
     path: `dpool/data/${nfsExport.user_name}/${nfsExport.name}`,

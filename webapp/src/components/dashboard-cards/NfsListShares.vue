@@ -25,12 +25,12 @@ const nfsShares = reactive(await post('api/selectNfsExportsByUserId', {
 
 /** 
  * @const {NfsExport} nfsShareTemplate A template for a new NFS share with 
- * property id=0, otherwise all other properties set to default values as per 
- * database schema.
+ * property id=0 and user_id=appstate.user.id, otherwise all other properties 
+ * set to default values as per database schema.
  */
 const nfsShareTemplate = {
     id: 0,
-    user_id: undefined,
+    user_id: appstate.user.id,
     status_id: 1,
     modified: undefined,
     created: undefined,
@@ -61,7 +61,7 @@ const nfsShareTemplate = {
     anonuid: undefined,
     anongid: undefined
 }
-/** @const {NfsExport} nfsShareClone reactive clone of nfsShareTemplate */ 
+/** @const {NfsExport} nfsShareClone reactive clone of nfsShareTemplate */
 const nfsShareClone = reactive({ ...nfsShareTemplate })
 /** @type {number} keeps track of which share the user have selected in <tr> */
 let selectedShareId = 0
@@ -100,9 +100,45 @@ function showNewModal() {
     myModal.show()
 }
 
+async function deleteShare() {
+    if (selectedShareId == 0)
+        return
+    // delete the share from the database
+    /** @typedef {QueryResu1t} nfsQueryResult */
+    const nfsQueryResult = await post('api/deleteNfsExportById', {
+        accesstoken: appstate.user.accesstoken,
+        nfsExport_id : selectedShareId
+    })
+    // if the delete was successful, add a new job to the scheduler  
+    // that deletes the share on server storage
+    console.log(`nfsQueryResult.changes = ${nfsQueryResult.changes}`)
+    if (nfsQueryResult.changes > 0) {
+        /** @typedef {QueryResu1t} jobQueryResult */
+        const jobQueryResult = await post('api/insertJob', {
+            accesstoken: appstate.user.accesstoken,
+            newJob:
+            {
+                user_id: appstate.user.id,
+                name: 'deleteNfsShare',
+                desc: 'Delete an existing NFS share',
+                script: 'delete-nfs',
+                script_data: `{"nfsExport_id" : ${selectedShareId}}`
+            }
+        })
+        console.log(`jobQueryResult.lastID = ${jobQueryResult.lastID}`)
+        if (jobQueryResult.changes != 0) {
+            // remove the share from the reactive nfsShares array
+            const index = nfsShares.findIndex((share) => share.id == selectedShareId)
+            if (index > -1) {
+                nfsShares.splice(index, 1)
+            }
+        }
+    }
+}
 
 async function applyEdit() {
     if (nfsShareClone.id == 0) {
+        delete nfsShareClone.id
         // insert a new share into the database
         /** @typedef {QueryResu1t} nfsQueryResult */
         const nfsQueryResult = await post('api/insertNfsExport', {
@@ -112,7 +148,9 @@ async function applyEdit() {
         })
         // if the insert was successful, add a new job to the scheduler  
         // that creates the share on server storage
+        console.log(`nfsQueryResult.lastID = ${nfsQueryResult.lastID}`)
         if (nfsQueryResult.lastID > 0) {
+            nfsShareClone.id = nfsQueryResult.lastID
             /** @typedef {QueryResu1t} jobQueryResult */
             const jobQueryResult = await post('api/insertJob', {
                 accesstoken: appstate.user.accesstoken,
@@ -125,6 +163,7 @@ async function applyEdit() {
                     script_data: JSON.stringify(nfsQueryResult)
                 }
             })
+            console.log(`jobQueryResult.lastID = ${jobQueryResult.lastID}`)
             if (jobQueryResult.lastID > 0) {
                 // clone nfsShareClone and add it to the reactive nfsShares array
                 nfsShares.push({ ...nfsShareClone })
@@ -132,18 +171,23 @@ async function applyEdit() {
         }
     } else {
         // update an existing share in the database
-        /** @typedef {NfsExport} originalShare reactive copy of nfsShareTemplate */ 
+        /** @typedef {NfsExport} originalShare reactive copy of the share in nfsShares */
         const originalShare = nfsShares.find((share) => share.id == nfsShareClone.id)
         /** @typedef {NfsExport} changedProperties - Properties in 
-         * originalShare that are not the same in nfsShareClone, excluding undefined */
+         * originalShare that are not the same in nfsShareClone, 
+         * excluding undefined, explicitly including id 
+         */
         const changedProperties = Object.keys(nfsShareClone).reduce((acc, key) => {
-            if (nfsShareClone[key] !== originalShare[key] && nfsShareClone[key] !== undefined) {
+            if (key === 'id' ||
+                nfsShareClone[key] !== originalShare[key] &&
+                nfsShareClone[key] !== undefined) {
                 acc[key] = nfsShareClone[key]
             }
             return acc
         }, {})
+        console.log(changedProperties)
         // if changedProperties is not an empty object, update the share in the database with changedProperties
-        if (Object.keys(changedProperties).length > 0) {
+        if (Object.keys(changedProperties).length > 1) {
             /** @typedef {QueryResu1t} nfsQueryResult */
             const nfsQueryResult = await post('api/updateNfsExport', {
                 accesstoken: appstate.user.accesstoken,
@@ -151,6 +195,7 @@ async function applyEdit() {
             })
             // if the update was successful, add a new job to the scheduler  
             // that updates the share on server storage
+            console.log(`nfsQueryResult.changes = ${nfsQueryResult.changes}`)
             if (nfsQueryResult.changes > 0) {
                 /** @typedef {QueryResu1t} jobQueryResult */
                 const jobQueryResult = await post('api/insertJob', {
@@ -164,6 +209,7 @@ async function applyEdit() {
                         script_data: JSON.stringify(nfsQueryResult)
                     }
                 })
+                console.log(`jobQueryResult.lastID = ${jobQueryResult.lastID}`)
                 if (jobQueryResult.changes != 0) {
                     // update the share in the reactive nfsShares array
                     for (const key in changedProperties) {
@@ -205,7 +251,7 @@ async function applyEdit() {
 
             <button type="button" class="btn btn-primary btn-sm me-1" v-on:click="showEditModal()">Edit</button>
             <button type="button" class="btn btn-primary btn-sm me-1" v-on:click="showNewModal()">New</button>
-            <button type="button" class="btn btn-danger btn-sm">Delete</button>
+            <button type="button" class="btn btn-danger btn-sm me-1" v-on:click="deleteShare()">Delete</button>
         </div>
     </div>
     <!-- Modal -->
@@ -223,13 +269,13 @@ async function applyEdit() {
                         v-model:path="nfsShareClone.path" v-model:sec="nfsShareClone.sec" v-model:ro="nfsShareClone.ro"
                         v-model:sync="nfsShareClone.sync" v-model:wdelay="nfsShareClone.wdelay"
                         v-model:hide="nfsShareClone.hide" v-model:crossmnt="nfsShareClone.crossmnt"
-                        v-model:subtree_check="nfsShareClone.subtree_check" v-model:secure_locks="nfsShareClone.secure_locks"
-                        v-model:mountpoint="nfsShareClone.mountpoint" v-model:fsid="nfsShareClone.fsid"
-                        v-model:nordirplus="nfsShareClone.nordirplus" v-model:refer="nfsShareClone.refer"
-                        v-model:replicas="nfsShareClone.replicas" v-model:pnfs="nfsShareClone.pnfs"
-                        v-model:security_label="nfsShareClone.security_label" v-model:root_squash="nfsShareClone.root_squash"
-                        v-model:all_squash="nfsShareClone.all_squash" v-model:anonuid="nfsShareClone.anonuid"
-                        v-model:anongid="nfsShareClone.anongid" />
+                        v-model:subtree_check="nfsShareClone.subtree_check"
+                        v-model:secure_locks="nfsShareClone.secure_locks" v-model:mountpoint="nfsShareClone.mountpoint"
+                        v-model:fsid="nfsShareClone.fsid" v-model:nordirplus="nfsShareClone.nordirplus"
+                        v-model:refer="nfsShareClone.refer" v-model:replicas="nfsShareClone.replicas"
+                        v-model:pnfs="nfsShareClone.pnfs" v-model:security_label="nfsShareClone.security_label"
+                        v-model:root_squash="nfsShareClone.root_squash" v-model:all_squash="nfsShareClone.all_squash"
+                        v-model:anonuid="nfsShareClone.anonuid" v-model:anongid="nfsShareClone.anongid" />
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary btn-sm me-1" v-on:click="applyEdit()">Apply</button>

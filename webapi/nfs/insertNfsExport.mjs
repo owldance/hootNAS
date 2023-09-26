@@ -20,7 +20,7 @@ import { executeQueryRun } from '../../db/executeQueryRun.mjs'
  * @property {number} quota - The quota of the NFS export. Default value: 0.
  * @property {string|null} expert_config - The expert configuration of the NFS export. Default value: NULL.
  * @property {boolean} kerb_auth - Whether Kerberos authentication is enabled for the NFS export. Default value: FALSE.
- * @property {string} path - The path of the NFS export.
+ * @property {string} path - The path of the NFS export. Default value: NULL.
  * @property {string|null} sec - The security mode of the NFS export. Default value: NULL.
  * @property {boolean} ro - Whether the NFS export is read-only. Default value: TRUE.
  * @property {boolean} sync - Whether synchronous writes are enabled for the NFS export. Default value: TRUE.

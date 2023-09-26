@@ -31,7 +31,6 @@ const dbFile = path.dirname(fileURLToPath(import.meta.url)) + '/hoot.db'
  */
 export async function executeQueryRun(query, queryParams = []) {
   try {
-    console.log('executeQueryRun')
     let result = null
     const db = await open({
       filename: dbFile,

@@ -43,6 +43,7 @@ await updateJobs(0, 'startup', true, null, null)
  * @param {Job} job - The job object to run.
  */
 const spawnWorker = async (job) => {
+        console.log(`run_data:${job.script_data}`)
         // append .mjs, if not already present
         if (!job.script.endsWith('.mjs'))
             job.script += '.mjs'
@@ -51,7 +52,7 @@ const spawnWorker = async (job) => {
             `${jobsPath}/${job.script}`, {
             name: `${job.script}`,
             workerData: {
-                data: JSON.parse(job.run_data), 
+                data: JSON.parse(job.script_data), 
                 id: job.id
             }
         })

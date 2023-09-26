@@ -6,15 +6,17 @@
  */
 'use strict'
 import {
-  _selectNfsExportByUserId,
-  _insertNfsExport
+  _selectNfsExportsByUserId,
+  _insertNfsExport,
+  _updateNfsExport,
+  _deleteNfsExportById
 } from "../services/shares.mjs"
 import { getErrorObject } from '../../webapi/utilities/getErrorObject.mjs'
 
-export async function selectNfsExportByUserId(req, res, next) {
+export async function selectNfsExportsByUserId(req, res, next) {
   const { userid } = req.body
   try {
-    const nfsExports = await _selectNfsExportByUserId(userid)
+    const nfsExports = await _selectNfsExportsByUserId(userid)
     res.status(201).send(nfsExports)
     next()
   } catch (e) {
@@ -23,7 +25,7 @@ export async function selectNfsExportByUserId(req, res, next) {
 }
 
 export async function insertNfsExport(req, res, next) {
-  const { userid, nfsExport } = req.body
+  const { nfsExport } = req.body
   try {
     const queryResult = await _insertNfsExport(nfsExport)
     res.status(201).send(queryResult)
@@ -33,4 +35,24 @@ export async function insertNfsExport(req, res, next) {
   }
 }
 
+export async function updateNfsExport(req, res, next) {
+  const { nfsExport } = req.body
+  try {
+    const queryResult = await _updateNfsExport(nfsExport)
+    res.status(201).send(queryResult)
+    next()
+  } catch (e) {
+    res.status(500).send(getErrorObject(e)) //&& next(error)
+  }
+}
 
+export async function deleteNfsExportById(req, res, next) {
+  const { nfsExport_id } = req.body
+  try {
+    const queryResult = await _deleteNfsExportById(nfsExport_id)
+    res.status(201).send(queryResult)
+    next()
+  } catch (e) {
+    res.status(500).send(getErrorObject(e)) //&& next(error)
+  }
+}

@@ -37,6 +37,8 @@ const authRequired = {
     getBlockDevices: ['admins', 'users'],
     selectNfsExportsByUserId: ['users'],
     insertNfsExport: ['users'],
+    updateNfsExport: ['users'],
+    deleteNfsExportById: ['users'],
     insertJob: ['users'],
     deleteJobById: ['users']
 }
