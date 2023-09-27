@@ -14,15 +14,12 @@
 import NfsShare from './NfsShare.vue'
 import { post } from '../shared.mjs'
 import { inject, onMounted, reactive, provide, ref } from 'vue'
+import { selectNfsExportsByUserId } from '../../api/calls.mjs'
 
 const appstate = inject('appstate')
 // get the user's NFS shares
-/** @const {NfsExports} nfsShares All the users shares from the database */
-const nfsShares = reactive(await post('api/selectNfsExportsByUserId', {
-    accesstoken: appstate.user.accesstoken,
-    userid: appstate.user.id
-}))
-
+/** @type {Array<NfsExport>} All the user's shares from the database */
+const nfsShares = reactive(await selectNfsExportsByUserId(appstate))
 /** 
  * @const {NfsExport} nfsShareTemplate A template for a new NFS share with 
  * property id=0 and user_id=appstate.user.id, otherwise all other properties 
@@ -65,7 +62,6 @@ const nfsShareTemplate = {
 const nfsShareClone = reactive({ ...nfsShareTemplate })
 /** @type {number} keeps track of which share the user have selected in <tr> */
 let selectedShareId = 0
-
 function toggleRowActive(event) {
     selectedShareId = event.target.attributes.shareid.value
     // remove active class from all elements that are "selectable"
@@ -90,7 +86,6 @@ function showEditModal() {
     const myModal = new bootstrap.Modal(document.getElementById('staticBackdrop'))
     myModal.show()
 }
-
 function showNewModal() {
     // reset the nfsShareClone object
     for (const key in nfsShareTemplate) {
@@ -99,7 +94,6 @@ function showNewModal() {
     const myModal = new bootstrap.Modal(document.getElementById('staticBackdrop'))
     myModal.show()
 }
-
 async function deleteShare() {
     if (selectedShareId == 0)
         return
@@ -135,40 +129,44 @@ async function deleteShare() {
         }
     }
 }
-
 async function applyEdit() {
     if (nfsShareClone.id == 0) {
-        delete nfsShareClone.id
-        // insert a new share into the database
-        /** @typedef {QueryResu1t} nfsQueryResult */
-        const nfsQueryResult = await post('api/insertNfsExport', {
+        nfsShareClone.user_id = appstate.user.id
+        const result = await post('api/nfs/createNetworkFileShare', {
             accesstoken: appstate.user.accesstoken,
-            userid: appstate.user.id,
             nfsExport: nfsShareClone
         })
-        // if the insert was successful, add a new job to the scheduler  
-        // that creates the share on server storage
-        console.log(`nfsQueryResult.lastID = ${nfsQueryResult.lastID}`)
-        if (nfsQueryResult.lastID > 0) {
-            nfsShareClone.id = nfsQueryResult.lastID
-            /** @typedef {QueryResu1t} jobQueryResult */
-            const jobQueryResult = await post('api/insertJob', {
-                accesstoken: appstate.user.accesstoken,
-                newJob:
-                {
-                    user_id: appstate.user.id,
-                    name: 'createNfsShare',
-                    desc: 'Create a new NFS share',
-                    script: 'create-nfs',
-                    script_data: JSON.stringify(nfsQueryResult)
-                }
-            })
-            console.log(`jobQueryResult.lastID = ${jobQueryResult.lastID}`)
-            if (jobQueryResult.lastID > 0) {
-                // clone nfsShareClone and add it to the reactive nfsShares array
-                nfsShares.push({ ...nfsShareClone })
-            }
-        }
+        // delete nfsShareClone.id
+        // // insert a new share into the database
+        // /** @type {QueryResu1t} */
+        // const nfsQueryResult = await post('api/insertNfsExport', {
+        //     accesstoken: appstate.user.accesstoken,
+        //     userid: appstate.user.id,
+        //     nfsExport: nfsShareClone
+        // })
+        // // if the insert was successful, add a new job to the scheduler  
+        // // that creates the share on server storage
+        // console.log(`nfsQueryResult.lastID = ${nfsQueryResult.lastID}`)
+        // if (nfsQueryResult.lastID > 0) {
+        //     nfsShareClone.id = nfsQueryResult.lastID
+        //     /** @typedef {QueryResu1t} jobQueryResult */
+        //     const jobQueryResult = await post('api/insertJob', {
+        //         accesstoken: appstate.user.accesstoken,
+        //         newJob:
+        //         {
+        //             user_id: appstate.user.id,
+        //             name: 'createNfsShare',
+        //             desc: 'Create a new NFS share',
+        //             script: 'create-nfs',
+        //             script_data: JSON.stringify(nfsQueryResult)
+        //         }
+        //     })
+        //     console.log(`jobQueryResult.lastID = ${jobQueryResult.lastID}`)
+        //     if (jobQueryResult.lastID > 0) {
+        //         // clone nfsShareClone and add it to the reactive nfsShares array
+        //         nfsShares.push({ ...nfsShareClone })
+        //     }
+        // }
     } else {
         // update an existing share in the database
         /** @typedef {NfsExport} originalShare reactive copy of the share in nfsShares */
