@@ -11,8 +11,7 @@ starts the jobduler target [jobduler.mjs](/scheduler/jobduler.mjs).
 
 All jobs are stored in the database, which the jobduler service polls every
 minute for jobs to run. The jobduler service will run the job if the job is
-enabled. Each job has a corresponding ES6 module file in the 
-[jobs directory](/scheduler/jobs/) which is the actual job code. 
+idle and enabled.
 
 
 ## Contributing

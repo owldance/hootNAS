@@ -6,9 +6,12 @@ import { parentPort, workerData, threadId } from 'node:worker_threads'
 import process from 'node:process'
 import { setTimeout } from 'timers/promises'
 import { selectNfsExportById } from './selectNfsExportById.mjs'
+import { updateNfsExport } from './updateNfsExport.mjs'
+
+parentPort.postMessage(`${import.meta.url}`)
 
 /** @type {NfsExport} */
-const nfsExport = await selectNfsExportById(workerData.data.nfsExportId)
+const nfsExport = await selectNfsExportById(workerData.data.id)
 parentPort.postMessage(`createNfsBackingStore ${nfsExport.id} in job id:${workerData.id}`)
 
 // createZfs(`dpool/data/${nfsExport.user_name}`, 'X',
@@ -30,7 +33,7 @@ const randomTime = Math.floor(Math.random() * (10000 - 5000 + 1) + 5000)
 await setTimeout(randomTime)
 await updateNfsExport({ 
     id: nfsExport.id, 
-    status: 'enabled',
+    status_id: 3,
     path: `dpool/data/${nfsExport.user_name}/${nfsExport.name}`,
     mountpoint: `dpool/data/${nfsExport.user_name}/${nfsExport.name}`
 })

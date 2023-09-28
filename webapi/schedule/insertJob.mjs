@@ -7,20 +7,29 @@
 import { executeQueryRun } from '../../db/executeQueryRun.mjs'
 
 /**
- * @typedef {Object} NewJob
- * @property {number} user_id The ID of the user who owns the job.
- * @property {string} name The name of the job. Default: undefined.
- * @property {string} desc The description of the job. Default: undefined.
- * @property {string} script The script to be executed for the job.
- * @property {string} script_data The data to be passed to the script.Default: undefined.
- * @property {string} run_on The date and time when the job should be run. Default: current date and time.
- * @property {number} run_interval The interval at which the job should be run. Default: 0 (run once).
+ * @typedef {Object} Job
+ * @property {number} id - The ID of the job.
+ * @property {number} user_id - The ID of the user who owns the job.
+ * @property {string} modified - The date and time when the job was last modified. Default value: CURRENT_TIMESTAMP.
+ * @property {string} created - The date and time when the job was created. Default value: CURRENT_TIMESTAMP.
+ * @property {string|null} name - The name of the job. Default value: NULL.
+ * @property {string|null} desc - The description of the job. Default value: NULL.
+ * @property {boolean} idle - Whether the job is idle. Default value: TRUE.
+ * @property {string} script - The script to run for the job.
+ * @property {string|null} script_data - The data for the script. Default value: NULL.
+ * @property {string} run_on - The date and time when the job should run. Default value: CURRENT_TIMESTAMP.
+ * @property {number} run_interval - The interval at which the job should run, in seconds. Default value: 0.
+ * @property {string|null} run_started - The date and time when the job started running. Default value: NULL.
+ * @property {string|null} run_ended - The date and time when the job ended running. Default value: NULL.
+ * @property {string|null} run_message - The message from the job run. Default value: NULL.
+ * @property {number|null} run_exit_code - The exit code from the job run. Default value: NULL.
  */
+
 /**
  * Creates a job in the job queue table.
  * @async
  * @function insertJob
- * @param {NewJob} job The job object containing the job details.
+ * @param {Job} job The job object containing the job details.
  * @returns {Promise<QueryResult>} The result of the query execution.
  * @throws {Error} If there is an error executing the query.
  */

@@ -8,18 +8,17 @@
  * @typedef {import('../../../../webapi/nfs/selectNfsExportsByUserId.mjs').NfsExports} NfsExports
  * @typedef {import('../../../../db/executeQueryRun.mjs').QueryResult'} QueryResu1t
  */
-
-
 'use strict'
 import NfsShare from './NfsShare.vue'
 import { post } from '../shared.mjs'
 import { inject, onMounted, reactive, provide, ref } from 'vue'
-import { selectNfsExportsByUserId } from '../../api/calls.mjs'
 
 const appstate = inject('appstate')
 // get the user's NFS shares
 /** @type {Array<NfsExport>} All the user's shares from the database */
-const nfsShares = reactive(await selectNfsExportsByUserId(appstate))
+const nfsShares = reactive(await post('api/selectNfsExportsByUserId', {
+    accesstoken: appstate.user.accesstoken, user_id: appstate.user.id
+}))
 /** 
  * @const {NfsExport} nfsShareTemplate A template for a new NFS share with 
  * property id=0 and user_id=appstate.user.id, otherwise all other properties 
@@ -99,82 +98,31 @@ async function deleteShare() {
         return
     // delete the share from the database
     /** @typedef {QueryResu1t} nfsQueryResult */
-    const nfsQueryResult = await post('api/deleteNfsExportById', {
-        accesstoken: appstate.user.accesstoken,
-        nfsExport_id : selectedShareId
+    const nfsQueryResult = await post('api/removeNetworkFileShare', {
+        accesstoken: appstate.user.accesstoken, id: selectedShareId
     })
-    // if the delete was successful, add a new job to the scheduler  
-    // that deletes the share on server storage
-    console.log(`nfsQueryResult.changes = ${nfsQueryResult.changes}`)
-    if (nfsQueryResult.changes > 0) {
-        /** @typedef {QueryResu1t} jobQueryResult */
-        const jobQueryResult = await post('api/insertJob', {
-            accesstoken: appstate.user.accesstoken,
-            newJob:
-            {
-                user_id: appstate.user.id,
-                name: 'deleteNfsShare',
-                desc: 'Delete an existing NFS share',
-                script: 'delete-nfs',
-                script_data: `{"nfsExport_id" : ${selectedShareId}}`
-            }
-        })
-        console.log(`jobQueryResult.lastID = ${jobQueryResult.lastID}`)
-        if (jobQueryResult.changes != 0) {
-            // remove the share from the reactive nfsShares array
-            const index = nfsShares.findIndex((share) => share.id == selectedShareId)
-            if (index > -1) {
-                nfsShares.splice(index, 1)
-            }
-        }
+    // remove the share from the reactive nfsShares array
+    const index = nfsShares.findIndex((share) => share.id == selectedShareId)
+    if (index > -1) {
+        nfsShares.splice(index, 1)
     }
 }
 async function applyEdit() {
     if (nfsShareClone.id == 0) {
         nfsShareClone.user_id = appstate.user.id
-        const result = await post('api/nfs/createNetworkFileShare', {
-            accesstoken: appstate.user.accesstoken,
-            nfsExport: nfsShareClone
+        /** @type {QueryResult} */
+        const result = await post('api/createNetworkFileShare', {
+            accesstoken: appstate.user.accesstoken, nfsExport: nfsShareClone
         })
-        // delete nfsShareClone.id
-        // // insert a new share into the database
-        // /** @type {QueryResu1t} */
-        // const nfsQueryResult = await post('api/insertNfsExport', {
-        //     accesstoken: appstate.user.accesstoken,
-        //     userid: appstate.user.id,
-        //     nfsExport: nfsShareClone
-        // })
-        // // if the insert was successful, add a new job to the scheduler  
-        // // that creates the share on server storage
-        // console.log(`nfsQueryResult.lastID = ${nfsQueryResult.lastID}`)
-        // if (nfsQueryResult.lastID > 0) {
-        //     nfsShareClone.id = nfsQueryResult.lastID
-        //     /** @typedef {QueryResu1t} jobQueryResult */
-        //     const jobQueryResult = await post('api/insertJob', {
-        //         accesstoken: appstate.user.accesstoken,
-        //         newJob:
-        //         {
-        //             user_id: appstate.user.id,
-        //             name: 'createNfsShare',
-        //             desc: 'Create a new NFS share',
-        //             script: 'create-nfs',
-        //             script_data: JSON.stringify(nfsQueryResult)
-        //         }
-        //     })
-        //     console.log(`jobQueryResult.lastID = ${jobQueryResult.lastID}`)
-        //     if (jobQueryResult.lastID > 0) {
-        //         // clone nfsShareClone and add it to the reactive nfsShares array
-        //         nfsShares.push({ ...nfsShareClone })
-        //     }
-        // }
+        nfsShareClone.id = result.lastID
+        // clone nfsShareClone and add it to the reactive nfsShares array
+        nfsShares.push({ ...nfsShareClone })
     } else {
-        // update an existing share in the database
-        /** @typedef {NfsExport} originalShare reactive copy of the share in nfsShares */
+        // update an existing share
+        /** @type {NfsExport} reactive copy of the share in nfsShares */
         const originalShare = nfsShares.find((share) => share.id == nfsShareClone.id)
-        /** @typedef {NfsExport} changedProperties - Properties in 
-         * originalShare that are not the same in nfsShareClone, 
-         * excluding undefined, explicitly including id 
-         */
+        /** @type {NfsExport} Properties in originalShare that are not the same 
+         * in nfsShareClone, excluding undefined, but retain the id */
         const changedProperties = Object.keys(nfsShareClone).reduce((acc, key) => {
             if (key === 'id' ||
                 nfsShareClone[key] !== originalShare[key] &&
@@ -183,38 +131,17 @@ async function applyEdit() {
             }
             return acc
         }, {})
-        console.log(changedProperties)
-        // if changedProperties is not an empty object, update the share in the database with changedProperties
+        // if changedProperties is not an empty object, update the share 
         if (Object.keys(changedProperties).length > 1) {
             /** @typedef {QueryResu1t} nfsQueryResult */
-            const nfsQueryResult = await post('api/updateNfsExport', {
+            const nfsQueryResult = await post('api/modifyNetworkFileShare', {
                 accesstoken: appstate.user.accesstoken,
                 nfsExport: changedProperties
             })
-            // if the update was successful, add a new job to the scheduler  
-            // that updates the share on server storage
-            console.log(`nfsQueryResult.changes = ${nfsQueryResult.changes}`)
-            if (nfsQueryResult.changes > 0) {
-                /** @typedef {QueryResu1t} jobQueryResult */
-                const jobQueryResult = await post('api/insertJob', {
-                    accesstoken: appstate.user.accesstoken,
-                    newJob:
-                    {
-                        user_id: appstate.user.id,
-                        name: 'updateNfsShare',
-                        desc: 'Update an existing NFS share',
-                        script: 'update-nfs',
-                        script_data: JSON.stringify(nfsQueryResult)
-                    }
-                })
-                console.log(`jobQueryResult.lastID = ${jobQueryResult.lastID}`)
-                if (jobQueryResult.changes != 0) {
-                    // update the share in the reactive nfsShares array
-                    for (const key in changedProperties) {
-                        if (Object.hasOwn(originalShare, key)) {
-                            originalShare[key] = changedProperties[key]
-                        }
-                    }
+            // update the share in the reactive nfsShares array
+            for (const key in changedProperties) {
+                if (Object.hasOwn(originalShare, key)) {
+                    originalShare[key] = changedProperties[key]
                 }
             }
         }

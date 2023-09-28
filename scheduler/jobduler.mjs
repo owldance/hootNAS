@@ -8,8 +8,7 @@
  * 
  * @module jobduler
  * @todo implement retry on error
- * @typedef {import('./queries/job_queue.mjs').Job} Job
- * @typedef {import('./queries/job_queue.mjs').Jobs} Jobs
+ * @typedef {import('../webapi/schedule/insertJob.mjs').Job} Job
  */
 'use strict'
 import { Worker } from 'worker_threads'
@@ -17,23 +16,21 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { setTimeout, setInterval } from 'timers'
 import { setTimeout as setTimeoutPromise } from 'timers/promises'
-import { getIdleJobs, updateJobs } from './queries/job_queue.mjs'
+import { updateJob } from '../webapi/schedule/updateJob.mjs'
+import { selectIdleJobs } from '../webapi/schedule/selectIdleJobs.mjs'
 
 /** @const {Number} maxWorkers max number of simultaneous workers */
 const maxWorkers = 2 
 /** @const {Number} pollInterval interval to poll for idle jobs */
-const pollInterval = 5000 
+const pollInterval = 20000 
 /** @var {Number} intervalId id of the polling timer */
 let intervalId // id of the polling timer
 /** @const {Number} runningWorkers number of workers running */
 let runningWorkers = 0 
-/** @const {String} jobsPath path to the jobs directory */
-const jobsPath = path.join(
-    path.dirname(fileURLToPath(import.meta.url)), '/jobs')
 
 // reset all jobs to idle on startup
 // this is to ensure a known state on startup, in case of abnormal shutdown
-await updateJobs(0, 'startup', true, null, null)
+await updateJob( { id: 0, idle: true } )
 
 
 /**
@@ -43,14 +40,11 @@ await updateJobs(0, 'startup', true, null, null)
  * @param {Job} job - The job object to run.
  */
 const spawnWorker = async (job) => {
-        console.log(`run_data:${job.script_data}`)
-        // append .mjs, if not already present
-        if (!job.script.endsWith('.mjs'))
-            job.script += '.mjs'
-        // spawn a worker
-        const worker = new Worker(
-            `${jobsPath}/${job.script}`, {
-            name: `${job.script}`,
+        job.script = `./webapi/${job.script}.mjs`
+        console.log(`spawning worker for job id:${job.id} script:${job.script}`)    
+        const worker = new Worker( 
+            job.script, {
+            name: job.script,
             workerData: {
                 data: JSON.parse(job.script_data), 
                 id: job.id
@@ -58,31 +52,34 @@ const spawnWorker = async (job) => {
         })
         // configure worker event handlers
         worker.on('online', () => {
-            updateJobs(job.id, 'online', false, null, null)
+            updateJob({
+                id: job.id, run_started: new Date().toISOString(), idle: false})
         })
         worker.on('message', (message) => {
-            updateJobs(job.id, 'message', null, message, null)
+            message = message.replace(/'/g, "''").replace(/"/g, '""')
+            updateJob({ id: job.id, run_message: message })
         })
         worker.on('error', (e) => {
             // uncaught exception, worker is terminated
             // log the error message
-            updateJobs(job.id, 'error', null, e.message, null)
+            const message = e.message.replace(/'/g, "''").replace(/"/g, '""')
+            updateJob({ id: job.id, run_message: message })
         })
         worker.on('exit', (exitCode) => {
             // if process.exit(exitCode) was called, the exitCode is passed
             // if the worker was terminated, then exitCode=1
             runningWorkers--
-            updateJobs(job.id, 'exit', true, null, exitCode)
+            updateJob({ id: job.id, run_ended: new Date().toISOString(),
+                run_exit_code: exitCode, idle: true })
         })
 }
 
 
 function startQueue() {
     intervalId = setInterval(async () => {
-        const idleJobs = await getIdleJobs()
+        const idleJobs = await selectIdleJobs()
         // spawn workers for each idle job
         idleJobs.forEach((job) => {
-            console.log(`spawning worker for job id:${job.id}`)
             if (runningWorkers < maxWorkers) {
                 spawnWorker(job)
                 runningWorkers++

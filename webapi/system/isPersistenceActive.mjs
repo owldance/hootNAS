@@ -8,7 +8,7 @@ import { shell } from "../utilities/shell.mjs"
  * Checks if persistence is active
  * @function isPersistenceActive
  * @async
- * @returns {Number} zero on active persistence
+ * @returns {Promise<Object>} A object with a message property
  * @throws {Error} if shell command fails
  */
 export async function isPersistenceActive() {

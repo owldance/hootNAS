@@ -32,7 +32,7 @@ import { lsBlockDeviceWWIDs } from './lsBlockDeviceWWIDs.mjs'
  * string numerical values (e.g. 10G) to numbers. 
  * @async 
  * @function 
- * @returns {Array<blockDevice>} On resolve
+ * @returns {Promise<Array<blockDevice>>} On resolve
  * @throws {Error} On reject
  */
 export async function getBlockDevices() {

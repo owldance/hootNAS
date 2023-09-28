@@ -36,9 +36,9 @@ const authRequired = {
     rebootSystem: ['admins'],
     getBlockDevices: ['admins', 'users'],
     selectNfsExportsByUserId: ['users'],
-    insertNfsExport: ['users'],
-    updateNfsExport: ['users'],
-    deleteNfsExportById: ['users'],
+    createNetworkFileShare: ['users'],
+    modifyNetworkFileShare: ['users'],
+    removeNetworkFileShare: ['users'],
     insertJob: ['users'],
     deleteJobById: ['users']
 }

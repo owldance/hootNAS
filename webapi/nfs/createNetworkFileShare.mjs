@@ -6,15 +6,13 @@
  */
 'use strict'
 import { insertNfsExport } from './insertNfsExport.mjs'
-import { insertJob } from '../scheduler/insertJob.mjs'
-
-
+import { insertJob } from '../schedule/insertJob.mjs'
 
 /**
  * Creates a new network file share.
  * @async
  * @param {NfsExport} nfsExport - The NFS export to create.
- * @returns {Promise<void>}
+ * @returns {Promise<QueryResult>}
  */
 export async function createNetworkFileShare(nfsExport) {
     try {
@@ -33,10 +31,11 @@ export async function createNetworkFileShare(nfsExport) {
                 name: 'createNfsShare',
                 desc: 'Create a new NFS share',
                 script: 'nfs/createNfsBackingStore',
-                script_data: `{ "nfsExportId": ${nfsExport.id} }`
+                script_data: `{ "id": ${nfsExport.id} }`
             }
         )
         console.log(`jobQueryResult.lastID = ${jobQueryResult.lastID}`)
+        return nfsQueryResult
     }
     catch (e) {
         throw e

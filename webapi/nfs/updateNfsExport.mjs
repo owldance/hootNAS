@@ -20,7 +20,7 @@ export async function updateNfsExport(nfsExport) {
     const fields = []
     const values = []
     for (const [key, value] of Object.entries(nfsExport)) {
-      if (value !== undefined) {
+      if (key != 'id' && value !== undefined) {
         fields.push(key)
         values.push(value)
       }
