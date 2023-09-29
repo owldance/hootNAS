@@ -57,3 +57,11 @@
 
     You can now log on to the `hootnas` machine without ever entering a 
     single password. This is required for development.
+
+7.  What you would ideally want to do now, unless you are developing the setup
+    wizard itself, is to setup the storage using the setup wizard. You can do 
+    this by accessing the setup wizard with your browser on the IP address or 
+    hostname of the `hootnas` machine, e.g. `http://hootnas` or 
+    `http://192.168.22.48`. The setup wizard will guide you through the
+    process of setting up the storage, and should also create a user account 
+    when given the opportunity by the wizard. 

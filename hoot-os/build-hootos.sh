@@ -430,7 +430,7 @@ sed -i "s|\"$|:/usr/bin/nodejs/node-${nodejs_version}-linux-x64/bin\"|" \
   hootos/etc/environment
 
 # create directories for hootnas
-mkdir -p hootos/usr/local/hootnas/{db,webserver,webapp/dist,webapi,scripts}
+mkdir -p hootos/usr/local/hootnas/{db,webserver,webapp/dist,services,scripts}
 
 # copy in db directory if exists
 if [ -d "$HOOT_REPO/db" ]; then
@@ -515,10 +515,10 @@ if [ -d "$HOOT_REPO/webapp/dist" ]; then
   cp -r $HOOT_REPO/webapp/dist/* hootos/usr/local/hootnas/webapp/dist
 fi
 
-# copy in webapi if source directory exists
-if [ -d "$HOOT_REPO/webapi" ]; then
-  echo "copy in hootnas webapi"
-  cp -r $HOOT_REPO/webapi/* hootos/usr/local/hootnas/webapi
+# copy in services if source directory exists
+if [ -d "$HOOT_REPO/services" ]; then
+  echo "copy in hootnas services"
+  cp -r $HOOT_REPO/services/* hootos/usr/local/hootnas/services
 fi
 
 # configuring root ssh access

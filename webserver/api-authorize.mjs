@@ -3,8 +3,8 @@
  * @module webserver/utilities/authorize
  */
 import jwt from 'jsonwebtoken'
-import { getErrorObject } from '../../webapi/utilities/getErrorObject.mjs'
-import { accessTokenSecret } from '../../webserver/webserver.mjs'
+import { getErrorObject } from '../services/utilities/getErrorObject.mjs'
+import { accessTokenSecret } from './webserver.mjs'
 
 /**
  * Verifies a jwt token and returns the payload
@@ -26,7 +26,7 @@ async function verifyJwt(accessToken) {
     })
 }
 /**
- * Object containing the groups required to access a route
+ * Object containing the group membership required to access a route
  * @constant {Object} authRequired
  * @property {Array<String>} route the route path
  * ...etc

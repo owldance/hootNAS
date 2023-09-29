@@ -1,7 +1,7 @@
 /**
  * Remove a new Network File Share (NFS)
  * @module removeNetworkFileShare
- * @typedef {import('../../db/executeQueryRun.mjs').QueryResult} QueryResult
+ * @typedef {import('../db/executeQueryRun.mjs').QueryResult} QueryResult
  * @typedef {import('./insertNfsExport.mjs').NfsExport} NfsExport
  */
 'use strict'
@@ -17,7 +17,7 @@ import { insertJob } from '../schedule/insertJob.mjs'
 export async function removeNetworkFileShare(id) {
     try {
         /** @type {QueryResult} */
-        const nfsQueryResult = await deleteNfsExportById(nfsExport)
+        const nfsQueryResult = await deleteNfsExportById(id)
         console.log(`nfsQueryResult.changes = ${nfsQueryResult.changes}`)
         // check for properties pertaining to the backing store
         // add job to the scheduler that removes the backing store
@@ -28,7 +28,7 @@ export async function removeNetworkFileShare(id) {
         //         name: 'removeNfsShare',
         //         desc: 'remove a NFS share',
         //         script: 'nfs/removeNfsBackingStore',
-        //         script_data: `{ "nfsExportId": ${nfsExport.id} }`
+        //         script_data: `{ "nfsExportId": ${id} }`
         //     }
         // )
         // console.log(`jobQueryResult.lastID = ${jobQueryResult.lastID}`)

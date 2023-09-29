@@ -6,25 +6,17 @@
 [webserver.mjs](./webserver.mjs). The webserver listens on port HTTP 80 when 
 deployed, and port 8000 in develpment mode.
 
-## Directory Structure
-The directory structure of the [webserver folder](/webserver/) is as follows: 
+## API Endpoints
+The endpoints are defined in the [endpoints directory](/webserver/endpoints) 
+which contains a module for each category of [application services](/services) 
+that ties the exposed endpoints together with the appropriate service.
 
-    📦webserver
-    ┣ 📂routes
-    ┣ 📂controllers
-    ┗ 📂services
+Api requests are routed through [api-router.mjs](/webserver/api-router.mjs) 
+which is also responsible for authorisation. Authorisation is currently done 
+on a user group membership basis, and is defined in 
+[api-authorize.mjs](/webserver/api-authorize.mjs) in the `authRequired` object. 
+[JSON Web Tokens](https://jwt.io/) (JWT) are used as the authorisation vehicle.
 
-Routes only authorize and chain together controller functions, no other logic 
-should go here. To authorize a route, add the route to the `authRequired` 
-object in [authorize.mjs](/webserver/routes/authorize.mjs). 
-[JSON Web Tokens](https://jwt.io/) (JWT) are used for authorization.
-
-Controllers handle the request and call the services, and 
-decide what to do with the data returned from the services, and then send the 
-response back to the client. 
-
-Services call various webapi's and handle the 
-data returned, no experess.js context should be in the services.
 
 ## Contributing
 

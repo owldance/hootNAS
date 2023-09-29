@@ -3,10 +3,12 @@
 1. Development
     - [Prepare your development environment](/documentation/prepare-development-environment.md) - 
     If you want to start contribute to the project.
+    - [Create and spin up a hootNAS instance](/documentation/create-hootnas-instance.md) - 
+    Get hootNAS up and running in no time.
     - [Developing the webapp](/webapp/README.md) - If you want to work with 
-    frontend JS with Vue 3 in Vite.
-    - [Developing the webapi](/webapi/README.md) - If you want to work with 
-    backend JS with node.js.
+    frontend JS and Vue 3 in Vite.
+    - [Developing application services](/services/README.md) - If you want to work with 
+    backend JS and node.js.
     - [Developing hootOS](/hoot-os/README.md) - If you want to work with 
     OS development.
     - [live-boot](/live-boot/README.md) - The things that makes hootOS run 
@@ -16,8 +18,6 @@
     - [Sheduler](/scheduler/README.md) - A persistent job scheduler
 
 2. General concepts
-    - [Create a hootNAS instance](/documentation/create-hootnas-instance.md) - 
-    Get hootNAS up and running in no time.
     - [hootNAS architecture and boot process](/hoot-os/architecture-and-boot-process.md) - 
     A detailed description of the hootOS architecture and boot process.
     - [ZFS concepts](./zfs-concepts.md) - A brief introduction to ZFS concepts 

@@ -4,11 +4,11 @@
  * returned from the services, and then send the response back to the client.
  * @module controllers/system
  */
-import { rebootSystem as _rebootSystem } from '../../webapi/system/rebootSystem.mjs'
-import { shutdownSystem as _shutdownSystem } from '../../webapi/system/shutdownSystem.mjs'
-import { getSetupId as _getSetupId} from '../../webapi/system/getSetupId.mjs'
-import { isPersistenceActive as _isPersistenceActive } from '../../webapi/system/isPersistenceActive.mjs'
-import { getErrorObject } from '../../webapi/utilities/getErrorObject.mjs'
+import { rebootSystem as _rebootSystem } from '../../services/system/rebootSystem.mjs'
+import { shutdownSystem as _shutdownSystem } from '../../services/system/shutdownSystem.mjs'
+import { getSetupId as _getSetupId} from '../../services/system/getSetupId.mjs'
+import { isPersistenceActive as _isPersistenceActive } from '../../services/system/isPersistenceActive.mjs'
+import { getErrorObject } from '../../services/utilities/getErrorObject.mjs'
 'use strict'
 
 export async function rebootSystem(req, res, next) {

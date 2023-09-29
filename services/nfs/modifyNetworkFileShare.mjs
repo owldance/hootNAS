@@ -1,7 +1,7 @@
 /**
  * Modify a new Network File Share (NFS)
  * @module modifyNetworkFileShare
- * @typedef {import('../../db/executeQueryRun.mjs').QueryResult} QueryResult
+ * @typedef {import('../db/executeQueryRun.mjs').QueryResult} QueryResult
  * @typedef {import('./insertNfsExport.mjs').NfsExport} NfsExport
  */
 'use strict'

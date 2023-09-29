@@ -7,7 +7,9 @@
  are ordered and executed by ascending schedueled time i.e. oldest first.
 
 **On boot** the service [jobduler.service](/scripts/jobduler.service) 
-starts the jobduler target [jobduler.mjs](/scheduler/jobduler.mjs).
+starts the jobduler target [jobduler.mjs](/scheduler/jobduler.mjs). This means 
+that the jobduler service runs in its own node.js process, and is not part of
+the webserver process. 
 
 All jobs are stored in the database, which the jobduler service polls every
 minute for jobs to run. The jobduler service will run the job if the job is

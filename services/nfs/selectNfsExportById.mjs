@@ -4,7 +4,7 @@
  * @typedef {import('./insertNfsExport.mjs').NfsExport} NfsExport
 */
 'use strict'
-import { executeQueryGet } from '../../db/executeQueryGet.mjs'
+import { executeQueryGet } from '../db/executeQueryGet.mjs'
 
 
 /**

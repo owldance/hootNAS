@@ -4,9 +4,9 @@
  * returned from the services, and then send the response back to the client.
  * @module controllers/devices
  */
-import { getBlockDevices as _getBlockDevices } from '../../webapi/blockdevices/getBlockDevices.mjs'
-import { initialSetup as _initialSetup } from '../../webapi/blockdevices/initialSetup.mjs'
-import { getErrorObject } from '../../webapi/utilities/getErrorObject.mjs'
+import { getBlockDevices as _getBlockDevices } from '../../services/blockdevices/getBlockDevices.mjs'
+import { initialSetup as _initialSetup } from '../../services/blockdevices/initialSetup.mjs'
+import { getErrorObject } from '../../services/utilities/getErrorObject.mjs'
 'use strict'
  
 export async function getBlockDevices(req, res, next) {

@@ -1,11 +1,11 @@
 /**
  * Updates a job in the job queue.
  * @module updateJob
- * @typedef {import('../../db/executeQueryRun.mjs').QueryResult} QueryResult
+ * @typedef {import('../db/executeQueryRun.mjs').QueryResult} QueryResult
  * @typedef {import('./insertJob.mjs').Job} Job
  */
 'use strict'
-import { executeQueryRun } from '../../db/executeQueryRun.mjs'
+import { executeQueryRun } from '../db/executeQueryRun.mjs'
 
 /**
  * Updates a job in the job queue table. If id=0 then all jobs will be updated.

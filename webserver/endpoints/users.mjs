@@ -6,7 +6,9 @@
  */
 import jwt from 'jsonwebtoken'
 import { accessTokenSecret } from '../../webserver/webserver.mjs'
-import { getErrorObject } from '../../webapi/utilities/getErrorObject.mjs'
+import { getErrorObject } from '../../services/utilities/getErrorObject.mjs'
+import { insertUser } from '../../services/users/insertUser.mjs'
+import { selectUser } from '../../services/users/selectUser.mjs'
 'use strict'
 
 export async function getAccessToken(req, res, next) {

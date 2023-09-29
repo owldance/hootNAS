@@ -1,11 +1,11 @@
 /**
  * Updates a nfsExport object in the nfs_exports table.
  * @module updateNfsExport
- * @typedef {import('../../db/executeQueryRun.mjs').QueryResult} QueryResult
+ * @typedef {import('../db/executeQueryRun.mjs').QueryResult} QueryResult
  * @typedef {import('./insertNfsExport.mjs').NfsExport} NfsExport
  */
 'use strict'
-import { executeQueryRun } from '../../db/executeQueryRun.mjs'
+import { executeQueryRun } from '../db/executeQueryRun.mjs'
 
 /**
  * Updates a NFS export in the database.

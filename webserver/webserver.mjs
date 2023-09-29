@@ -13,7 +13,7 @@
  */
 'use strict'
 import express from 'express'
-import { apiRouter } from './routes/index.mjs'
+import apiRouter from './api-router.mjs'
 const basePath = process.env.HOOT_REPO || '/usr/local/hootnas'
 const serverPath = `${basePath}/webserver`
 const appPath = `${basePath}/webapp/dist`

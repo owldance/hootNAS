@@ -3,7 +3,7 @@
  * @typedef {import('./insertJob.mjs').Job} Job
  */
 'use strict'
-import { executeQueryAll } from '../../db/executeQueryAll.mjs'
+import { executeQueryAll } from '../db/executeQueryAll.mjs'
 /**
  * Retrieves all jobs with status 'idle' from the job_queue table.
  * @async
@@ -26,7 +26,7 @@ export async function selectIdleJobs() {
     }
   }
 
-  // run test if this module is executed directly
+// run unit test if this module is executed directly
 if (import.meta.url === `file://${process.argv[1]}`) {
     selectIdleJobs().then((result) => {
       console.log(result)

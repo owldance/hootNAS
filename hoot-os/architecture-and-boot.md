@@ -33,7 +33,7 @@ hootNAS
         ├── live-boot
         ├── scripts
         ├── webapp
-        ├── webapi
+        ├── services
         └── webserver
 ```
 
@@ -157,7 +157,7 @@ The script [tui-network-config.sh](/scripts/tui-network-config.sh) is executed
 on first boot, 
 and on the terminal screen, the user is welcomed with the IP address of the 
 system. With this information, the user can connect to the system using SSH, 
-or make webAPI calls, or open a browser and connect to the hootNAS management 
+or make services calls, or open a browser and connect to the hootNAS management 
 dashboard.
 
 The service `hootsrv.service` (see [build-hootos.sh](/hoot-os/build-hootos.sh)) 

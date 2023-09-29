@@ -3,20 +3,18 @@
  * This is the nfsListShares component, it produces a list of all the user's 
  * NFS shares which can be managed by the user.
  * @module nfsListShares
- * @typedef {import('../../../../webapi/schedule/insertJob.mjs').NewJob} NewJob
- * @typedef {import('../../../../webapi/nfs/insertNfsExport.mjs').NfsExport} NfsExport
- * @typedef {import('../../../../webapi/nfs/selectNfsExportsByUserId.mjs').NfsExports} NfsExports
+ * @typedef {import('../../../../services/nfs/insertNfsExport.mjs').NfsExport} NfsExport
  * @typedef {import('../../../../db/executeQueryRun.mjs').QueryResult'} QueryResu1t
  */
 'use strict'
 import NfsShare from './NfsShare.vue'
 import { post } from '../shared.mjs'
-import { inject, onMounted, reactive, provide, ref } from 'vue'
+import { inject, reactive } from 'vue'
 
 const appstate = inject('appstate')
 // get the user's NFS shares
 /** @type {Array<NfsExport>} All the user's shares from the database */
-const nfsShares = reactive(await post('api/selectNfsExportsByUserId', {
+const nfsShares = reactive(await post('api/nfs/selectNfsExportsByUserId', {
     accesstoken: appstate.user.accesstoken, user_id: appstate.user.id
 }))
 /** 
@@ -98,7 +96,7 @@ async function deleteShare() {
         return
     // delete the share from the database
     /** @typedef {QueryResu1t} nfsQueryResult */
-    const nfsQueryResult = await post('api/removeNetworkFileShare', {
+    const nfsQueryResult = await post('api/nfs/removeNetworkFileShare', {
         accesstoken: appstate.user.accesstoken, id: selectedShareId
     })
     // remove the share from the reactive nfsShares array
@@ -111,7 +109,7 @@ async function applyEdit() {
     if (nfsShareClone.id == 0) {
         nfsShareClone.user_id = appstate.user.id
         /** @type {QueryResult} */
-        const result = await post('api/createNetworkFileShare', {
+        const result = await post('api/nfs/createNetworkFileShare', {
             accesstoken: appstate.user.accesstoken, nfsExport: nfsShareClone
         })
         nfsShareClone.id = result.lastID
@@ -134,7 +132,7 @@ async function applyEdit() {
         // if changedProperties is not an empty object, update the share 
         if (Object.keys(changedProperties).length > 1) {
             /** @typedef {QueryResu1t} nfsQueryResult */
-            const nfsQueryResult = await post('api/modifyNetworkFileShare', {
+            const nfsQueryResult = await post('api/nfs/modifyNetworkFileShare', {
                 accesstoken: appstate.user.accesstoken,
                 nfsExport: changedProperties
             })

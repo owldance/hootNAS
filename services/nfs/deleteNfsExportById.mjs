@@ -1,10 +1,10 @@
 /**
  * Delete a NFS export by id
  * @module deleteNfsExportById
- * @typedef {import('../../db/executeQueryRun.mjs').QueryResult} QueryResult
+ * @typedef {import('../db/executeQueryRun.mjs').QueryResult} QueryResult
 */
 'use strict'
-import { executeQueryRun } from '../../db/executeQueryRun.mjs'
+import { executeQueryRun } from '../db/executeQueryRun.mjs'
 
 
 /**

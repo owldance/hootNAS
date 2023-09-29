@@ -11,7 +11,9 @@ import { fileURLToPath } from 'node:url'
  * @const {string} dbFile Database full path and file name, relative to the
  * directory where this module is located.
  */
-const dbFile = path.dirname(fileURLToPath(import.meta.url)) + '/hoot.db'
+const dbFile = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)), '../../db/hoot.db')
+
 
 /**
  * The result object returned by the executeQueryRun function.
@@ -43,3 +45,13 @@ export async function executeQueryRun(query, queryParams = []) {
     throw e
   }
 }
+
+// run select test if this module is executed directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  executeQueryRun('SELECT * FROM users').then((result) => {
+    console.log(result)
+  }).catch((e) => {
+    console.log(e)
+  })
+}
+

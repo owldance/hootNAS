@@ -132,7 +132,7 @@ async function signIn() {
     appstate.vue = 'dashBoard'
   }
   catch (e) {
-    console.log(e.message)
+    console.log(`Sign In failed: ${e.message}`)
   }
 }
 </script>

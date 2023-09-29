@@ -1,10 +1,10 @@
 /**
  * Inserts a job in the job queue.
  * @module insertJob
- * @typedef {import('../../db/executeQueryRun.mjs').QueryResult} QueryResult
+ * @typedef {import('../db/executeQueryRun.mjs').QueryResult} QueryResult
  */
 'use strict'
-import { executeQueryRun } from '../../db/executeQueryRun.mjs'
+import { executeQueryRun } from '../db/executeQueryRun.mjs'
 
 /**
  * @typedef {Object} Job

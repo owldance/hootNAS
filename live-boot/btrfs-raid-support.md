@@ -13,7 +13,7 @@ CAVEAT: If there are multiple raid devices with a partition labeled
 mount correctly, therefore only one partition label "persistence" is allowed in 
 a raid.
 
-The raid configuration is done by `/webapi/blockdevices/initialSetup.mjs`
+The raid configuration is done by `/services/blockdevices/initialSetup.mjs`
 
 The only `live-boot` modification required is to add the command
 `mknod /dev/btrfs-control c 10 234` to `/etc/live/boot/0001-init-vars.sh` 

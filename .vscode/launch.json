@@ -16,11 +16,21 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch server",
+            "name": "Webserver",
             "skipFiles": [
                 "<node_internals>/**"
             ],
             "program": "${workspaceFolder}/webserver/webserver.mjs"
+        }
+        ,
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Jobduler",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/scheduler/jobduler.mjs"
         }
     ]
 }
