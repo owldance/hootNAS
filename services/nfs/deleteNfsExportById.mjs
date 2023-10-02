@@ -24,14 +24,3 @@ export async function deleteNfsExportById(Id) {
     throw e
   }
 }
-
-// run test if this module is executed directly
-if (import.meta.url === `file://${process.argv[1]}`) {
-  deleteNfsExportById(6)
-    .then((result) => {
-      console.log(result)
-    })
-    .catch((err) => {
-      console.log(err)
-    })
-}

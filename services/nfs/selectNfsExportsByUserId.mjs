@@ -51,11 +51,3 @@ export async function selectNfsExportsByUserId(userId) {
     throw e
   }
 }
-
-// selectNfsByUserId(1)
-//   .then((result) => {
-//     console.log(result)
-//   })
-//   .catch((err) => {
-//     console.log(err)
-//   })

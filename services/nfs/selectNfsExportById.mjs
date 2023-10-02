@@ -24,14 +24,3 @@ export async function selectNfsExportById(Id) {
     throw e
   }
 }
-
-// run test if this module is executed directly
-if (import.meta.url === `file://${process.argv[1]}`) {
-  selectNfsExportById(1)
-    .then((result) => {
-      console.log(result)
-    })
-    .catch((err) => {
-      console.log(err)
-    })
-}
