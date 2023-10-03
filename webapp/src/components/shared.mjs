@@ -108,7 +108,7 @@ export async function post(uri, payload) {
  * @param {Integer} time time in milliseconds
  * @returns {Promise} On resolve
  */
-export const sleep = (time) => {
+export async function sleep(time) {
   return new Promise((resolve) => {
     setTimeout(resolve, time)
   })

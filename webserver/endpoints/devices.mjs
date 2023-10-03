@@ -10,7 +10,6 @@ import { getErrorObject } from '../../services/utilities/getErrorObject.mjs'
 'use strict'
  
 export async function getBlockDevices(req, res, next) {
-  const { username, content } = req.body
   try {
     const result = await _getBlockDevices()
     res.status(201).send(result)

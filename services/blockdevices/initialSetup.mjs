@@ -1,6 +1,7 @@
 /**
  * Setup all initial storage and live-boot persistance
  * @module initialSetup
+ * @todo deactivate OneTimeUser account in the database
  */
 'use strict'
 import { shell } from "../utilities/shell.mjs"

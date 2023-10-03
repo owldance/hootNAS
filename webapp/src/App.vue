@@ -1,4 +1,8 @@
 <script setup>
+/**
+ * @file App.vue is the main vue file, it is the entry point of the application.
+ * @typedef {import('../../webserver/endpoints/users.mjs').User} User
+ */
 import { provide, reactive, Suspense } from 'vue'
 import 'bootstrap/dist/css/bootstrap.css'
 import './assets/css/Nunito.css'
@@ -15,70 +19,56 @@ window.bootstrap = bootstrap
  * Determines which vue component should be rendered, it 
  * defaults to 'nothing', which means nothing except the basic template
  * in this file should be rendered.
- * @constant
- * @type {Object} 
+ * @typedef {Object} AppState
+ * @property {string} vue - the name of the vue component to render
+ * @property {User} user - the user object including an access token
  */
-const appstate = reactive({ vue: 'nothing', accesstoken: '' })
+/** @type {AppState} */
+const appstate = reactive({ vue: 'nothing', user: null })
 provide('appstate', appstate)
 /**
- * see https://jsdoc.app/tags-callback.html for the callback tag
- * @callback postCallback
- * @param {Object} data - The response body of the post request.
- * @returns {void}
- */
-/**
- * Posts a request to the hootnas server to get an access token, if the
- * request is successful, it checks if the setupid is availiable on hootnas, if
- * it is, it changes the appstate.vue to 'signIn', if it isn't, it changes
- * the appstate.vue to 'setupStoragePool'.
+ * Checks if persistence is active i.e. a storage setup has been performed, 
+ * then changes appstate.vue to 'SignIn' which reactively loads the component.
+ * Otherwise signs in with a one-time user account and changes appstate.vue to 
+ * 'StorageSetupCarousel' which reactively loads the component. 
  * 
  * await syntax is not possible here, because the parent vue file must be 
  * wrapped in Suspense tags, and App.vue doesn't have any parent.
- * @async
- * @param {string} name - The username of the hootnas server.
- * @param {string} password - The password of the hootnas server.
- * @param {postCallback} callback - The callback that handles the response of
- * the post request.
  */
-// Check if persistence is active
-post('api/isPersistenceActive')
+post('api/system/isPersistenceActive')
   .then((data) => {
     // persistence is active
-    appstate.vue = 'signIn'
+    appstate.vue = 'SignIn'
   })
   .catch((e) => {
     if (e.message.match(/ssh|verification|network/i)) {
       console.log(`${e.message}\ncheck your connectivity and refresh the page`)
       return
     }
-    // persistence is not active, this requires setup.
-    // need to get accesstoken first, the name/password is hardcoded and is 
-    // used only for setup, upon setup completion, this user is deactivated.
-    post('api/getAccessToken', { name: 'Monkey', password: 'monk7y' })
+    // persistence is not active, this requires setup. sign in with a one-time
+    // user account and change appstate.vue to 'StorageSetupCarousel'
+    post('api/users/signIn', { name: 'OneTimeUser', password: 'Zn05z1mfk7y' })
       .then((data) => {
-        appstate.accesstoken = data.accesstoken
-        appstate.vue = 'setupStoragePool'
+        appstate.user = data
+        appstate.vue = 'StorageSetupCarousel'
       }).catch((e) => {
         console.log(e.message)
       })
   })
-
 </script>
 
 <template>
   <header>
   </header>
-  <main>
-    <!-- <p>appstate.vue: {{ appstate.vue }}</p> -->
+  <main v-if="appstate.vue !== 'nothing'">
     <Suspense>
-      <DashBoard v-if="appstate.vue === 'dashBoard'" />
-    </Suspense>
-    <h1 v-if="appstate.vue === 'nothing'">waiting</h1>
-    <Suspense>
-      <SignIn v-if="appstate.vue === 'signIn'" />
+      <DashBoard v-if="appstate.vue === 'DashBoard'" />
     </Suspense>
     <Suspense>
-      <StorageSetupCarousel v-if="appstate.vue === 'setupStoragePool'" />
+      <SignIn v-if="appstate.vue === 'SignIn'" />
+    </Suspense>
+    <Suspense>
+      <StorageSetupCarousel v-if="appstate.vue === 'StorageSetupCarousel'" />
     </Suspense>
   </main>
 </template>

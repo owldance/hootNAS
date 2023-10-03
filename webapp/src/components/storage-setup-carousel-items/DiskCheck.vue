@@ -3,6 +3,7 @@
  * The DiskCheck component checks if there are any disks available on the
  * system. If there are, the user can continue to the next carousel item.
  * @module DiskCheck
+ * @todo check for minimum number of disks
  * @todo check storagepool devices for existing partitions. if there are
  * existing partitions, and user accepts to delete them, delete them from 
  * storagepool and continue. otherwise exit.
@@ -10,46 +11,47 @@
  * are existing partitions, and user accepts to delete them, zwipe disks. 
  * otherwise exit.
   */
-import { inject, nextTick } from 'vue'
-import { post } from '../shared.mjs'
+import { inject, nextTick, onMounted } from 'vue'
+import { post, sleep} from '../shared.mjs'
 const storagepool = inject('storagepool')
 const allDisks = inject('allDisks')
 const appstate = inject('appstate')
-// give user some time to read
-setTimeout(() => {
-    const button = document.getElementById('disk-check-button')
-    const title = document.getElementById('disk-check-title')
-    const subtitle = document.getElementById('disk-check-subtitle')
-    const text = document.getElementById('disk-check-text')
-    //check if there are any disks
-    if (allDisks.blockdevices.length) {
-        button.disabled = false
-        button.innerHTML = 'Next'
-        title.innerHTML = "Success"
-        subtitle.innerHTML = "Found some disks"
-        text.innerHTML = "You are good to go, press next to continue"
-        button.addEventListener('click', async () => {
-            // create the first data vdev
-            storagepool.vdevs.push({
-                blockdevices: [],
-                redundancy: 'stripe',
-                type: 'data-1',
-                delete: false,
-                dspares: 0
-            })
-            // wait for DOM update
-            await nextTick()
-            const carousel = new bootstrap.Carousel(
+let button, title, subtitle, text
+
+function foundSomeDisks() {
+    button.disabled = false
+    button.innerHTML = 'Next'
+    title.innerHTML = "Success"
+    subtitle.innerHTML = "Found some disks"
+    text.innerHTML = "You are good to go, press next to continue"
+    button.addEventListener('click', async () => {
+        // push a new data vdev to the reactive storagepool object.
+        // this will trigger a DOM update because the StorageSetupCarousel 
+        // component renders a carousel item for each vdev in storagepool
+        storagepool.vdevs.push({
+            blockdevices: [],
+            redundancy: 'stripe',
+            type: 'data-1',
+            delete: false,
+            dspares: 0
+        })
+        // wait for DOM update
+        await nextTick()
+        // get the carousel instance and move to the next carousel item, which
+        // is the VdevConfig component based on the vdev we just pushed to
+        // storagepool
+        const carousel = new bootstrap.Carousel(
             document.getElementById('carousel-init'))
         carousel.next()
     })
-    } else {
-    // there are no disks
+}
+function noDisksFound(){
     button.disabled = false
     button.innerHTML = 'Shutdown'
     button.addEventListener('click', () => {
-        post('api/shutdownSystem',
-            { accesstoken: appstate.accesstoken }).then(() => {
+        post('api/system/shutdownSystem',
+            { accesstoken: appstate.user.accesstoken })
+            .then(() => {
                 title.innerHTML = 'System has been shut down'
                 button.disabled = true
             })
@@ -60,14 +62,26 @@ setTimeout(() => {
     title.innerHTML = 'Sorry'
     subtitle.innerHTML = 'No disks found'
     text.innerHTML = `If you are using VMware, set 
-        <em>disk.EnableUUID="TRUE" </em>in the vmx configuration file or in 
-        the vsphere configuration. <br><br>
-        If you are using QEMU/KVM, make sure you are using virtual SATA or SCSI 
-        disk (and not VirtIO). Alternatively set a unique serial number on 
-        each virtual disk using libvirt or qemu e.g.: <br><em>-drive
-            if=none,id=disk1,file=disk1.qcow2,serial=1234567890</em>`
+    <em>disk.EnableUUID="TRUE" </em>in the vmx configuration file or in 
+    the vsphere configuration. <br><br>
+    If you are using QEMU/KVM, make sure you are using virtual SATA or SCSI 
+    disk (and not VirtIO). Alternatively set a unique serial number on 
+    each virtual disk using libvirt or qemu e.g.: <br><em>-drive
+        if=none,id=disk1,file=disk1.qcow2,serial=1234567890</em>`
 }
-}, 1000)
+onMounted(async () => {
+    await sleep(4000)
+    button = document.getElementById('disk-check-button')
+    title = document.getElementById('disk-check-title')
+    subtitle = document.getElementById('disk-check-subtitle')
+    text = document.getElementById('disk-check-text')
+    if (allDisks.length) 
+        foundSomeDisks()
+    else
+        noDisksFound()
+})
+
+
 
 </script>
 

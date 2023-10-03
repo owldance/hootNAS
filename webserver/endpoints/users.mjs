@@ -11,7 +11,19 @@ import { insertUser } from '../../services/users/insertUser.mjs'
 import { selectUser } from '../../services/users/selectUser.mjs'
 'use strict'
 
-export async function getAccessToken(req, res, next) {
+/**
+ * @typedef {Object} User
+ * @property {number} id - The ID of the user.
+ * @property {string} name - The name of the user.
+ * @property {string} mail - The email address of the user.
+ * @property {number} status_id - The ID of the status of the user.
+ * @property {string} status - The status of the user.
+ * @property {Array<String>} groups group names
+ * @property {String} accesstoken jwt token
+ */ 
+ 
+
+export async function signIn(req, res, next) {
   const { name, password } = req.body
   try {
     const user = await selectUser(name, password)

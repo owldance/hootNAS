@@ -118,18 +118,18 @@ async function signIn() {
   let user = {}
   try {
     if (createChecked.value){
-      user = await post('api/createAccount', {
+      user = await post('api/users/createAccount', {
         name: nameInput.value,
         password: passwordInput.value, 
         mail: mailInput.value
       })}
     else
-      user = await post('api/getAccessToken', {
+      user = await post('api/users/signIn', {
         name: nameInput.value,
         password: passwordInput.value
       })
     appstate.user = user
-    appstate.vue = 'dashBoard'
+    appstate.vue = 'DashBoard'
   }
   catch (e) {
     console.log(`Sign In failed: ${e.message}`)

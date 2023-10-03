@@ -20,7 +20,7 @@ const dbPath = `${basePath}/db/hoot.db`
  * @param {String} name 
  * @param {String} password 
  * @param {String} mail
- * @returns {Number} lastID on resolve, the user id of the newly created user
+ * @returns {Promise<Number>} lastID on resolve, the user id of the newly created user
  * @returns {Error} on reject
  */
 export async function insertUser(name, password, mail) {

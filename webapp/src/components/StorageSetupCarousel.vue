@@ -3,6 +3,9 @@
  * The StorageSetupCarousel component is a wizard that guides the user through
  * the process of setting up the storage pool.
  * @module StorageSetupCarousel
+ * @typedef {import('../../../services/blockdevices/getBlockDevices.mjs').BlockDevice} BlockDevice
+ * @typedef {import('../../../webserver/endpoints/users.mjs').User} User
+ * @typedef {import('../App.vue').AppState} AppState
  * @todo use :key for VdevConfig component to force re-render when vdevs are
  * added or removed. this seems to be more appropriate than v-for
  * see https://michaelnthiessen.com/force-re-render/
@@ -13,30 +16,11 @@ import VdevConfig from './storage-setup-carousel-items/VdevConfig.vue'
 import FinalizeSetup from './storage-setup-carousel-items/FinalizeSetup.vue'
 import { post } from './shared.mjs'
 import { provide, reactive, watch, inject } from 'vue'
-/** 
- * A blockdevice is a physical disk/partition on the machine
- * @typedef blockdevice
- * @type {Object}
- * @property {String} kname internal kernel device name
- * @property {String} type device type
- * @property {String} path path to the device node
- * @property {Number} fstype filesystem type
- * @property {Number} fssize  filesystem size
- * @property {String} size  size of the device
- * @property {String} mountpoint  where the device is mounted
- * @property {String} parttype  partition type uuid
- * @property {String} partuuid  partition uuid
- * @property {String} partlabel  partition label
- * @property {String} wwn  unique storage identifier
- * @property {String} vendor  device vendor
- * @property {String} rev  device revision
- * @property {String} wwid device wwid
- */
+
 /** 
  * vdev is a ZFS virtual device i.e. a group of blockdevices or vdevs
- * @typedef vdev
- * @type {Object}
- * @property {Array<blockdevice>|Array<vdev>} blockdevices 
+ * @typedef {Object} Vdev
+ * @property {Array<BlockDevice>|Array<Vdev>} blockdevices 
  * @property {String} topology stripe|mirror|raidz1|raidz2raidz3
  * @property {String} name the unique name of this vdev
  * @property {String} compress compress data option
@@ -45,9 +29,8 @@ import { provide, reactive, watch, inject } from 'vue'
  * @property {String} capacity calculated capacity of the vdev
  */
 /**
-  * @typedef storagepool
-  * @type {Object}
-  * @property {Array<vdev>} vdevs
+  * @typedef {Object} StoragePool
+  * @property {Array<Vdev>} vdevs
   * @property {String} topology
   * @property {String} name
   * @property {Boolean} compress
@@ -55,42 +38,32 @@ import { provide, reactive, watch, inject } from 'vue'
   * @property {String} password
   * @property {Number} capacity
   */
-/** 
- * all disks on the machine
- * @constant
- * @type {Array<blockdevice>}
- */
+
+/** @type {AppState} */
 const appstate = inject('appstate')
 
 async function getBlockDevices() {
   try {
-    const result = await post('api/getBlockDevices',
-      { accesstoken: appstate.accesstoken })
+    const result = await post('api/devices/getBlockDevices',
+      { accesstoken: appstate.user.accesstoken })
     return result
   } catch (e) {
     return { blockdevices: []}
   }
 }
+/** @type {Array<BlockDevice} */
 const allDisks = await getBlockDevices()
-// const allDisks = reactive(await post('api/getBlockDevices',
-//   { accesstoken: appstate.accesstoken }))
 provide('allDisks', allDisks)
 /**
- * storagepool is the primary object of this component. 
- * 
- * allDisks contains all blockdevices on the machine. The purpose of this 
- * component is to copy these blockdevice to any user defined vdevs.
- * 
- * When done, the setup of the storage pool can be initiated.
- * 
- * @const storagepool
- * @type {vdev}
+ * @typedef {Object} StoragePool
+ * @property {Array<Vdev>} vdevs - the user defined vdevs
+ * @property {Boolean} debug - if true, the setup will not be initiated
  */
+/** @type {StoragePool} */
 const storagepool = reactive(
   {
     vdevs: [
     ],
-    setupid: 'AGA771-4',
     debug: false
   }
 )

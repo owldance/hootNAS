@@ -21,16 +21,4 @@ export async function isPersistenceActive() {
     }
 }
 
-// isPersistenceActive()
-// .then((data) => {
-//     console.log('then')
-//     console.log(data)
-// })
-// .catch((e) => {
-//     console.log('catch')
-//     console.log(e.exit)
-//     console.log(e.message)
-// })
-
-
 

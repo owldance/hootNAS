@@ -4,15 +4,17 @@
  * returned from the services, and then send the response back to the client.
  * @module controllers/system
  */
-import { rebootSystem as _rebootSystem } from '../../services/system/rebootSystem.mjs'
-import { shutdownSystem as _shutdownSystem } from '../../services/system/shutdownSystem.mjs'
-import { getSetupId as _getSetupId} from '../../services/system/getSetupId.mjs'
-import { isPersistenceActive as _isPersistenceActive } from '../../services/system/isPersistenceActive.mjs'
-import { getErrorObject } from '../../services/utilities/getErrorObject.mjs'
 'use strict'
+import { rebootSystem as _rebootSystem }
+  from '../../services/system/rebootSystem.mjs'
+import { shutdownSystem as _shutdownSystem }
+  from '../../services/system/shutdownSystem.mjs'
+import { isPersistenceActive as _isPersistenceActive }
+  from '../../services/system/isPersistenceActive.mjs'
+import { getErrorObject }
+  from '../../services/utilities/getErrorObject.mjs'
 
 export async function rebootSystem(req, res, next) {
-  const { username, content } = req.body
   try {
     const result = await _rebootSystem()
     res.status(200).send(result)
@@ -21,21 +23,10 @@ export async function rebootSystem(req, res, next) {
     res.status(500).send(getErrorObject(e)) //&& next(error)
   }
 }
- 
+
 export async function shutdownSystem(req, res, next) {
-  const { username, content } = req.body
   try {
     const result = await _shutdownSystem()
-    res.status(200).send(result)
-    next()
-  } catch (e) {
-    res.status(500).send(getErrorObject(e)) //&& next(error)
-  }
-}
-
-export async function getSetupId(req, res, next) {
-  try {
-    const result = await _getSetupId()
     res.status(200).send(result)
     next()
   } catch (e) {

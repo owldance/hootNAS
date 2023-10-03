@@ -3,14 +3,14 @@
  * @module selectUser
  */
 'use strict'
-import sqlite3 from 'sqlite3'
-import { open } from 'sqlite'
-const basePath = process.env.HOOT_REPO || '/usr/local/hootnas'
-const dbPath = `${basePath}/db/hoot.db`
+import { executeQueryAll } from '../db/executeQueryAll.mjs'
 /**
  * @typedef {Object} User
- * @property {String} name
- * .... etc 
+ * @property {number} id - The ID of the user.
+ * @property {string} name - The name of the user.
+ * @property {string} mail - The email address of the user.
+ * @property {number} status_id - The ID of the status of the user.
+ * @property {string} status - The status of the user.
  * @property {Array<String>} groups group names
  */
 /**
@@ -19,17 +19,12 @@ const dbPath = `${basePath}/db/hoot.db`
  * @async
  * @param {String} name 
  * @param {String} password 
- * @returns {User} on resolve
+ * @returns {Promise<User>} on resolve
  * @throws {Error} on reject
  */
 export async function selectUser(name, password) {
   try {
-    let result = null
-    const db = await open({
-      filename: dbPath,
-      driver: sqlite3.Database
-    })
-    result = await db.all(
+    let result = await executeQueryAll(
       `SELECT users.* , user_status.status, groups."group"
       FROM users
       INNER JOIN user_groups ON users.id = user_groups.user_id 
@@ -38,7 +33,6 @@ export async function selectUser(name, password) {
       WHERE name ='${name}' AND password='${password}'`
     )
     if (result.length === 0) {
-      await db.close()
       throw new Error('Username or password incorrect')
     }
     // create array of groups
@@ -52,17 +46,8 @@ export async function selectUser(name, password) {
     // don't return the password
     delete result.password
     result.groups = groups
-    await db.close()
     return result
   } catch (e) {
     throw e
   }
 }
-
-// selectUser('Monkey', 'monk7y')
-//   .then((result) => {
-//     console.log(result)
-//   })
-//   .catch((err) => {
-//     console.log(err)
-//   })

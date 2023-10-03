@@ -9,7 +9,7 @@ import { lsBlockDevices } from './lsBlockDevices.mjs'
 import { lsBlockDeviceWWIDs } from './lsBlockDeviceWWIDs.mjs'
 
 /**
- * @typedef blockDevice
+ * @typedef BlockDevice
  * @type {Object}
  * @property {String} kname internal kernel device name
  * @property {String} type device type
@@ -32,7 +32,7 @@ import { lsBlockDeviceWWIDs } from './lsBlockDeviceWWIDs.mjs'
  * string numerical values (e.g. 10G) to numbers. 
  * @async 
  * @function 
- * @returns {Promise<Array<blockDevice>>} On resolve
+ * @returns {Promise<Array<BlockDevice>>} On resolve
  * @throws {Error} On reject
  */
 export async function getBlockDevices() {
@@ -42,13 +42,12 @@ export async function getBlockDevices() {
     const wwid = await lsBlockDeviceWWIDs()
     // adds the first available wwid starting with "wwn" 
     // to it's respecitve blockdevice
-    for (const block of blocks.blockdevices) {
+    for (const block of blocks) {
       const mapwwid = wwid.map.find(({ wwid, kname }) =>
         kname === block.kname && wwid.match(/^virt|wwn|scsi|sata|pci/m)
       )
-      // if no wwid is found, do not add it
+      // if wwid is found, add it
       if (mapwwid) {
-        console.log(`found wwid ${mapwwid.wwid}`)
         block.wwid = mapwwid.wwid
       }
       // convert postfixed values to ints e.g. "0.1M" to 100000 (bytes)

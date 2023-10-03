@@ -7,7 +7,7 @@
 import { shell } from '../utilities/shell.mjs'
 
 /**
- * @typedef blockDevice
+ * @typedef BlockDevice
  * @type {Object}
  * @property {String} kname internal kernel device name
  * @property {String} type device type
@@ -32,7 +32,7 @@ import { shell } from '../utilities/shell.mjs'
  *  2. holder devices or slaves e.g. partitions.
  * @async 
  * @function
- * @returns {Promise<Array<blockDevice>>} On resolve
+ * @returns {Promise<Array<BlockDevice>>} On resolve
  * @throws {Error} On reject
  */
 export async function lsBlockDevices() {
@@ -45,7 +45,7 @@ export async function lsBlockDevices() {
     lsblk = JSON.parse(lsblk)
     // delete devices where TRAN is "usb"
     lsblk.blockdevices = lsblk.blockdevices.filter(({ tran }) => tran !== 'usb')
-    return lsblk
+    return lsblk.blockdevices
   }
   catch (e) {
     throw e
