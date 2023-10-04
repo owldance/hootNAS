@@ -4,42 +4,31 @@
  * Since there can be multiple insctances of the VdevConfig component, the 
  * vdevType prop, which is unique, is prepended to most id's and names in this 
  * component.
- * @module VdevConfig
+ * @module components/storage-setup-carousel-items/VdevConfig
  * @todo add support for selecting hot spares for draid vdevs
  */
 import { inject, nextTick, onMounted } from 'vue'
 const storagepool = inject('storagepool')
 const allDisks = inject('allDisks')
-/**
- * Filers all blockdevices in allDisks, and returns only the type 'disk'
- * @function filteredBlockDevices
- * @returns {Array<blockdevice>}
- */
-function filteredBlockDevices() {
-    return allDisks.blockdevices.filter((disk) => {
+/** @typedef {import('../../../../services/blockdevices/getBlockDevices.mjs').BlockDevice} BlockDevice */
+/** @returns {Array<BlockDevice>} */
+function filteredDevices() {
+    return allDisks.filter((disk) => {
         return disk.type === 'disk'
     })
 }
 /**
- * The props passed on to this component
- * @typedef {Object} props
+ * The properties passed to this component in the StorageSetupCarousel component
+ * @typedef {Object} Props
  * @property {String} vdevType the type of the vdev
  */
-/**
- * The props passed on to this component
- * @constant
- * @type {props}
- */
+/** @type {Props} */
 const props = defineProps({ vdevType: String })
-/** 
- * The vdev index of the vdev type passed on to this componenet in props
- * @constant
- * @type {Number}
- */
+/** @type {Number} vdev index from type specified in props */
 const thisVdevIndex = storagepool.vdevs.findIndex(({ type }) =>
     type === props.vdevType)
 /**
- * @typedef {Object} vdevRedundancies
+ * @typedef {Object} VdevRedundancies
  * @property {Array<String>} data valid data vdev redundancies
  * @property {Array<String>} log valid log vdev redundancies
  * @property {Array<String>} cache valid cache vdev redundancies
@@ -49,8 +38,7 @@ const thisVdevIndex = storagepool.vdevs.findIndex(({ type }) =>
  */
 /**
  * A list of vdevs and allowed redundancies
- * @constant
- * @type {vdevRedundancies}
+ * @type {VdevRedundancies}
  * @todo special/dedup rules for data vdevs
  */
 const vdevRedundancies = {
@@ -146,13 +134,8 @@ const draid3 = new Redundancy('draid3', 5, 3)
 const raidz1 = new Redundancy('raidz1', 3, 1)
 const raidz2 = new Redundancy('raidz2', 4, 2)
 const raidz3 = new Redundancy('raidz3', 5, 3)
-/**
- * @typedef {Object} carousel bootstrap carousel object
- */
-/**
- * @constant
- * @type {carousel}
- */
+
+/** @type {Object} Carousel bootstrap carousel object */
 const carousel = new bootstrap.Carousel(
     document.getElementById('carousel-init'))
 // event driven functions
@@ -224,14 +207,14 @@ onMounted(() => {
 function diskSelectionChanged(event) {
     if (event.target.checked) {
         // copy disk to this vdev
-        storagepool.vdevs[thisVdevIndex].blockdevices.push(
-            allDisks.blockdevices.find(({ kname }) =>
+        storagepool.vdevs[thisVdevIndex].devices.push(
+            allDisks.find(({ kname }) =>
                 kname === event.target.id)
         )
     } else {
         // remove disk from this vdev
-        storagepool.vdevs[thisVdevIndex].blockdevices.splice(
-            storagepool.vdevs[thisVdevIndex].blockdevices.findIndex(
+        storagepool.vdevs[thisVdevIndex].devices.splice(
+            storagepool.vdevs[thisVdevIndex].devices.findIndex(
                 ({ kname }) => kname === event.target.id), 1)
         // count dspares down
         if (storagepool.vdevs[thisVdevIndex].dspares > 0) {
@@ -298,7 +281,7 @@ function toHumanReadable(bytes) {
  * @returns {Number} number of disks in this vdev
  */
 function numberOfDisksInThisVdev() {
-    return storagepool.vdevs[thisVdevIndex].blockdevices.length
+    return storagepool.vdevs[thisVdevIndex].devices.length
 }
 /**
  * Returns the smallest size disk in Kb of all disks in this vdev
@@ -307,27 +290,22 @@ function numberOfDisksInThisVdev() {
  */
 function minDiskSize() {
     // make array of sizes
-    const sizes = storagepool.vdevs[thisVdevIndex].blockdevices.map(o => o.size)
+    const sizes = storagepool.vdevs[thisVdevIndex].devices.map(o => o.size)
     // find min 
     return Math.min(...sizes)
 }
-/**
- * Returns the compund size of all disks (in Kb) of all disks in this vdev
- * @function
- * @returns {Number} compund size in Kb 
- */
+/** @returns {Number} compund size of all disks in this vdev in Kb */
 function compoundCapacity() {
-    return storagepool.vdevs[thisVdevIndex].blockdevices.reduce(
+    return storagepool.vdevs[thisVdevIndex].devices.reduce(
         (accumulator, currentValue) => accumulator + currentValue.size, 0)
 }
 /**
- * check if disk is in this vdev
- * @function diskInThisVdev
+ * check if disk kname is in this vdev
  * @param {String} diskKname kernel name of the disk
  * @returns {Boolean} true if disk is in any vdev in storagepool
  */
 function diskInThisVdev(diskKname) {
-    const ret = storagepool.vdevs[thisVdevIndex].blockdevices.find(({ kname }) =>
+    const ret = storagepool.vdevs[thisVdevIndex].devices.find(({ kname }) =>
         kname === diskKname)
     return ret ? true : false
 }
@@ -339,7 +317,7 @@ function diskInThisVdev(diskKname) {
  */
 function diskInAnyVdev(diskKname) {
     const ret = storagepool.vdevs.find(
-        vdev => vdev.blockdevices.find(({ kname }) =>
+        vdev => vdev.devices.find(({ kname }) =>
             kname === diskKname))
     return ret ? true : false
 }
@@ -380,7 +358,7 @@ function okRemoveEmptyVdev(event) {
  */
 function goPrev(event) {
     // if there are no disks selected in this vdev, show modal
-    if (!storagepool.vdevs[thisVdevIndex].blockdevices.length) {
+    if (!storagepool.vdevs[thisVdevIndex].devices.length) {
         var modalElement = document.getElementById(`vdev-empty-modal-${props.vdevType}`)
         var modal = bootstrap.Modal.getOrCreateInstance(modalElement)
         modal.show()
@@ -397,7 +375,7 @@ function goPrev(event) {
  */
 function goNext(event) {
     // if there are no disks selected in this vdev, show modal
-    if (!storagepool.vdevs[thisVdevIndex].blockdevices.length) {
+    if (!storagepool.vdevs[thisVdevIndex].devices.length) {
         var modalElement = document.getElementById(`vdev-empty-modal-${props.vdevType}`)
         var modal = bootstrap.Modal.getOrCreateInstance(modalElement)
         modal.show()
@@ -476,7 +454,7 @@ function goNext(event) {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="disk in filteredBlockDevices()">
+                            <tr v-for="disk in filteredDevices()">
                                 <td class="text-center">
                                     <input v-if="diskInThisVdev(disk.kname)" v-on:change="diskSelectionChanged"
                                         class="form-check-input" type="checkbox" name="disk-selector" v-bind:id="disk.kname"

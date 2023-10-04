@@ -2,7 +2,7 @@
 /**
  * The StorageSetupCarousel component is a wizard that guides the user through
  * the process of setting up the storage pool.
- * @module StorageSetupCarousel
+ * @module components/StorageSetupCarousel
  * @typedef {import('../../../services/blockdevices/getBlockDevices.mjs').BlockDevice} BlockDevice
  * @typedef {import('../../../webserver/endpoints/users.mjs').User} User
  * @typedef {import('../App.vue').AppState} AppState
@@ -18,26 +18,19 @@ import { post } from './shared.mjs'
 import { provide, reactive, watch, inject } from 'vue'
 
 /** 
- * vdev is a ZFS virtual device i.e. a group of blockdevices or vdevs
+ * A ZFS virtual device i.e. a group of blockdevices or vdevs
  * @typedef {Object} Vdev
- * @property {Array<BlockDevice>|Array<Vdev>} blockdevices 
- * @property {String} topology stripe|mirror|raidz1|raidz2raidz3
- * @property {String} name the unique name of this vdev
- * @property {String} compress compress data option
- * @property {String} encrypt encrypt data option
- * @property {String} password encryption password
- * @property {String} capacity calculated capacity of the vdev
+ * @property {Array<BlockDevice>|Array<Vdev>} devices 
+ * @property {String} redundancy the redundancy level of the vdev
+ * @property {String} type the type of vdev
+ * @property {Boolean} delete if true, the vdev will be deleted from the storagepool
+ * @property {Number} dspares number of spare devices in a vdev of type draid
  */
 /**
   * @typedef {Object} StoragePool
   * @property {Array<Vdev>} vdevs
-  * @property {String} topology
-  * @property {String} name
-  * @property {Boolean} compress
-  * @property {Boolean} encrypt
-  * @property {String} password
-  * @property {Number} capacity
-  */
+  * @property {Boolean} debug if true, the setup will be tested but not initiated
+  */  
 
 /** @type {AppState} */
 const appstate = inject('appstate')
