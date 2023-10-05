@@ -99,7 +99,7 @@ function sortVdevs(storagepool) {
 async function configurePersistence() {
   try {
     const settings = await getSettings()
-    await createZvol(`1G`, 
+    await createZvol(`1G`,
       `${settings.storagepoolname}/${settings.persistencezvolname}`)
     // the volume is exported as a block device in /dev/zvol/path
     await shell(`mkfs.ext4 -L persistence /dev/zd0`)
@@ -142,36 +142,34 @@ async function configurePersistence() {
  * @throws {Error} On reject
  */
 export async function initialSetup(storagepool) {
-  const settings = await getSettings()
-  if (storagepool.debug) {
-    let debugMessage = ''
-    try {
-      storagepool = sortVdevs(storagepool)
-      debugMessage = await createZpool(storagepool)
-    } catch (e) {
-      return e
-    }
-    return { message: debugMessage }
-  }
-  // normal setup
-  let creationMessage = ''
-  try {
-    storagepool = sortVdevs(storagepool)
-    // wipe and zap blockdevices, required if the disks have been used before
-    for (const vdev of storagepool.vdevs) {
-      for (const blockdevice of vdev.blockdevices) {
-        await zwipeBlockDevice(`/dev/disk/by-id/${blockdevice.wwid}`)
+    if (storagepool.debug) {
+      try {
+        storagepool = sortVdevs(storagepool)
+        const debugMessage = await createZpool(storagepool)
+        return { message: debugMessage }
+      } catch (e) {
+        throw e
       }
     }
-    creationMessage = await createZpool(storagepool)
-    await configurePersistence()
-    // create the root zfs filesystem
-    await createZfs(`${settings.storagepoolname}/${settings.datafsname}`, 
-      undefined, 
-      { mountpoint: `/${settings.datafsname}` })
-    return { message: creationMessage }
-  }
-  catch (e) {
-    throw e
-  }
+    // normal setup
+    try {
+      const settings = await getSettings()
+      storagepool = sortVdevs(storagepool)
+      // wipe and zap blockdevices, required if the disks have been used before
+      for (const vdev of storagepool.vdevs) {
+        for (const blockdevice of vdev.devices) {
+          await zwipeBlockDevice(`/dev/disk/by-id/${blockdevice.wwid}`)
+        }
+      }
+      const creationMessage = await createZpool(storagepool)
+      await configurePersistence()
+      // create the root zfs filesystem
+      await createZfs(`${settings.storagepoolname}/${settings.datafsname}`,
+        undefined,
+        { mountpoint: `/${settings.datafsname}` })
+      return { message: creationMessage }
+    }
+    catch (e) {
+      throw e
+    }
 }

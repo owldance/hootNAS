@@ -19,7 +19,7 @@ import { shell } from "../utilities/shell.mjs"
  * { property : value }, or value undefined
  * @param {blocksize} blocksize - The blocksize of the zvol to create. can be 
  * specified using human-readable suffixes (for example, k, KB, M, Gb, etc.)
- * @returns {string} - The result of the shell command.
+ * @returns {Promise<string>} - The result of the shell command.
  * @throws {Error} - Error from the shell command.
  */
 export async function createZvol(size, name, options='P', 

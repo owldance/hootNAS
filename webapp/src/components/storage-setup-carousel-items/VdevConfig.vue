@@ -1,9 +1,9 @@
 <script setup>
 /**
  * The VdevConfig component is used to configure vdevs in the storagepool.
- * Since there can be multiple insctances of the VdevConfig component, the 
- * vdevType prop, which is unique, is prepended to most id's and names in this 
- * component.
+ * Since there can be multiple vdevs there can be multiple insctances of this 
+ * VdevConfig component, therefore the vdevType property, which is unique, is 
+ * prepended to most html element id's and names in this component.
  * @module components/storage-setup-carousel-items/VdevConfig
  * @todo add support for selecting hot spares for draid vdevs
  */
@@ -36,11 +36,8 @@ const thisVdevIndex = storagepool.vdevs.findIndex(({ type }) =>
  * @property {Array<String>} spare valid spare vdev redundancies
  * @property {Array<String>} dedup valid dedup vdev redundancies
  */
-/**
- * A list of vdevs and allowed redundancies
- * @type {VdevRedundancies}
- * @todo special/dedup rules for data vdevs
- */
+ 
+/** @type {VdevRedundancies} supported vdev redundancies */
 const vdevRedundancies = {
     data: ['stripe', 'mirror', 'raidz1', 'raidz2', 'raidz3',
         'draid1', 'draid2', 'draid3'],
@@ -50,12 +47,18 @@ const vdevRedundancies = {
     spare: ['stripe'],
     dedup: ['stripe', 'mirror'] // number of redundant disks must be equal to number of redundant disks in data vdevs
 }
+// @todo implement special/dedup rules for data vdevs
+
 class Redundancy {
     constructor(name, requiredNumberOfDisks, redundantDisks) {
         this.name = name
         this.requiredNumberOfDisks = requiredNumberOfDisks
         this.redundantDisks = redundantDisks
     }
+    /**
+     * Determines if this redundancy configuration can be used for the current Vdev.
+     * @returns {boolean} True if this redundancy configuration can be used.
+     */
     render() {
         // stip props.vdevType of anything from and including the 
         // first hyphen to the end, as there can be more than one data vdev
@@ -67,6 +70,10 @@ class Redundancy {
             return true
         return false
     }
+    /**
+     * Calculates the capacity of this redundancy configuration.
+     * @returns {string} The capacity of this redundancy configuration in human-readable format.
+     */
     capacity() {
         if (this.name.match('draid')) {
             if (getSelectedRedundancy() == this.name) {
@@ -90,6 +97,10 @@ class Redundancy {
             return toHumanReadable(minDiskSize())
         }
     }
+    /**
+     * Calculates the read gain of the Vdev configuration based on the number of disks and redundancy.
+     * @returns {string} The read gain in the format "${gain}x read".
+     */
     gain() {
         if (this.name.match('draid')) {
             if (getSelectedRedundancy() == this.name) {

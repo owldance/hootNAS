@@ -146,8 +146,8 @@ import { shell } from "../utilities/shell.mjs"
  * @returns {Promise<Message>} On resolve
  */
 export async function createZpool(storagepool) {
-    let ret = ''
     try {
+        console.log(storagepool)
         let zpoolOptions = 
         `-o ashift=12 \
         -o autotrim=on \
@@ -171,16 +171,20 @@ export async function createZpool(storagepool) {
                 createZpoolString += `${vdev.type} `
             // stripe is not a zfs redundancy, do not add to string
             if (vdev.redundancy !== 'stripe')
-                createZpoolString += `${vdev.redundancy} `
+                createZpoolString += `${vdev.redundancy}`
+            // if it's a draid vdev with spares, add spares to string
+            if (vdev.redundancy.startsWith('draid') && vdev.dspares > 0)
+                createZpoolString += `:${vdev.dspares}s`
+            createZpoolString += ' '
             // get blockdevices in vdev as one string  
-            createZpoolString += vdev.blockdevices.map(blockdevice => {
-                    return `/dev/disk/by-id/${blockdevice.wwid}`
+            createZpoolString += vdev.devices.map(device => {
+                    return `/dev/disk/by-id/${device.wwid}`
             }).join(' ')
             createZpoolString += ' '
         }
-        ret = await shell(createZpoolString)
+        const ret = await shell(createZpoolString)
         return ret
     } catch (e) {
-        return e
+        throw e
     }
 }

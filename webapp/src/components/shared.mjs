@@ -77,7 +77,6 @@ export async function post(uri, payload) {
     // we are in development
     endpoint = `http://localhost:8000/${uri}`
   }
-  let bodydata
   try {
     const response = await fetch(endpoint, {
       method: 'POST',
@@ -90,16 +89,16 @@ export async function post(uri, payload) {
       body: JSON.stringify(payload)
     })
     // responses are sent as json
-    bodydata = await response.json()
+    const bodydata = await response.json()
     if (!response.ok) {
       throw new ApiException(bodydata.message, bodydata.exit, 
         response.status, response.statusText)
     }
+    return bodydata
   }
   catch (e) {
     throw e
   }
-  return bodydata
 }
 /**
  * Pauses further execution for a given amount of time, if used with await

@@ -8,7 +8,7 @@
  * @module FinalizeSetup
  */
 import { inject } from 'vue'
-import { post } from '../shared.mjs'
+import { post, sleep } from '../shared.mjs'
 const appstate = inject('appstate')
 const storagepool = inject('storagepool')
 /**
@@ -47,7 +47,7 @@ function showFinalizeModal(title, body, buttonDisabled = false) {
 
 function progressProgressBar(progressBarProgressed, progressBarSlices) {
     progressBarProgressed++
-    const progressBarSlice = 100/progressBarSlices
+    const progressBarSlice = 100 / progressBarSlices
     const progressBarProgress = Math.ceil(progressBarProgressed * progressBarSlice)
     const progress = document.getElementById('install-progress')
     progress.style.width = `${progressBarProgress}%`
@@ -56,10 +56,10 @@ function progressProgressBar(progressBarProgressed, progressBarSlices) {
 }
 
 function isProductionMode() {
-  if (location.port === '80' || location.port === '') 
-    return true
-  else 
-    return false
+    if (location.port === '80' || location.port === '')
+        return true
+    else
+        return false
 }
 /**
  * Sends initialSetup request to server and disables the 
@@ -83,16 +83,21 @@ async function configStoragePool(event) {
     try {
         storagepool.debug = true
         showMessage.innerHTML = 'checking configuration...'
-        await post('api/initialSetup', {
-            accesstoken: appstate.accesstoken,
+        const debugResult = await post('api/devices/initialSetup', {
+            accesstoken: appstate.user.accesstoken,
             storagepool: storagepool
         })
-        progressBarProgressed=
+        progressBarProgressed =
             progressProgressBar(progressBarProgressed, progressBarSlices)
+        console.log(debugResult.message)
     }
     catch (e) {
         // test failed, allow user to go back and try again
-        const showMessage = e.message.replace(/^use.*override.*$/m, '<br>')
+        // escape less-than greater-than brackets < > 
+        let showMessage = e.message.replace(/[<>]/g, function (match) {
+            return { '<': '&lt;', '>': '&gt;' }[match]
+        })
+        showMessage = showMessage.replace(/^use.*override.*$/m, '<br>')
         showFinalizeModal('Configuration Error',
             `<p>hootNAS was unable to configure the storage pool. </p>
         <p>Go back using the 'Prev' button and please check the following:</p>
@@ -104,19 +109,19 @@ async function configStoragePool(event) {
     // now setup storage pool for real
     storagepool.debug = false
     showMessage.innerHTML = 'Committing your configuration to disk...'
-    await post('api/initialSetup', {
-        accesstoken: appstate.accesstoken,
+    await post('api/devices/initialSetup', {
+        accesstoken: appstate.user.accesstoken,
         storagepool: storagepool
     })
-    progressBarProgressed=
+    progressBarProgressed =
         progressProgressBar(progressBarProgressed, progressBarSlices)
     // reboot the system
     showMessage.innerHTML = 'Rebooting system...'
-    progressBarProgressed=
+    progressBarProgressed =
         progressProgressBar(progressBarProgressed, progressBarSlices)
     try {
-        await post('api/rebootSystem',
-            { accesstoken: appstate.accesstoken })
+        await post('api/system/rebootSystem',
+            { accesstoken: appstate.user.accesstoken })
     }
     catch (e) {
         // show error message, if it's not a network error. network errors are
@@ -143,40 +148,51 @@ async function configStoragePool(event) {
     let countTicks = true
     const ticksBetweenTries = 10
     const ticksBeforeFirstTry = 5
-    const progressBarProgressedSoFar = progressBarProgressed 
+    const progressBarProgressedSoFar = progressBarProgressed
     showMessage.innerHTML = `Connection attempt \
-        ${progressBarProgressed-progressBarProgressedSoFar + 1} \
-        of ${progressBarSlices-progressBarProgressedSoFar} to hootNAS...`
+        ${progressBarProgressed - progressBarProgressedSoFar + 1} \
+        of ${progressBarSlices - progressBarProgressedSoFar} to hootNAS...`
     // start polling isPersistenceActive
-    const interval = setInterval(async () => {
+    const intervalID = setInterval(async () => {
         if (ticks == ticksBeforeFirstTry && countTicks) {
             // pause counting ticks
             countTicks = false
             try {
                 console.log('executing isPersistenceActive')
-                const data = await post('api/isPersistenceActive')
+                const data = await post('api/system/isPersistenceActive')
                 console.log(`Finished setup successfully`)
-                showMessage.innerHTML = `Finished setup successfully`
-                progressBarProgressed=
-                    progressProgressBar(progressBarProgressed, 
-                        progressBarSlices)
-                clearInterval(interval)
-                // show vue signIn component
-                appstate.vue = 'signIn'
+                clearInterval(intervalID)
+                // update progress bar to the end, then wait 3 seconds before
+                // redirecting to the sign in page
+                setInterval(async () => {
+                    if (progressBarProgressed != progressBarSlices) {
+                        progressBarProgressed =
+                            progressProgressBar(progressBarProgressed,
+                                progressBarSlices)
+                    }
+                    else {
+                        clearInterval(intervalID)
+                        showMessage.innerHTML = 
+                        `<p>Finished setup successfully. </p>\
+                        <p>You will now be redirected to the sign in page</p>`
+                        await sleep(3000)
+                        appstate.vue = 'SignIn'
+                    }
+                }, 500)
             }
             catch (e) {
                 console.log(`isPersistenceActive error: ${e.message}`)
-                progressBarProgressed=
-                    progressProgressBar(progressBarProgressed, 
-                    progressBarSlices)    
+                progressBarProgressed =
+                    progressProgressBar(progressBarProgressed,
+                        progressBarSlices)
             }
             if (progressBarProgressed == progressBarSlices) {
                 // max retries reached
                 console.log('max retries reached')
                 showMessage.innerHTML = `Cannot connect to hootNAS`
-                if (isProductionMode()){
-                showMaxRetriesMessage.innerHTML = 
-                    `<p>This is most likely because hootNAS has been assigned \
+                if (isProductionMode()) {
+                    showMaxRetriesMessage.innerHTML =
+                        `<p>This is most likely because hootNAS has been assigned \
                     a new IP address from your DHCP server. </p>\
                     <p>Please login to hootNAS via the \
                     terminal (tty) with username 'root' and password \
@@ -185,20 +201,20 @@ async function configStoragePool(event) {
                     IP address.</p> \ 
                     <p>Or hit F12 to open the browser debug window</p>`
                 } else {
-                    showMaxRetriesMessage.innerHTML = 
-                    `<p>This is most likely because you haven't copied the  \
+                    showMaxRetriesMessage.innerHTML =
+                        `<p>This is most likely because you haven't copied the  \
                     the ssh key before attempts were exhausted.</p>\
                     <p>after first reboot you have to run \
                     'ssh-copy-id root@&lt;IP address>' again in your terminal with \
                     password 'pass1234'. Then hit refresh in your browser.</p> \
                     <p>Or hit F12 to open the browser debug window</p>`
                 }
-                clearInterval(interval)
+                clearInterval(intervalID)
             }
             else {
                 showMessage.innerHTML = `Connection attempt \
-                    ${progressBarProgressed-progressBarProgressedSoFar +1} \
-                    of ${progressBarSlices-progressBarProgressedSoFar} to hootNAS...`
+                    ${progressBarProgressed - progressBarProgressedSoFar + 1} \
+                    of ${progressBarSlices - progressBarProgressedSoFar} to hootNAS...`
             }
             countTicks = true
         }
@@ -220,7 +236,7 @@ async function configStoragePool(event) {
                 </p>
                 <h5 id="install-msg"></h5>
                 <h6 id="install-max-msg"></h6>
-                
+
                 <div class="progress" style="height: 24px;margin-top: 20px;margin-bottom: 20px;">
                     <div class="progress-bar" id="install-progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
                         style="width: 0%;">0%</div>
