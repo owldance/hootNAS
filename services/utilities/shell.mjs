@@ -39,8 +39,9 @@ export async function shell(cmd) {
                 // HOOT_REPO is set, but the user has not setup 
                 // ssh access to the remote system
                 if (ret.match(/ssh_askpass/i)) {
-                    ret = "host key verification failed. please see \n" +
-                    '/documentation/create-hootnas-instance.md for more information.'
+                    ret = "host key verification failed. \n" +
+                    'you must setup SSH key authentication for development mode. \n' +
+                    'see /documentation/create-hootnas-instance.md for more information.'
                 }
                 const err = new Error(ret)
                 err.exit = exitCode 

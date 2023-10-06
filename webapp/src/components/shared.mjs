@@ -50,8 +50,8 @@ export async function get(uri) {
  * @param {Integer} status http status code
  * @param {String} statusText http status text
  * @returns {ApiException}
- */ 
- function ApiException(message, exit, status, statusText) {
+ */
+function ApiException(message, exit, status, statusText) {
   this.message = message
   this.exit = exit
   this.httpStatus = status
@@ -63,11 +63,15 @@ export async function get(uri) {
  * served from port 80, then the request is made to localhost:8000.
  * @async 
  * @function
- * @param {Object} payload Must at least contain the property 'name'
- * @returns {Promise<Object>} On resolve
+ * @param {String} uri the resource requested
+ * @param {Object} payload the data to be sent
+ * @param {Integer} timeout request timeout in milliseconds
+ * @returns {Promise<Response>} The Response object
  * @returns {Promise<Error>} On reject 
  */
-export async function post(uri, payload) {
+export async function post(uri, payload = {}, timeout = 40000) {
+  const controller = new AbortController()
+  const timeoutID = setTimeout(() => { controller.abort() }, timeout)
   let endpoint
   if (location.port === '80' || location.port === '') {
     // we are in production
@@ -79,6 +83,7 @@ export async function post(uri, payload) {
   }
   try {
     const response = await fetch(endpoint, {
+      signal: controller.signal,
       method: 'POST',
       mode: 'cors',
       credentials: 'omit',
@@ -90,8 +95,9 @@ export async function post(uri, payload) {
     })
     // responses are sent as json
     const bodydata = await response.json()
+    clearTimeout(timeoutID)
     if (!response.ok) {
-      throw new ApiException(bodydata.message, bodydata.exit, 
+      throw new ApiException(bodydata.message, bodydata.exit,
         response.status, response.statusText)
     }
     return bodydata
@@ -112,5 +118,3 @@ export async function sleep(time) {
     setTimeout(resolve, time)
   })
 }
-
-

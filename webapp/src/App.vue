@@ -35,14 +35,34 @@ provide('appstate', appstate)
  * await syntax is not possible here, because the parent vue file must be 
  * wrapped in Suspense tags, and App.vue doesn't have any parent.
  */
-post('api/system/isPersistenceActive')
+post('api/system/isPersistenceActive',{}, 40000)
   .then((data) => {
     // persistence is active
     appstate.vue = 'SignIn'
   })
   .catch((e) => {
-    if (e.message.match(/ssh|verification|network/i)) {
-      console.log(`${e.message}\ncheck your connectivity and refresh the page`)
+    if (e.message.match(/ssh/i)) {
+      console.log("The webserver is running in development mode, \n" +
+        "and it can't connect to a running hootNAS instance.\n" +
+        e.message)
+      return
+    }
+    if (e.message.match(/verification|network/i)) {
+      if (location.port === '80' || location.port === '') {
+        // we are in production
+        console.log("Can't connect to a running hootNAS instance.\n" +
+        e.message)
+      }
+      else {
+        // we are in development
+        console.log("The webserver is probably not running, \n" +
+        "or there are network issues.\n" +
+        e.message)
+      }
+      return
+    }
+    if (e.name === 'AbortError') {
+      console.log('Fetch request timed out')
       return
     }
     // persistence is not active, this requires setup. sign in with a one-time

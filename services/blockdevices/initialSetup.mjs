@@ -10,49 +10,22 @@ import { createZpool } from "../zfs/createZpool.mjs"
 import { createZvol } from "../zfs/createZvol.mjs"
 import { createZfs } from "../zfs/createZfs.mjs"
 import { getSettings } from "../utilities/getSettings.mjs"
-/**
- * A blockdevice is a physical disk/partition on the machine
- * @typedef blockDevice
- * @type {Object}
- * @property {String} kname internal kernel device name
- * @property {String} type device type
- * @property {String} path path to the device node
- * @property {Number} fstype filesystem type
- * @property {Number} fssize  filesystem size
- * @property {String} size  size of the device
- * @property {String} mountpoint  where the device is mounted
- * @property {String} parttype  partition type uuid
- * @property {String} partuuid  partition uuid
- * @property {String} partlabel  partition label
- * @property {String} wwn  unique storage identifier
- * @property {String} vendor  device vendor
- * @property {String} rev  device revision
- * @property {String} wwid device wwid
- * @property {String} vdev vdev name
- */
+/** @typedef {import('./getBlockDevices.mjs').BlockDevice} BlockDevice */
 /** 
- * vdev is a ZFS virtual device i.e. a group of blockdevices or vdevs
- * @typedef vdev
- * @type {Object}
- * @property {Array<blockDevice>} blockdevices
- * @property {String} topology
- * @property {String} name
- * @property {String} compress
- * @property {String} encrypt
- * @property {String} password
- * @property {Number} capacity
+ * A ZFS virtual device i.e. a group of blockdevices or vdevs
+ * @typedef {Object} Vdev
+ * @property {Array<BlockDevice>|Array<Vdev>} devices 
+ * @property {String} redundancy the redundancy level of the vdev
+ * @property {String} type the type of vdev
+ * @property {Boolean} delete delete vdev from the storagepool, this is only 
+ * for use in the webapp vue components, has no meaning in the api.
+ * @property {Number} dspares number of spare devices in a vdev of type draid
  */
 /**
- * A storagepool is a ZFS pool i.e. a group of vdevs
- * @typedef storagepool
- * @type {Object}
- * @property {Array<vdev>} vdevs
- * @property {String} topology
- * @property {String} name
- * @property {Boolean} compress
- * @property {Boolean} encrypt
- * @property {String} password
- * @property {Number} capacity
+ * @typedef {Object} StoragePool
+ * @property {Array<Vdev>} vdevs - the user defined vdevs
+ * @property {Boolean} debug - if true, the setup will only be tested, but not
+ * executed.
  */
 /**
  * Sorts storagepool.vdevs by type and redundancy, so that the order becomes:

@@ -36,7 +36,7 @@ const thisVdevIndex = storagepool.vdevs.findIndex(({ type }) =>
  * @property {Array<String>} spare valid spare vdev redundancies
  * @property {Array<String>} dedup valid dedup vdev redundancies
  */
- 
+
 /** @type {VdevRedundancies} supported vdev redundancies */
 const vdevRedundancies = {
     data: ['stripe', 'mirror', 'raidz1', 'raidz2', 'raidz3',

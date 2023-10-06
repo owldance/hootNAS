@@ -9,7 +9,13 @@
  */
 import { inject } from 'vue'
 import { post, sleep } from '../shared.mjs'
+/** @typedef {import('../../App.vue').AppState} AppState */
+/** @type {AppState} */
 const appstate = inject('appstate')
+/** @typedef {import('../../../../services/blockdevices/getBlockDevices.mjs').BlockDevice} BlockDevice */
+/** @typedef {import('../../../../services/blockdevices/initialSetup.mjs').Vdev} Vdev */
+/** @typedef {import('../../../../services/blockdevices/initialSetup.mjs').StoragePool} StoragePool */
+/** @type {StoragePool} */
 const storagepool = inject('storagepool')
 /**
  * Go to previous carouselItem
@@ -159,7 +165,7 @@ async function configStoragePool(event) {
             countTicks = false
             try {
                 console.log('executing isPersistenceActive')
-                const data = await post('api/system/isPersistenceActive')
+                const data = await post('api/system/isPersistenceActive',{}, 10000)
                 console.log(`Finished setup successfully`)
                 clearInterval(intervalID)
                 // update progress bar to the end, then wait 3 seconds before
@@ -178,7 +184,7 @@ async function configStoragePool(event) {
                         await sleep(3000)
                         appstate.vue = 'SignIn'
                     }
-                }, 500)
+                }, 250)
             }
             catch (e) {
                 console.log(`isPersistenceActive error: ${e.message}`)

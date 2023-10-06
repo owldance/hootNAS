@@ -13,7 +13,8 @@
 */
 import { inject, nextTick, onMounted } from 'vue'
 import { post, sleep } from '../shared.mjs'
-/** @typedef {import('../StorageSetupCarousel.vue').StoragePool} StoragePool */
+/** @typedef {import('../../../../services/blockdevices/initialSetup.mjs').Vdev} Vdev */
+/** @typedef {import('../../../../services/blockdevices/initialSetup.mjs').StoragePool} StoragePool */
 /** @type {StoragePool} */
 const storagepool = inject('storagepool')
 /** @typedef {import('../../../../services/blockdevices/getBlockDevices.mjs').BlockDevice} BlockDevice */
@@ -31,7 +32,7 @@ function foundSomeDisks() {
     subtitle.innerHTML = "Found some disks"
     text.innerHTML = "You are good to go, press next to continue"
     button.addEventListener('click', async () => {
-        /** @typedef {import('../StorageSetupCarousel.vue').Vdev} Vdev */
+        /** @typedef {import('../../../../services/blockdevices/initialSetup.mjs').Vdev} Vdev */
         /** @type {Vdev} */
         const dataVdev = {
             devices: [],
